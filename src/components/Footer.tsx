@@ -28,7 +28,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
     }, [selected]);
 
     return (
-        <div className="flex gap-12 fixed bottom-10">
+        <div className="flex gap-12 fixed bottom-5">
             <Link
                 className="hover:text-cyan-400 transition-colors duration-300 p-[10px]"
                 href="https://www.linkedin.com/in/advayc/"

@@ -3,7 +3,8 @@ import { Inter } from "next/font/google";
 import Terminal from "@/components/Terminal";
 import File from "@/components/File";
 import Footer from "@/components/Footer";
-import MouseTracker from "@/components/MouseTracker"; 
+import { SelectionBoxProvider } from "@/components/SelectionContext";
+import SelectionBox from "@/components/SelectionBox";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,21 +25,23 @@ export default function Home() {
   }, [selected]);
 
   return (
-    <main className={`${inter.className} flex items-center justify-center min-h-screen`}>
-      <div className="h-screen w-full bg-neutral-950 bg-grid-white/[0.025] relative flex items-center justify-center">
-        <div>
-          <h1 className="text-5xl font-bold text-center text-white mb-8">Hi, I'm Advay!</h1>
-          <div className="flex flex-col items-center justify-center space-y-2">
-            <File
-              setWindowOpen={setIsTerminalOpen}
-              className="w-16 h-16"
-            />
+    <SelectionBoxProvider>
+      <main className={`${inter.className} flex items-center justify-center min-h-screen`}>
+        <div className="h-screen w-full bg-neutral-950 bg-grid-white/[0.025] relative flex items-center justify-center">
+          <div>
+            <h1 className="text-5xl font-bold text-center text-white mb-8">Hi, I'm Advay!</h1>
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <File
+                setWindowOpen={setIsTerminalOpen}
+                className="w-16 h-16"
+              />
+            </div>
+            {isTerminalOpen && <Terminal onClose={() => setIsTerminalOpen(false)} />}
           </div>
-          {isTerminalOpen && <Terminal onClose={() => setIsTerminalOpen(false)} />}
         </div>
-      </div>
-      <Footer />
-      <MouseTracker /> 
-    </main>
+        <Footer selected={selected} setSelected={setSelected} />
+        <SelectionBox />
+      </main>
+    </SelectionBoxProvider>
   );
 }
