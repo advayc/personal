@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Inter } from "next/font/google";
+import { motion } from "framer-motion"; // Import motion from framer-motion
 import Terminal from "@/components/Terminal";
 import File from "@/components/File";
 import Footer from "@/components/Footer";
@@ -24,24 +25,50 @@ export default function Home() {
     }
   }, [selected]);
 
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.9 } }
+  };
+
   return (
     <SelectionBoxProvider>
-      <main className={`${inter.className} flex items-center justify-center min-h-screen`}>
+      <motion.main 
+        className={`${inter.className} flex items-center justify-center min-h-screen`}
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+      >
         <div className="h-screen w-full bg-neutral-950 bg-grid-white/[0.025] relative flex items-center justify-center">
-          <div>
-            <h1 className="text-5xl font-bold text-center text-white mb-8">Hi, I'm Advay!</h1>
-            <div className="flex flex-col items-center justify-center space-y-2">
+          <motion.div variants={fadeIn}>
+            <motion.h1 
+              className="text-5xl font-bold text-center text-white mb-8"
+              variants={fadeIn}
+            >
+              Hi, I'm Advay!
+            </motion.h1>
+            <motion.div 
+              className="flex flex-col items-center justify-center space-y-2"
+              variants={fadeIn}
+            >
               <File
                 setWindowOpen={setIsTerminalOpen}
                 className="w-16 h-16"
               />
-            </div>
-            {isTerminalOpen && <Terminal onClose={() => setIsTerminalOpen(false)} />}
-          </div>
+            </motion.div>
+            {isTerminalOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Terminal onClose={() => setIsTerminalOpen(false)} />
+              </motion.div>
+            )}
+          </motion.div>
         </div>
-        <Footer selected={selected} setSelected={setSelected} />
+          <Footer selected={selected} setSelected={setSelected} />
         <SelectionBox />
-      </main>
+      </motion.main>
     </SelectionBoxProvider>
   );
 }

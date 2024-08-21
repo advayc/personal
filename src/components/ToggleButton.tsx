@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MdOutlineDarkMode, MdOutlineLightMode } from "react-icons/md";
+import { useSelectionBox, isElementInSelectionBox } from '@/components/SelectionContext';
 
 type ToggleOptionsType = 'dark' | 'light';
 
@@ -10,6 +11,10 @@ interface ToggleButtonProps {
 }
 
 const ToggleButton: React.FC<ToggleButtonProps> = ({ selected, setSelected }) => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const selectionBox = useSelectionBox();
+  const [isButtonSelected, setIsButtonSelected] = useState(false);
+
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as ToggleOptionsType | null;
     if (savedTheme) {
@@ -39,7 +44,13 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ selected, setSelected }) =>
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selected]); // Add selected to the dependency array
+  }, [selected]);
+
+  useEffect(() => {
+    if (buttonRef.current) {
+      setIsButtonSelected(isElementInSelectionBox(buttonRef.current, selectionBox));
+    }
+  }, [selectionBox]);
 
   const toggleTheme = () => {
     const newTheme = selected === 'dark' ? 'light' : 'dark';
@@ -57,12 +68,13 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ selected, setSelected }) =>
 
   return (
     <button
+      ref={buttonRef}
       onClick={toggleTheme}
       className={`flex items-center rounded-md p-[10px] border-none transition-colors duration-1500 ${
         selected === 'light'
           ? 'text-black hover:bg-gray-300'
           : 'text-white hover:bg-[#191919]'
-      }`}
+      } ${isButtonSelected ? 'dark:bg-[#191919] transition-colors duration-1500' : ''}`}
     >
       <motion.div
         key={selected}

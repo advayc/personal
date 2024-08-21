@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import { useSelectionBox, isElementInSelectionBox } from './SelectionContext';
+import Image from 'next/image';
 
 export default function File({
   setWindowOpen,
@@ -13,6 +14,7 @@ export default function File({
   const selectionBox = useSelectionBox();
   const fileRef = useRef<HTMLDivElement>(null);
   const [isSelected, setIsSelected] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     if (fileRef.current) {
@@ -33,24 +35,31 @@ export default function File({
         className={clsx("", className)}
         onClick={() => setWindowOpen(true)}
       >
-        <motion.img
-          src="/computer.png" 
-          draggable={false}
-          initial={{
-            opacity: 0,
-            display: "none",
-          }}
-          animate={{
-            opacity: 1,
-            display: "block",
-          }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          alt="Old Computer Icon"
-          className="w-12 h-12 mx-auto"
-        />
-        <span className="block mt-1 text-[10px] text-center text-gray-300 font-semibold">
-          learn.exe
-        </span>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: imageLoaded ? 1 : 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Image
+            src="/computer.png"
+            width={48}
+            height={48}
+            alt="Old Computer Icon"
+            className="mx-auto"
+            priority
+            onLoadingComplete={() => setImageLoaded(true)}
+          />
+        </motion.div>
+        {imageLoaded && (
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="block mt-1 text-[10px] text-center text-gray-300 font-semibold"
+          >
+            learn.exe
+          </motion.span>
+        )}
       </button>
     </div>
   );

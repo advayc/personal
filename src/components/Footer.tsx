@@ -53,7 +53,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
             <Link
                 ref={linkedInRef}
                 className={`transition-colors duration-300 p-[10px] ${isLinkedInSelected ? 'text-cyan-400' : 'hover:text-cyan-400'}`}
-                href="https://www.linkedin.com/in/advayc/"
+                href="https://www.linkedin.com/in/advay/"
                 target="_blank"
                 rel="noopener noreferrer"
             >
