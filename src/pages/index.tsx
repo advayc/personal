@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Inter } from "next/font/google";
 import Terminal from "@/components/Terminal";
 import File from "@/components/File";
-import { motion } from "framer-motion";
-import Footer from '@/components/Footer';
+import Footer from "@/components/Footer";
+import MouseTracker from "@/components/MouseTracker"; 
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,9 +35,10 @@ export default function Home() {
             />
           </div>
           {isTerminalOpen && <Terminal onClose={() => setIsTerminalOpen(false)} />}
-       </div>
+        </div>
       </div>
       <Footer />
+      <MouseTracker /> 
     </main>
   );
 }

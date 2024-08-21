@@ -46,3 +46,27 @@ body {
 .draggable-terminal {
   animation: fadeIn 0.3s ease-in-out;
 }
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  background: rgba(0, 255, 255, 0.2);
+  border: 1px solid cyan;
+  pointer-events: none;
+  display: none;
+}
+
+body.selecting::after {
+  display: block;
+}
+
+body.selecting::after {
+  left: var(--selection-left, 0);
+  top: var(--selection-top, 0);
+  width: var(--selection-width, 0);
+  height: var(--selection-height, 0);
+}
