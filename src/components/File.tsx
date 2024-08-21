@@ -4,13 +4,19 @@ import clsx from "clsx";
 import { useSelectionBox, isElementInSelectionBox } from './SelectionContext';
 import Image from 'next/image';
 
+interface FileProps {
+  setWindowOpen: (arg: boolean) => void;
+  className: string;
+  filename: string;
+  imageSrc: string;
+}
+
 export default function File({
   setWindowOpen,
   className,
-}: {
-  setWindowOpen: (arg: boolean) => void;
-  className: string;
-}) {
+  filename,
+  imageSrc,
+}: FileProps) {
   const selectionBox = useSelectionBox();
   const fileRef = useRef<HTMLDivElement>(null);
   const [isSelected, setIsSelected] = useState(false);
@@ -41,10 +47,10 @@ export default function File({
           transition={{ duration: 0.5 }}
         >
           <Image
-            src="/computer.png"
+            src={imageSrc}
             width={48}
             height={48}
-            alt="Old Computer Icon"
+            alt={filename}
             className="mx-auto"
             priority
             onLoadingComplete={() => setImageLoaded(true)}
@@ -57,7 +63,7 @@ export default function File({
             transition={{ delay: 0.3, duration: 0.5 }}
             className="block mt-1 text-[10px] text-center text-gray-300 font-semibold"
           >
-            learn.exe
+            {filename}
           </motion.span>
         )}
       </button>

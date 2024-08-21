@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Inter } from "next/font/google";
-import { motion } from "framer-motion"; // Import motion from framer-motion
+import { motion } from "framer-motion";
 import Terminal from "@/components/Terminal";
 import File from "@/components/File";
 import Footer from "@/components/Footer";
@@ -53,6 +53,8 @@ export default function Home() {
               <File
                 setWindowOpen={setIsTerminalOpen}
                 className="w-16 h-16"
+                filename="learn.exe"
+                imageSrc="/computer.png"
               />
             </motion.div>
             {isTerminalOpen && (

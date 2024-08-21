@@ -50,16 +50,13 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     const handleMouseUp = () => {
-      setSelectionBox({
-        isSelecting: false,
-        left: 0,
-        top: 0,
-        width: 0,
-        height: 0,
-      });
-      document.body.classList.remove('selecting');
-      document.body.style.userSelect = '';
-      resetSelectionBox();
+      clearSelectionBox();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        clearSelectionBox();
+      }
     };
 
     const updateSelectionBox = (start: { x: number; y: number }, end: { x: number; y: number }) => {
@@ -76,6 +73,19 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
       document.documentElement.style.setProperty('--selection-height', `${height}px`);
     };
 
+    const clearSelectionBox = () => {
+      setSelectionBox({
+        isSelecting: false,
+        left: 0,
+        top: 0,
+        width: 0,
+        height: 0,
+      });
+      document.body.classList.remove('selecting');
+      document.body.style.userSelect = '';
+      resetSelectionBox();
+    };
+
     const resetSelectionBox = () => {
       document.documentElement.style.removeProperty('--selection-left');
       document.documentElement.style.removeProperty('--selection-top');
@@ -86,11 +96,13 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectionBox.isSelecting]);
 
