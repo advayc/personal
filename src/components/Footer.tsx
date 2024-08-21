@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FaLinkedin, FaGithub } from "react-icons/fa";
 import { MdMail } from "react-icons/md";
 import ToggleButton from '@/components/ToggleButton';
 import Link from 'next/link';
+import { useSelectionBox, isElementInSelectionBox } from '@/components/SelectionContext';
 
 type ToggleOptionsType = 'dark' | 'light';
 
@@ -13,9 +14,17 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: propSetSelected }) => {
     const [internalSelected, setInternalSelected] = useState<ToggleOptionsType>('light');
-
     const selected = propSelected ?? internalSelected;
     const setSelected = propSetSelected ?? setInternalSelected;
+    const selectionBox = useSelectionBox();
+
+    const linkedInRef = useRef<HTMLAnchorElement>(null);
+    const githubRef = useRef<HTMLAnchorElement>(null);
+    const mailRef = useRef<HTMLAnchorElement>(null);
+
+    const [isLinkedInSelected, setIsLinkedInSelected] = useState(false);
+    const [isGithubSelected, setIsGithubSelected] = useState(false);
+    const [isMailSelected, setIsMailSelected] = useState(false);
 
     useEffect(() => {
       if (selected === 'light') {
@@ -27,10 +36,23 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
       }
     }, [selected]);
 
+    useEffect(() => {
+      if (linkedInRef.current) {
+        setIsLinkedInSelected(isElementInSelectionBox(linkedInRef.current, selectionBox));
+      }
+      if (githubRef.current) {
+        setIsGithubSelected(isElementInSelectionBox(githubRef.current, selectionBox));
+      }
+      if (mailRef.current) {
+        setIsMailSelected(isElementInSelectionBox(mailRef.current, selectionBox));
+      }
+    }, [selectionBox]);
+
     return (
         <div className="flex gap-12 fixed bottom-5">
             <Link
-                className="hover:text-cyan-400 transition-colors duration-300 p-[10px]"
+                ref={linkedInRef}
+                className={`transition-colors duration-300 p-[10px] ${isLinkedInSelected ? 'text-cyan-400' : 'hover:text-cyan-400'}`}
                 href="https://www.linkedin.com/in/advayc/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -38,7 +60,8 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                 <FaLinkedin size={27} />
             </Link>
             <Link
-                className="hover:text-cyan-400 transition-colors duration-300 p-[10px]"
+                ref={githubRef}
+                className={`transition-colors duration-300 p-[10px] ${isGithubSelected ? 'text-cyan-400' : 'hover:text-cyan-400'}`}
                 href="https://www.github.com/advayc/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -46,7 +69,8 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                 <FaGithub size={27} />
             </Link>
             <Link
-                className="hover:text-cyan-400 transition-colors duration-300 p-[10px]"
+                ref={mailRef}
+                className={`transition-colors duration-300 p-[10px] ${isMailSelected ? 'text-cyan-400' : 'hover:text-cyan-400'}`}
                 href="mailto:advay.chandorkar@gmail.com"
             >
                 <MdMail size={27} />
