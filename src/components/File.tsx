@@ -10,7 +10,7 @@ export default function File({
   className: string;
 }) {
   return (
-    <div className="cursor-pointer pt-2 focus:bg-blue-700/50 focus:border-blue-500 hover:bg-blue-700/50 hover:border-blue-500 border border-dotted border-transparent hover:text-white">
+    <div className="cursor-pointer pt-2 focus:bg-cyan-700/50 focus:border-cyan-500 hover:bg-cyan-700/50 hover:border-cyan-500 border border-dotted border-transparent hover:text-white">
     <button
       className={clsx(
         "",

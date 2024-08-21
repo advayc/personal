@@ -3,9 +3,7 @@ import { Inter } from "next/font/google";
 import Terminal from "@/components/Terminal";
 import File from "@/components/File";
 import { motion } from "framer-motion";
-import Link from 'next/link';
-import { FaLinkedin, FaGithub } from "react-icons/fa";
-import ToggleButton from '@/components/ToggleButton';
+import Footer from '@/components/Footer';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,7 +25,7 @@ export default function Home() {
 
   return (
     <main className={`${inter.className} flex items-center justify-center min-h-screen`}>
-      <div className="h-screen w-full bg-neutral-950 bg-grid-white/[0.04] relative flex items-center justify-center">
+      <div className="h-screen w-full bg-neutral-950 bg-grid-white/[0.025] relative flex items-center justify-center">
         <div>
           <h1 className="text-5xl font-bold text-center text-white mb-8">Hi, I'm Advay!</h1>
           <div className="flex flex-col items-center justify-center space-y-2">
@@ -37,26 +35,9 @@ export default function Home() {
             />
           </div>
           {isTerminalOpen && <Terminal onClose={() => setIsTerminalOpen(false)} />}
-        </div>
-
-          <div className="flex gap-12 fixed bottom-10">
-            <Link
-              className="hover:text-blue-500 transition-colors duration-300 p-[10px]"
-              href="https://www.linkedin.com/in/advayc/"
-              target="_blank"
-            >
-              <FaLinkedin size={27} />
-            </Link>
-            <Link
-              className="hover:text-blue-500 transition-colors duration-300 p-[10px]"
-              href="https://www.github.com/advayc/"
-              target="_blank"
-            >
-              <FaGithub size={27} />
-            </Link>
-              <ToggleButton selected={selected} setSelected={setSelected}/>
-          </div>
-        </div>
+       </div>
+      </div>
+      <Footer />
     </main>
   );
 }
