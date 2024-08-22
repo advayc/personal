@@ -1,53 +1,92 @@
 import React, { useState } from "react";
-import Draggable from "react-draggable";
+import { motion, useDragControls } from "framer-motion";
+import { Inter } from "next/font/google";
 
-const Terminal = ({ onClose }: { onClose: () => void }) => {
-  const [activeTab, setActiveTab] = useState(0);
+interface TerminalProps {
+  onClose: () => void;
+}
 
-  const tabs = [
-    { id: 0, title: "Tab 1", content: "Lorem ipsum dolor sit amet..." },
-    { id: 1, title: "Tab 2", content: "Consectetur adipiscing elit..." },
-    { id: 2, title: "Tab 3", content: "Sed do eiusmod tempor incididunt..." },
-  ];
+const inter = Inter({ subsets: ["latin"] });
+
+const Terminal: React.FC<TerminalProps> = ({ onClose }) => {
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
+  const dragControls = useDragControls();
+
+  const handleClose = () => {
+    onClose();
+  };
+
+  const handleMinimize = () => {
+    onClose();
+  };
+
+  const handleMaximize = () => {
+    setIsMaximized(!isMaximized);
+  };
 
   return (
-    <Draggable>
-      <div className="w-[450px] bg-gray-200 border border-gray-500 text-black rounded-sm shadow-lg p-2 fixed top-16 left-16 z-50 font-sans">
-        <div className="flex justify-between items-center mb-2 bg-gray-300 text-black px-2 py-1 border-b border-gray-500">
-          <div className="flex space-x-2">
-            <div className="flex items-center space-x-1">
-              <span className="w-3 h-3 bg-red-600 rounded-full"></span>
-              <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-              <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-            </div>
-            <div className="font-bold">Windows Terminal</div>
-          </div>
-          <button className="text-sm" onClick={onClose}>
-            ✕
-          </button>
-        </div>        
-        <div className="bg-gray-300 border border-gray-500 p-2">
-          <ul className="flex space-x-2 mb-2 text-black">
-            {tabs.map((tab) => (
-              <li
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`cursor-pointer px-2 py-1 rounded-sm border ${
-                  activeTab === tab.id
-                    ? "bg-gray-400 border-gray-500 text-black"
-                    : "bg-gray-300 border-gray-500"
-                }`}
-              >
-                {tab.title}
-              </li>
-            ))}
-          </ul>
-          <div className="h-40 overflow-y-auto bg-white border border-gray-500 p-2 text-sm font-mono">
-            {tabs[activeTab].content}
-          </div>
+    <motion.div
+      drag
+      dragControls={dragControls}
+      dragMomentum={false}
+      dragElastic={0.1}
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.8, opacity: 0 }}
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 25
+      }}
+      className={`${inter.className} ${
+        isMinimized
+          ? "hidden"
+          : isMaximized
+          ? "w-[862px] h-[500px]"
+          : "w-[600px] h-[400px]"
+      } rounded-lg shadow-lg fixed top-16 left-16 z-50 font-mono text-sm border-gray-800 rounded-b-lg`}
+    >
+      <motion.div 
+        className="flex items-center justify-between bg-zinc-200 text-white px-4 py-1 rounded-t-lg cursor-move"
+        onPointerDown={(e) => dragControls.start(e)}
+      >
+        <div className="flex space-x-2">
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="w-3 h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 transition-colors duration-200 cursor-pointer"
+            onClick={handleClose}
+          ></motion.div>
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="w-3 h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 transition-colors duration-200 cursor-pointer"
+            onClick={handleMinimize}
+          ></motion.div>
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="relative w-3 h-3 bg-[#29CA40] rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer"
+            onClick={handleMaximize}
+            onMouseEnter={() => setIsHoveringMaximize(true)}
+            onMouseLeave={() => setIsHoveringMaximize(false)}
+          ></motion.div>
         </div>
+        <div className="flex-grow text-center text-black">
+          <span className="font-medium text-[13px]">
+            1. advaychandorkar@personalsite: ~/personal/terminal-layout (zsh)
+          </span>
+        </div>
+      </motion.div>
+
+      <div className="p-4 bg-[#151515] text-white">
+        <span className="text-cyan-500 font-semibold">~/personal/terminal-layout </span>
+        <span className="text-[#2CCC12] font-semibold">master ✔</span>
+        <div className="mt-1 text-2xl text-white">▸</div>
       </div>
-    </Draggable>
+    </motion.div>
   );
 };
 
