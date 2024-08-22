@@ -1,4 +1,5 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
+import { useTerminal } from './TerminalContext';
 
 interface SelectionBoxState {
   isSelecting: boolean;
@@ -26,10 +27,11 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
     width: 0,
     height: 0,
   });
+  const { isTerminalOpen } = useTerminal();
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      if (selectionBox.isSelecting) {
+      if (selectionBox.isSelecting && !isTerminalOpen) {
         updateSelectionBox(
           { x: selectionBox.left, y: selectionBox.top },
           { x: event.clientX, y: event.clientY }
@@ -38,15 +40,17 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     const handleMouseDown = (event: MouseEvent) => {
-      setSelectionBox({
-        isSelecting: true,
-        left: event.clientX,
-        top: event.clientY,
-        width: 0,
-        height: 0,
-      });
-      document.body.classList.add('selecting');
-      document.body.style.userSelect = 'none';
+      if (!isTerminalOpen) {
+        setSelectionBox({
+          isSelecting: true,
+          left: event.clientX,
+          top: event.clientY,
+          width: 0,
+          height: 0,
+        });
+        document.body.classList.add('selecting');
+        document.body.style.userSelect = 'none';
+      }
     };
 
     const handleMouseUp = () => {
@@ -104,7 +108,7 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectionBox.isSelecting]);
+  }, [selectionBox.isSelecting, isTerminalOpen]);
 
   return (
     <SelectionBoxContext.Provider value={selectionBox}>

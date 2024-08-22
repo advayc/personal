@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, useDragControls } from "framer-motion";
 import { Inter } from "next/font/google";
+import { useTerminal } from './TerminalContext';
 
 interface TerminalProps {
   onClose: () => void;
@@ -13,18 +14,37 @@ const Terminal: React.FC<TerminalProps> = ({ onClose }) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
   const dragControls = useDragControls();
+  const { setIsTerminalOpen } = useTerminal();
 
   const handleClose = () => {
     onClose();
+    setIsTerminalOpen(false);
   };
 
   const handleMinimize = () => {
     onClose();
+    setIsTerminalOpen(false);
   };
 
   const handleMaximize = () => {
     setIsMaximized(!isMaximized);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'F' || event.key === 'f') {
+        handleMaximize();
+      } else if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMaximized]);
 
   return (
     <motion.div

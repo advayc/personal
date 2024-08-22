@@ -1,10 +1,12 @@
 import React from 'react';
 import { useSelectionBox } from './SelectionContext';
+import { useTerminal } from './TerminalContext';
 
 const SelectionBox: React.FC = () => {
   const selectionBox = useSelectionBox();
+  const { isTerminalOpen } = useTerminal();
 
-  if (!selectionBox.isSelecting || selectionBox.width === 0 || selectionBox.height === 0) {
+  if (isTerminalOpen || !selectionBox.isSelecting || selectionBox.width === 0 || selectionBox.height === 0) {
     return null;
   }
 
