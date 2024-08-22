@@ -18,15 +18,15 @@ class MyDocument extends Document {
           
           <meta property="og:type" content="website" />
           <meta property="og:title" content="Advay Chandorkar" />
-          <meta property="og:description" content="Advay personal portfolio" />
-          <meta property="og:image" content="meta.png" />
+          <meta property="og:description" content="portfolio site" />
+          <meta property="og:image" content="/meta.png" />
           <meta property="og:site_name" content="Advay Chandorkar" />
           <meta property="og:locale" content="en_US" />
           
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content="Advay Chandorkar" />
-          <meta name="twitter:description" content="Advay personal portfolio" />
-          <meta name="twitter:image" content="meta.png" />
+          <meta name="twitter:description" content="portfolio site" />
+          <meta name="twitter:image" content="/meta.png" />
           <meta name="twitter:site" content="@advayc" />
           <meta name="twitter:creator" content="@advayc" />
           
@@ -39,7 +39,7 @@ class MyDocument extends Document {
           <meta name="apple-mobile-web-app-status-bar-style" content="default" />
           <meta name="apple-mobile-web-app-title" content="Advay Chandorkar" />
           <meta name="application-name" content="Advay Chandorkar" />
-          <meta name="msapplication-tooltip" content="Advay Chandorkar's Personal Website" />
+          <meta name="msapplication-tooltip" content="portfolio site" />
           <meta name="msapplication-starturl" content="/" />
           <meta name="msapplication-navbutton-color" content="#22D3EE" />
           <meta name="format-detection" content="telephone=no" />
