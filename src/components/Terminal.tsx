@@ -19,11 +19,14 @@ const Terminal: React.FC<TerminalProps> = ({ onClose }) => {
   const handleClose = () => {
     onClose();
     setIsTerminalOpen(false);
+    // Remove focus from any currently focused element
+    document.activeElement instanceof HTMLElement && document.activeElement.blur();
   };
 
   const handleMinimize = () => {
     onClose();
     setIsTerminalOpen(false);
+    document.activeElement instanceof HTMLElement && document.activeElement.blur();
   };
 
   const handleMaximize = () => {
@@ -66,7 +69,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose }) => {
           : isMaximized
           ? "w-[862px] h-[500px]"
           : "w-[600px] h-[400px]"
-      } rounded-lg shadow-lg fixed top-16 left-16 z-50 font-mono text-sm border-gray-800 rounded-b-lg`}
+      } rounded-lg fixed top-16 left-16 z-50 font-mono text-sm border-gray-800 rounded-b-lg`}
     >
       <motion.div 
         className="flex items-center justify-between bg-zinc-200 text-white px-4 py-1 rounded-t-lg cursor-move"

@@ -34,7 +34,7 @@ export default function File({
       className={clsx(
         "cursor-pointer pt-2 border border-dotted border-transparent",
         isSelected && "bg-cyan-700/50 border-cyan-500 text-white",
-        !isSelected && "focus:bg-cyan-700/50 focus:border-cyan-500 hover:bg-cyan-700/50 hover:border-cyan-500 hover:text-white"
+        !isSelected && "hover:bg-cyan-700/50 hover:border-cyan-500 hover:text-white"
       )}
     >
       <button
