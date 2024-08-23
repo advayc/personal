@@ -8,6 +8,7 @@ import SelectionBox from "@/components/SelectionBox";
 import { useTerminal } from "@/components/TerminalContext";
 import Link from '@/components/Link';
 import Head from 'next/head'; 
+import {fileConfigs} from '@/lib/fileConfigs';
 
 const inter = Inter({ subsets: ["latin"] });
 type ToggleOptionsType = 'dark' | 'light';
@@ -31,28 +32,6 @@ interface FileConfig {
   };
 }
 
-const fileConfigs: FileConfig[] = [
-  {
-    id: 'learn',
-    filename: 'learn.exe',
-    imageSrc: '/computer.png',
-    terminalConfig: {
-      headerText: "advaychandorkar@personalsite: ~/personal/about (zsh)",
-      pathText: "~/personal/about",
-      branchText: "master"
-    }
-  },
-  {
-    id: 'projects',
-    filename: 'projects.app',
-    imageSrc: '/files.png',
-    terminalConfig: {
-      headerText: "advaychandorkar@personalsite: ~/personal/projects (zsh)",
-      pathText: "~/personal/projects",
-      branchText: "prod"
-    }
-  }
-];
 
 export default function Home() {
   const { isTerminalOpen, setIsTerminalOpen } = useTerminal();
@@ -85,7 +64,10 @@ export default function Home() {
       if (fileConfig) {
         const newTerminal: TerminalState = {
           id: terminals.length,
-          position: { x: -185 + terminals.length * 350, y: -130 + terminals.length },
+          position: { 
+            x: -185,
+            y: -130 + (terminals.length * 75) // Adjust y position based on number of open terminals
+          },
           ...fileConfig.terminalConfig
         };
         setTerminals([...terminals, newTerminal]);
