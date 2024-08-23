@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import SelectionBox from "@/components/SelectionBox";
 import { useTerminal } from "@/components/TerminalContext";
 import Link from '@/components/Link';
+import Head from 'next/head'; 
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,11 @@ export default function Home() {
       document.documentElement.classList.remove('light');
       document.documentElement.classList.add('dark');
     }
+
+    const favicon = document.querySelector('link[rel="shortcut icon"]');
+    if (favicon) {
+      favicon.setAttribute('href', selected === 'light' ? '/favicon.png' : '/favicon2.png');
+    }
   }, [selected]);
 
   const fadeIn = {
@@ -38,6 +44,11 @@ export default function Home() {
       animate="visible"
       variants={fadeIn}
     >
+    <Head>
+      <title>advay chandorkar</title>
+      <link rel="shortcut icon" href={selected === 'light' ? '/favicon.png' : '/favicon2.png'} />
+    </Head>
+    
       <div className="h-screen w-full bg-neutral-950 bg-grid-white/[0.021] relative flex items-center justify-center">
         <motion.div variants={fadeIn} className="relative">
           <motion.h1 
