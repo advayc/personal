@@ -6,7 +6,7 @@ export const fileConfigs = [
       terminalConfig: {
         headerText: "advaychandorkar@personalsite: ~/personal/about (zsh)",
         pathText: "~/personal/about",
-        branchText: "master"
+        branchText: "master ✔"
       }
     },
     {
@@ -16,7 +16,7 @@ export const fileConfigs = [
       terminalConfig: {
         headerText: "advaychandorkar@personalsite: ~/personal/projects (zsh)",
         pathText: "~/personal/projects",
-        branchText: "prod"
+        branchText: "prod ✔"
       }
     }
   ];
