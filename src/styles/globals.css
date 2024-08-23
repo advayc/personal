@@ -54,7 +54,7 @@ body::after {
   left: 0;
   width: 0;
   height: 0;
-  background: rgba(0, 255, 255, 0.2);
+  background: rgba(0, 255, 255, 0.025);
   border: 1px solid cyan;
   pointer-events: none;
   display: none;

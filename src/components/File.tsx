@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import clsx from "clsx";
 import { useSelectionBox, isElementInSelectionBox } from './SelectionContext';
 import Image from 'next/image';
+import { Inter } from "next/font/google";
+const inter = Inter({ subsets: ["latin"] });
 
 interface FileProps {
   setWindowOpen: (arg: boolean) => void;
@@ -32,7 +34,7 @@ export default function File({
     <div
       ref={fileRef}
       className={clsx(
-        "cursor-pointer pt-2 border border-dotted border-transparent",
+        `${inter.className} cursor-pointer pt-2 border border-dotted border-transparent`,
         isSelected && "bg-cyan-700/50 border-cyan-500 text-white",
         !isSelected && "hover:bg-cyan-700/50 hover:border-cyan-500 hover:text-white"
       )}

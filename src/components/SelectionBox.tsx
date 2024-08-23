@@ -18,7 +18,6 @@ const SelectionBox: React.FC = () => {
         top: `${selectionBox.top}px`,
         width: `${selectionBox.width}px`,
         height: `${selectionBox.height}px`,
-        border: '1px solid cyan',
         backgroundColor: 'rgba(0, 255, 255, 0.1)',
         pointerEvents: 'none',
       }}
