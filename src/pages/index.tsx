@@ -20,6 +20,40 @@ interface TerminalState {
   branchText: string;
 }
 
+interface FileConfig {
+  id: string;
+  filename: string;
+  imageSrc: string;
+  terminalConfig: {
+    headerText: string;
+    pathText: string;
+    branchText: string;
+  };
+}
+
+const fileConfigs: FileConfig[] = [
+  {
+    id: 'learn',
+    filename: 'learn.exe',
+    imageSrc: '/computer.png',
+    terminalConfig: {
+      headerText: "advaychandorkar@personalsite: ~/personal/about (zsh)",
+      pathText: "~/personal/about",
+      branchText: "master"
+    }
+  },
+  {
+    id: 'projects',
+    filename: 'projects.app',
+    imageSrc: '/files.png',
+    terminalConfig: {
+      headerText: "advaychandorkar@personalsite: ~/personal/projects (zsh)",
+      pathText: "~/personal/projects",
+      branchText: "prod"
+    }
+  }
+];
+
 export default function Home() {
   const { isTerminalOpen, setIsTerminalOpen } = useTerminal();
   const [selected, setSelected] = useState<ToggleOptionsType>('light');
@@ -45,18 +79,17 @@ export default function Home() {
     visible: { opacity: 1, transition: { duration: 0.9 } }
   };
 
-  const openTerminal = (fileType: 'learn' | 'projects') => {
-    if (terminals.length < 2) {
-      const newTerminal: TerminalState = {
-        id: terminals.length,
-        position: { x: -185 + terminals.length * 350, y: -130 + terminals.length },
-        headerText: fileType === 'learn' 
-          ? "advaychandorkar@personalsite: ~/personal/about (zsh)" 
-          : "advaychandorkar@personalsite: ~/personal/projects (zsh)",
-        pathText: fileType === 'learn' ? "~/personal/about" : "~/personal/projects",
-        branchText: fileType === 'learn' ? "master" : "prod"
-      };
-      setTerminals([...terminals, newTerminal]);
+  const openTerminal = (fileId: string) => {
+    if (terminals.length < fileConfigs.length) {
+      const fileConfig = fileConfigs.find(config => config.id === fileId);
+      if (fileConfig) {
+        const newTerminal: TerminalState = {
+          id: terminals.length,
+          position: { x: -185 + terminals.length * 350, y: -130 + terminals.length },
+          ...fileConfig.terminalConfig
+        };
+        setTerminals([...terminals, newTerminal]);
+      }
     }
   };
 
@@ -99,18 +132,15 @@ export default function Home() {
             </div>
           </motion.div>
           <div className="absolute left-1/2 transform -translate-x-1/2 mt-4 flex gap-4">
-            <File
-              setWindowOpen={() => openTerminal('learn')}
-              className="px-2"
-              filename="learn.exe"
-              imageSrc="/computer.png"
-            />
-            <File
-              setWindowOpen={() => openTerminal('projects')}
-              className="px-2"
-              filename="projects.app"
-              imageSrc="/files.png"
-            />
+            {fileConfigs.map((fileConfig) => (
+              <File
+                key={fileConfig.id}
+                setWindowOpen={() => openTerminal(fileConfig.id)}
+                className="px-2"
+                filename={fileConfig.filename}
+                imageSrc={fileConfig.imageSrc}
+              />
+            ))}
           </div>
           {terminals.map((terminal) => (
             <motion.div
