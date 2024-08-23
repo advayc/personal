@@ -5,11 +5,14 @@ import { useTerminal } from './TerminalContext';
 
 interface TerminalProps {
   onClose: () => void;
+  headerText: string;
+  pathText: string;
+  branchText: string;
 }
 
 const inter = Inter({ subsets: ["latin"] });
 
-const Terminal: React.FC<TerminalProps> = ({ onClose }) => {
+const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, branchText }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
@@ -19,7 +22,6 @@ const Terminal: React.FC<TerminalProps> = ({ onClose }) => {
   const handleClose = () => {
     onClose();
     setIsTerminalOpen(false);
-    // Remove focus from any currently focused element
     document.activeElement instanceof HTMLElement && document.activeElement.blur();
   };
 
@@ -99,14 +101,14 @@ const Terminal: React.FC<TerminalProps> = ({ onClose }) => {
         </div>
         <div className="flex-grow text-center text-black">
           <span className="font-medium text-[13px]">
-            1. advaychandorkar@personalsite: ~/personal/terminal-layout (zsh)
+            {headerText}
           </span>
         </div>
       </motion.div>
 
       <div className="p-4 bg-[#151515] text-white">
-        <span className="text-cyan-500 font-semibold">~/personal/terminal-layout </span>
-        <span className="text-[#2CCC12] font-semibold">master ✔</span>
+        <span className="text-cyan-500 font-semibold">{pathText} </span>
+        <span className="text-[#2CCC12] font-semibold">{branchText}</span>
         <div className="mt-1 text-2xl text-white">▸</div>
       </div>
     </motion.div>

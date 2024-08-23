@@ -15,6 +15,9 @@ type ToggleOptionsType = 'dark' | 'light';
 interface TerminalState {
   id: number;
   position: { x: number; y: number };
+  headerText: string;
+  pathText: string;
+  branchText: string;
 }
 
 export default function Home() {
@@ -42,11 +45,16 @@ export default function Home() {
     visible: { opacity: 1, transition: { duration: 0.9 } }
   };
 
-  const openTerminal = () => {
+  const openTerminal = (fileType: 'learn' | 'projects') => {
     if (terminals.length < 2) {
-      const newTerminal = {
+      const newTerminal: TerminalState = {
         id: terminals.length,
-        position: { x: -185 + terminals.length * 350, y: -130 + terminals.length }
+        position: { x: -185 + terminals.length * 350, y: -130 + terminals.length },
+        headerText: fileType === 'learn' 
+          ? "advaychandorkar@personalsite: ~/personal/about (zsh)" 
+          : "advaychandorkar@personalsite: ~/personal/projects (zsh)",
+        pathText: fileType === 'learn' ? "~/personal/about" : "~/personal/projects",
+        branchText: fileType === 'learn' ? "master" : "prod"
       };
       setTerminals([...terminals, newTerminal]);
     }
@@ -59,11 +67,11 @@ export default function Home() {
       animate="visible"
       variants={fadeIn}
     >
-    <Head>
-      <title>advay chandorkar</title>
-      <link rel="shortcut icon" href={selected === 'light' ? '/favicon.png' : '/favicon2.png'} />
-    </Head>
-    
+      <Head>
+        <title>advay chandorkar</title>
+        <link rel="shortcut icon" href={selected === 'light' ? '/favicon.png' : '/favicon2.png'} />
+      </Head>
+      
       <div className="h-screen w-full bg-neutral-950 bg-grid-white/[0.021] relative flex items-center justify-center">
         <motion.div variants={fadeIn} className="relative">
           <motion.h1 
@@ -92,13 +100,13 @@ export default function Home() {
           </motion.div>
           <div className="absolute left-1/2 transform -translate-x-1/2 mt-4 flex gap-4">
             <File
-              setWindowOpen={openTerminal}
+              setWindowOpen={() => openTerminal('learn')}
               className="px-2"
               filename="learn.exe"
               imageSrc="/computer.png"
             />
             <File
-              setWindowOpen={openTerminal}
+              setWindowOpen={() => openTerminal('projects')}
               className="px-2"
               filename="projects.app"
               imageSrc="/files.png"
@@ -112,7 +120,12 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               style={{ position: 'absolute', left: terminal.position.x, top: terminal.position.y }}
             >
-              <Terminal onClose={() => setTerminals(terminals.filter(t => t.id !== terminal.id))} />
+              <Terminal 
+                onClose={() => setTerminals(terminals.filter(t => t.id !== terminal.id))}
+                headerText={terminal.headerText}
+                pathText={terminal.pathText}
+                branchText={terminal.branchText}
+              />
             </motion.div>
           ))}
         </motion.div>
