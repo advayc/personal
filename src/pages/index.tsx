@@ -10,12 +10,17 @@ import Link from '@/components/Link';
 import Head from 'next/head'; 
 
 const inter = Inter({ subsets: ["latin"] });
-
 type ToggleOptionsType = 'dark' | 'light';
+
+interface TerminalState {
+  id: number;
+  position: { x: number; y: number };
+}
 
 export default function Home() {
   const { isTerminalOpen, setIsTerminalOpen } = useTerminal();
   const [selected, setSelected] = useState<ToggleOptionsType>('light');
+  const [terminals, setTerminals] = useState<TerminalState[]>([]);
 
   useEffect(() => {
     if (selected === 'light') {
@@ -35,6 +40,16 @@ export default function Home() {
   const fadeIn = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.9 } }
+  };
+
+  const openTerminal = () => {
+    if (terminals.length < 2) {
+      const newTerminal = {
+        id: terminals.length,
+        position: { x: -185 + terminals.length * 350, y: -130 + terminals.length }
+      };
+      setTerminals([...terminals, newTerminal]);
+    }
   };
 
   return (
@@ -63,41 +78,43 @@ export default function Home() {
           >
             <div className="flex flex-col leading-relaxed text-primary text-center">
               <p>
-                i'm a 15 year old developer from <Link href={"https://www.google.com/maps/place/Mississauga,+ON,+Canada/@43.5774568,-79.6591567,11z/data=!3m1!4b1!4m6!3m5!1s0x882b469fe76b05b7:0x3146cbed75966db!8m2!3d43.5852972!4d-79.6449838!16zL20vMDE1NGd4?entry=ttu&g_ep=EgoyMDI0MDgyMC4xIKXMDSoASAFQAw%3D%3D"}>
+                I'm a 15-year-old developer from <Link href={"https://www.google.com/maps/place/Mississauga,+ON,+Canada/@43.5774568,-79.6591567,11z/data=!3m1!4b1!4m6!3m5!1s0x882b469fe76b05b7:0x3146cbed75966db!8m2!3d43.5852972!4d-79.6449838!16zL20vMDE1NGd4?entry=ttu&g_ep=EgoyMDI0MDgyMC4xIKXMDSoASAFQAw%3D%3D"}>
                   Mississauga, ON</Link> with a passion for engineering and problem solving.
               </p>
               <p className="mt-1">
-                currently i'm a grade 11 IB student at <Link href="https://glenforest.peelschools.org/about-us">Glenforest SS</Link>.
-                At the moment, i'm working at <Link href="futuremd.tech">FutureMD</Link>.
+                Currently, I'm a grade 11 IB student at <Link href="https://glenforest.peelschools.org/about-us">Glenforest SS</Link>.
+                At the moment, I'm working at <Link href="futuremd.tech">FutureMD</Link>.
               </p>
               <p className="mt-1">
-                to learn more about me, click here!
+                To learn more about me, click here!
               </p>
             </div>
           </motion.div>
           <div className="absolute left-1/2 transform -translate-x-1/2 mt-4 flex gap-4">
             <File
-              setWindowOpen={() => setIsTerminalOpen(true)}
+              setWindowOpen={openTerminal}
               className="px-2"
               filename="learn.exe"
               imageSrc="/computer.png"
             />
             <File
-              setWindowOpen={() => setIsTerminalOpen(true)}
+              setWindowOpen={openTerminal}
               className="px-2"
               filename="projects.app"
               imageSrc="/files.png"
             />
           </div>
-          {isTerminalOpen && (
+          {terminals.map((terminal) => (
             <motion.div
-              initial={{ opacity: 0 }}
+              key={terminal.id}
+              initial={{ opacity: 0, x: terminal.position.x, y: terminal.position.y }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
+              style={{ position: 'absolute', left: terminal.position.x, top: terminal.position.y }}
             >
-              <Terminal onClose={() => setIsTerminalOpen(false)} />
+              <Terminal onClose={() => setTerminals(terminals.filter(t => t.id !== terminal.id))} />
             </motion.div>
-          )}
+          ))}
         </motion.div>
       </div>
       <Footer selected={selected} setSelected={setSelected} />
