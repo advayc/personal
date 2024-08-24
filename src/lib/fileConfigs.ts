@@ -26,9 +26,19 @@ export const fileConfigs = [
           repoUrl: "https://github.com/advayc/graph-visualizer"
         },
         {
+          title: "Chatify",
+          description: "Chatify! A tool to communicate with family, friends, and communities online. Paired with great features like End-To-End encryption, and customizability!",
+          repoUrl: "https://github.com/Abdifatah-Abdi/Chatify-Old"
+        },
+        {
           title: "LCD Calculator",
           description: "ATMEGA 324PA microcontroller-based calculator with LCD display and ADC input.",
           repoUrl: "https://github.com/advayc/calculator"
+        },
+        {
+          title: "Rhymebot",
+          description: "Elevate your writing with the ultimate rhyming, synonym, and antonym companion. Craft masterpieces anytime, anywhere with ease.",
+          repoUrl: "https://github.com/advayc/rhymebot"
         },
         {
           title: "Humanoid Robot",
