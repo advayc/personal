@@ -33,10 +33,8 @@ export default function File({
   return (
     <div
       ref={fileRef}
-      className={clsx(
-        `${inter.className} cursor-pointer pt-2 border border-dotted border-transparent`,
-        isSelected && "bg-cyan-700/50 border-cyan-500 text-white",
-        !isSelected && "hover:bg-cyan-700/50 hover:border-cyan-500 hover:text-white"
+      className={(
+        `${inter.className} cursor-pointer pt-2 border border-dotted border-transparent hover:bg-cyan-950 hover:border-cyan-500 text-white`
       )}
     >
       <button
