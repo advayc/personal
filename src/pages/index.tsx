@@ -20,20 +20,12 @@ interface TerminalState {
   pathText: string;
   branchText: string;
   infoText: string;
+  projects?: {
+    title: string;
+    description: string;
+    repoUrl: string;
+  }[];
 }
-
-interface FileConfig {
-  id: string;
-  filename: string;
-  imageSrc: string;
-  terminalConfig: {
-    headerText: string;
-    pathText: string;
-    branchText: string;
-    infoText: string;
-  };
-}
-
 
 export default function Home() {
   const { isTerminalOpen, setIsTerminalOpen } = useTerminal();
@@ -140,6 +132,7 @@ export default function Home() {
                 pathText={terminal.pathText}
                 branchText={terminal.branchText}
                 infoText={terminal.infoText}
+                projects={terminal.projects}
               />
             </motion.div>
           ))}

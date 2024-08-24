@@ -2,6 +2,13 @@ import React, { useState, useEffect } from "react";
 import { motion, useDragControls } from "framer-motion";
 import { Inter } from "next/font/google";
 import { useTerminal } from './TerminalContext';
+import Link from '@/components/Link';
+
+interface Project {
+  title: string;
+  description: string;
+  repoUrl: string;
+}
 
 interface TerminalProps {
   onClose: () => void;
@@ -9,11 +16,12 @@ interface TerminalProps {
   pathText: string;
   branchText: string;
   infoText: string;
+  projects?: Project[];
 }
 
 const inter = Inter({ subsets: ["latin"] });
 
-const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, branchText, infoText }) => {
+const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, branchText, infoText, projects }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
@@ -61,6 +69,23 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
 
   const handleMouseUp = () => {
     setIsDraggable(true);
+  };
+
+  const renderProjects = () => {
+    if (!projects) return null;
+
+    return (
+      <div className="mt-4 font-mono text-sm">
+        {projects.map((project, index) => (
+          <div key={index} className="mb-4">
+            <div className="ml-4 mt-2">
+                <Link href={project.repoUrl}>{project.title}</Link>
+            <div className="text-gray-300 mt-1">{project.description}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+    );
   };
 
   return (
@@ -113,13 +138,18 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
         </div>
       </motion.div>
 
-      <div className="p-4 bg-[#151515] text-white select-text">
-        <span className="text-cyan-500 font-semibold">{pathText} </span>
-        <span className="text-[#2CCC12] font-semibold">{branchText}</span>
-        <div className="flex mt-4 text-2xl text-white">
-          <span>▸</span>
-          <span className="mt-1 text-sm text-primary font-semibold ml-1">{infoText}</span>
+      <div className="p-4 bg-[#151515] text-primary select-text overflow-y-auto rounded-b-lg" style={{ maxHeight: isMaximized ? "calc(100% - 32px)" : "368px" }}>
+        <div className="flex items-center">
+          <span className="text-green-400 mr-2">$</span>
+          <span className="text-cyan-500 font-semibold">{pathText}</span>
+          <span className="text-[#2CCC12] font-semibold ml-2">{branchText}</span>
         </div>
+        <div className="flex mt-4">
+          <span className="text-green-400 mr-2">$</span>
+          <span className="text-yellow-400">echo</span>
+          <span className="text-primary ml-2">{infoText}</span>
+        </div>
+        {renderProjects()}
       </div>
     </motion.div>
   );
