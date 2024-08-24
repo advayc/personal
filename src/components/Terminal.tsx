@@ -11,6 +11,15 @@ interface Project {
   technologies: string;
 }
 
+interface WorkExperience {
+  title: string;
+  company: string;
+  duration: string;
+  description: string;
+  technologies?: string;
+  link: string;
+}
+
 interface TerminalProps {
   onClose: () => void;
   headerText: string;
@@ -18,11 +27,12 @@ interface TerminalProps {
   branchText: string;
   infoText: string;
   projects?: Project[];
+  workExperience?: WorkExperience[];
 }
 
 const inter = Inter({ subsets: ["latin"] });
 
-const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, branchText, infoText, projects }) => {
+const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, branchText, infoText, projects, workExperience }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
@@ -62,6 +72,15 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
     };
   }, [isMaximized]);
 
+  const renderContent = () => {
+    if (projects) {
+      return renderProjects();
+    } else if (workExperience) {
+      return renderWorkExperience();
+    }
+    return null;
+  };
+
   const renderProjects = () => {
     if (!projects) return null;
 
@@ -70,11 +89,33 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
         {projects.map((project, index) => (
           <div key={index} className="mb-4">
             <div className="flex items-center ml-4 mt-2">
-              <span className="text-[#29CA40] mr-2">$</span>
+              <span className="text-gprimary mr-2">$</span>
               <Link href={project.repoUrl}>{project.title}</Link>
             </div>
             <div className="text-gray-300 mt-1 ml-8">{project.description}</div>
-            <div className="text-primary mt-1 text-center italic">technologies used <span className="text-[#29CA40]">-{">"}</span> {project.technologies}</div>
+            <div className="text-primary mt-1 text-center italic">technologies used <span className="text-gprimary">-{">"}</span> {project.technologies}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderWorkExperience = () => {
+    if (!workExperience) return null;
+
+    return (
+      <div className="mt-4 font-mono text-sm">
+        {workExperience.map((experience, index) => (
+          <div key={index} className="mb-4">
+            <div className={`flex items-center ml-4 mt-4`}>
+              <span className="text-gprimary mr-2">$</span>
+              <span className="text-gprimary font-semibold">{experience.title} at <Link href={experience.link}>{experience.company}</Link></span>
+            </div>
+            <div className="text-primary mt-1 ml-8">{experience.duration}</div>
+            <div className="text-gray-300 mt-1 ml-8">{experience.description}</div>
+            {experience.technologies && (
+              <div className="text-primary mt-1 mb-6 text-center italic">Skills <span className="text-yellow-500">-{">"}</span> {experience.technologies}</div>
+            )}
           </div>
         ))}
       </div>
@@ -114,7 +155,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
             onClick={handleMinimize}
           ></div>
           <div
-            className="relative w-3 h-3 bg-[#29CA40] rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer no-drag"
+            className="relative w-3 h-3 bg-gprimary rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer no-drag"
             onClick={handleMaximize}
             onMouseEnter={() => setIsHoveringMaximize(true)}
             onMouseLeave={() => setIsHoveringMaximize(false)}
@@ -128,16 +169,16 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
 
       <div className="p-4 bg-[#151515] text-primary select-text overflow-y-auto rounded-b-lg custom-scrollbar" style={{ maxHeight: isMaximized ? "calc(100% - 32px)" : "368px" }}>
         <div className="flex items-center">
-          <span className="text-[#29CA40] mr-2">$</span>
+          <span className="text-gprimary mr-2">$</span>
           <span className="text-cyan-500 font-semibold">{pathText}</span>
           <span className="text-[#2CCC12] font-semibold ml-2">{branchText}</span>
         </div>
         <div className="flex mt-4">
-          <span className="text-[#29CA40] mr-2 font-mono">$</span>
+          <span className="text-gprimary mr-2 font-mono">$</span>
           <span className="text-yellow-400 font-mono">echo</span>
-          <span className="text-primary ml-2">{infoText}</span>
+          <span className="text-primary ml-2 font-mono leading-tight tracking-tight">{infoText}</span>
         </div>
-        {renderProjects()}
+        {renderContent()}
       </div>
     </motion.div>
   );

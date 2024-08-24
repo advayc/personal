@@ -26,6 +26,14 @@ interface TerminalState {
     repoUrl: string;
     technologies: string;
   }[];
+  workExperience?: {
+    title: string;
+    company: string;
+    duration: string;
+    description: string;
+    technologies?: string;
+    link: string;
+  }[];
 }
 
 export default function Home() {
@@ -104,7 +112,7 @@ export default function Home() {
                 at the moment, I'm working at <Link href="https://futuremd.tech/">FutureMD</Link>.
               </p>
               <p className="mt-1">
-                To learn more about me, click here!
+                To learn more about me, click the files!
               </p>
             </div>
           </motion.div>
@@ -134,6 +142,7 @@ export default function Home() {
                 branchText={terminal.branchText}
                 infoText={terminal.infoText}
                 projects={terminal.projects}
+                workExperience={terminal.workExperience}
               />
             </motion.div>
           ))}
