@@ -19,6 +19,7 @@ interface TerminalState {
   headerText: string;
   pathText: string;
   branchText: string;
+  infoText: string;
 }
 
 interface FileConfig {
@@ -29,6 +30,7 @@ interface FileConfig {
     headerText: string;
     pathText: string;
     branchText: string;
+    infoText: string;
   };
 }
 
@@ -66,7 +68,7 @@ export default function Home() {
           id: terminals.length,
           position: { 
             x: -185,
-            y: -130 + (terminals.length * 75) // Adjust y position based on number of open terminals
+            y: -130 + (terminals.length * 80) 
           },
           ...fileConfig.terminalConfig
         };
@@ -105,8 +107,8 @@ export default function Home() {
                   Mississauga, ON</Link> with a passion for engineering and problem solving.
               </p>
               <p className="mt-1">
-                Currently, I'm a grade 11 IB student at <Link href="https://glenforest.peelschools.org/about-us">Glenforest SS</Link>.
-                At the moment, I'm working at <Link href="futuremd.tech">FutureMD</Link>.
+                Currently, I'm a grade 11 IB student at <Link href="https://glenforest.peelschools.org/about-us">Glenforest SS</Link> and
+                at the moment, I'm working at <Link href="https://futuremd.tech/">FutureMD</Link>.
               </p>
               <p className="mt-1">
                 To learn more about me, click here!
@@ -137,6 +139,7 @@ export default function Home() {
                 headerText={terminal.headerText}
                 pathText={terminal.pathText}
                 branchText={terminal.branchText}
+                infoText={terminal.infoText}
               />
             </motion.div>
           ))}

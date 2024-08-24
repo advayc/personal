@@ -72,5 +72,5 @@ body.selecting::after {
 }
 
 ::selection {
-  background: rgba(0, 255, 247, 0.3);
+  background: rgba(0, 255, 247, 0.175);
 }

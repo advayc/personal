@@ -8,14 +8,16 @@ interface TerminalProps {
   headerText: string;
   pathText: string;
   branchText: string;
+  infoText: string;
 }
 
 const inter = Inter({ subsets: ["latin"] });
 
-const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, branchText }) => {
+const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, branchText, infoText }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
+  const [isDraggable, setIsDraggable] = useState(true);
   const dragControls = useDragControls();
   const { setIsTerminalOpen, setIsDragging } = useTerminal();
 
@@ -39,7 +41,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'F' || event.key === 'f') {
         handleMaximize();
-      } else if (event.key === 'Escape') {
+      } else if (event.key === 'Escape' || event.key === 'C' || event.key === 'c') {
         handleClose();
       }
     };
@@ -51,33 +53,37 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
     };
   }, [isMaximized]);
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.detail === 2) {
+      setIsDraggable(false);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDraggable(true);
+  };
+
   return (
     <motion.div
-      drag
+      drag={isDraggable}
       dragControls={dragControls}
       dragMomentum={false}
       dragElastic={0.1}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={() => setIsDragging(false)}
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.8, opacity: 0 }}
-      transition={{
-        type: "spring",
-        stiffness: 300,
-        damping: 25
-      }}
-      className={`terminal-container ${inter.className} ${
+      className={`terminal-container ${inter.className} transition-all duration-300 ease-in-out ${
         isMinimized
           ? "hidden"
           : isMaximized
-          ? "w-[862px] h-[500px]"
+          ? "w-[862px] h-[700px]"
           : "w-[600px] h-[400px]"
       } rounded-lg fixed top-16 left-16 z-50 font-mono text-sm border-gray-800 rounded-b-lg`}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
     >
       <motion.div 
         className="flex items-center justify-between bg-zinc-200 text-white px-4 py-1 rounded-t-lg cursor-move"
-        onPointerDown={(e) => dragControls.start(e)}
+        onPointerDown={(e) => isDraggable && dragControls.start(e)}
       >
         <div className="flex space-x-2">
           <motion.div
@@ -101,17 +107,19 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
             onMouseLeave={() => setIsHoveringMaximize(false)}
           ></motion.div>
         </div>
-        <div className="flex-grow text-center text-black">
-          <span className="font-medium text-[13px]">
-            {headerText}
-          </span>
+        <div className="flex-grow text-center text-black flex items-center justify-center">
+          <img src="/directory_closed.png" className="mr-2" alt="Directory" />
+          <span className="font-medium text-[13px]">{headerText}</span>
         </div>
       </motion.div>
 
-      <div className="p-4 bg-[#151515] text-white">
+      <div className="p-4 bg-[#151515] text-white select-text">
         <span className="text-cyan-500 font-semibold">{pathText} </span>
         <span className="text-[#2CCC12] font-semibold">{branchText}</span>
-        <div className="mt-1 text-2xl text-white">▸</div>
+        <div className="flex mt-4 text-2xl text-white">
+          <span>▸</span>
+          <span className="mt-1 text-sm text-primary font-semibold ml-1">{infoText}</span>
+        </div>
       </div>
     </motion.div>
   );
