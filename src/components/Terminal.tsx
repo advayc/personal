@@ -17,7 +17,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
   const dragControls = useDragControls();
-  const { setIsTerminalOpen } = useTerminal();
+  const { setIsTerminalOpen, setIsDragging } = useTerminal();
 
   const handleClose = () => {
     onClose();
@@ -57,6 +57,8 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
       dragControls={dragControls}
       dragMomentum={false}
       dragElastic={0.1}
+      onDragStart={() => setIsDragging(true)}
+      onDragEnd={() => setIsDragging(false)}
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.8, opacity: 0 }}
@@ -65,7 +67,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
         stiffness: 300,
         damping: 25
       }}
-      className={`${inter.className} ${
+      className={`terminal-container ${inter.className} ${
         isMinimized
           ? "hidden"
           : isMaximized

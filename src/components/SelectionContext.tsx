@@ -27,11 +27,11 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
     width: 0,
     height: 0,
   });
-  const { isTerminalOpen } = useTerminal();
+  const { isTerminalOpen, isDragging } = useTerminal();
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      if (selectionBox.isSelecting && !isTerminalOpen) {
+      if (selectionBox.isSelecting && !isTerminalOpen && !isDragging && !isEventInTerminal(event)) {
         updateSelectionBox(
           { x: selectionBox.left, y: selectionBox.top },
           { x: event.clientX, y: event.clientY }
@@ -40,7 +40,7 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     const handleMouseDown = (event: MouseEvent) => {
-      if (!isTerminalOpen) {
+      if (!isTerminalOpen && !isDragging && !isEventInTerminal(event)) {
         setSelectionBox({
           isSelecting: true,
           left: event.clientX,
@@ -49,7 +49,6 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
           height: 0,
         });
         document.body.classList.add('selecting');
-        document.body.style.userSelect = 'none';
       }
     };
 
@@ -97,6 +96,11 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
       document.documentElement.style.removeProperty('--selection-height');
     };
 
+    const isEventInTerminal = (event: MouseEvent): boolean => {
+      const terminalElement = document.querySelector('.terminal-container');
+      return terminalElement ? terminalElement.contains(event.target as Node) : false;
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
@@ -108,7 +112,7 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectionBox.isSelecting, isTerminalOpen]);
+  }, [selectionBox.isSelecting, isTerminalOpen, isDragging]);
 
   return (
     <SelectionBoxContext.Provider value={selectionBox}>
