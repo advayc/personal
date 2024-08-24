@@ -8,6 +8,7 @@ interface Project {
   title: string;
   description: string;
   repoUrl: string;
+  technologies: string;
 }
 
 interface TerminalProps {
@@ -73,6 +74,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
               <Link href={project.repoUrl}>{project.title}</Link>
             </div>
             <div className="text-gray-300 mt-1 ml-8">{project.description}</div>
+            <div className="text-primary mt-1 text-center italic">technologies used <span className="text-[#29CA40]">-{">"}</span> {project.technologies}</div>
           </div>
         ))}
       </div>
@@ -131,8 +133,8 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
           <span className="text-[#2CCC12] font-semibold ml-2">{branchText}</span>
         </div>
         <div className="flex mt-4">
-          <span className="text-[#29CA40] mr-2">$</span>
-          <span className="text-yellow-400">echo</span>
+          <span className="text-[#29CA40] mr-2 font-mono">$</span>
+          <span className="text-yellow-400 font-mono">echo</span>
           <span className="text-primary ml-2">{infoText}</span>
         </div>
         {renderProjects()}

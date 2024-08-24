@@ -24,6 +24,7 @@ interface TerminalState {
     title: string;
     description: string;
     repoUrl: string;
+    technologies: string;
   }[];
 }
 
