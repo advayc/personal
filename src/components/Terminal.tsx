@@ -124,7 +124,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
         </div>
       </div>
 
-      <div className="p-4 bg-[#151515] text-primary select-text overflow-y-auto rounded-b-lg" style={{ maxHeight: isMaximized ? "calc(100% - 32px)" : "368px" }}>
+      <div className="p-4 bg-[#151515] text-primary select-text overflow-y-auto rounded-b-lg custom-scrollbar" style={{ maxHeight: isMaximized ? "calc(100% - 32px)" : "368px" }}>
         <div className="flex items-center">
           <span className="text-[#29CA40] mr-2">$</span>
           <span className="text-cyan-500 font-semibold">{pathText}</span>
