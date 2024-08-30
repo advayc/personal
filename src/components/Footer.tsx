@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FaLinkedin, FaGithub } from "react-icons/fa";
 import { MdMail } from "react-icons/md";
-import ToggleButton from '@/components/ToggleButton';
 import Link from 'next/link';
 import { useSelectionBox, isElementInSelectionBox } from '@/components/SelectionContext';
 
@@ -75,7 +74,6 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
             >
                 <MdMail size={27} />
             </Link>
-            <ToggleButton selected={selected} setSelected={setSelected} />
         </div>
     );
 };
