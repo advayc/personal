@@ -4,7 +4,7 @@ export const fileConfigs = [
     filename: 'experience.exe',
     imageSrc: '/computer.png',
     terminalConfig: {
-      headerText: "advaychandorkar@personalsite: ~/personal/about (zsh)",
+      headerText: "advaychandorkar@personalsite: ~/personal/about (vim)",
       pathText: "~/personal/about",
       branchText: "master ✔",
       infoText: "i like to ride bikes, play badminton, and tinker on projects that involve web development, 3D printing, electronics, and design.",
@@ -56,7 +56,7 @@ export const fileConfigs = [
     filename: 'projects.app',
     imageSrc: '/files.png',
     terminalConfig: {
-      headerText: "advaychandorkar@personalsite: ~/personal/projects (zsh)",
+      headerText: "advaychandorkar@personalsite: ~/personal/projects (vim)",
       pathText: "~/personal/projects",
       branchText: "prod ✔",
       infoText: "take a look into some of my projects!",
