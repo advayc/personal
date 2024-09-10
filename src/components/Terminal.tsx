@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Inter } from "next/font/google";
 import { useTerminal } from './TerminalContext';
 import Link from '@/components/Link';
@@ -38,6 +38,8 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
   const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
   const { setIsTerminalOpen } = useTerminal();
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const terminalRef = useRef<HTMLDivElement>(null);
 
   const handleClose = () => {
     setIsFadingOut(true);
@@ -62,15 +64,42 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
     } else if (event.key === 'Escape' || event.key === 'C' || event.key === 'c') {
       handleClose();
     }
+
+    const key = event.key.toLowerCase();
+    let newPosition = { ...cursorPosition };
+
+    switch (key) {
+      case 'arrowup':
+      case 'w':
+      case 'k':
+        newPosition.y = Math.max(0, cursorPosition.y - 1);
+        break;
+      case 'arrowdown':
+      case 's':
+      case 'j':
+        newPosition.y = Math.min((projects?.length || workExperience?.length || 0) - 1, cursorPosition.y + 1);
+        break;
+      case 'arrowleft':
+      case 'a':
+      case 'h':
+        newPosition.x = Math.max(0, cursorPosition.x - 1);
+        break;
+      case 'arrowright':
+      case 'd':
+      case 'l':
+        newPosition.x = cursorPosition.x + 1;
+        break;
+    }
+
+    setCursorPosition(newPosition);
   };
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isMaximized]);
+  }, [cursorPosition]);
 
   const renderContent = () => {
     if (projects) {
@@ -91,6 +120,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
             <div className="flex items-center ml-4 mt-2">
               <span className="text-gprimary mr-2">$</span>
               <Link href={project.repoUrl}>{project.title}</Link>
+              {cursorPosition.y === index && <span className="bg-white animate-blink">&nbsp;</span>}
             </div>
             <div className="text-gray-300 mt-1 ml-8">{project.description}</div>
             <div className="text-primary mt-1 text-center italic">technologies used <span className="text-gprimary">-{">"}</span> {project.technologies}</div>
@@ -110,6 +140,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
             <div className={`flex items-center ml-4 mt-4`}>
               <span className="text-gprimary mr-2">$</span>
               <span className="text-gprimary font-semibold">{experience.title} at <Link href={experience.link}>{experience.company}</Link></span>
+              {cursorPosition.y === index && <span className="bg-white animate-blink">&nbsp;</span>}
             </div>
             <div className="text-primary mt-1 ml-8">{experience.duration}</div>
             <div className="text-gray-300 mt-1 ml-8">{experience.description}</div>
@@ -167,7 +198,11 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
         </div>
       </div>
 
-      <div className="p-4 bg-[#151515] text-primary select-text overflow-y-auto rounded-b-lg custom-scrollbar" style={{ maxHeight: isMaximized ? "calc(100% - 32px)" : "368px" }}>
+      <div 
+        ref={terminalRef}
+        className="p-4 bg-[#151515] text-primary select-text overflow-y-auto rounded-b-lg custom-scrollbar" 
+        style={{ maxHeight: isMaximized ? "calc(100% - 32px)" : "368px" }}
+      >
         <div className="flex items-center">
           <span className="text-gprimary mr-2">$</span>
           <span className="text-cyan-500 font-semibold">{pathText}</span>

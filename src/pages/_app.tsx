@@ -6,10 +6,17 @@ import Head from "next/head";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <TerminalProvider>
-      <SelectionBoxProvider>
-        <Component {...pageProps} />
-      </SelectionBoxProvider>
-    </TerminalProvider>
+    <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>advay chandorkar</title>
+        <meta name="description" content="advay chandorkars portfolio site" />
+      </Head>
+      <TerminalProvider>
+        <SelectionBoxProvider>
+          <Component {...pageProps} />
+        </SelectionBoxProvider>
+      </TerminalProvider>
+    </>
   );
 }

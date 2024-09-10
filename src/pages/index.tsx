@@ -52,7 +52,7 @@ export default function Home() {
 
     const favicon = document.querySelector('link[rel="shortcut icon"]');
     if (favicon) {
-      favicon.setAttribute('href', '/favicon2.png');
+      favicon.setAttribute('href', '/favicon.png');
     }
   }, [selected]);
 

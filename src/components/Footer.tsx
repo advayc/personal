@@ -51,7 +51,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
         <div className="flex gap-12 fixed bottom-5">
             <Link
                 ref={linkedInRef}
-                className={`transition-colors duration-300 p-[10px] ${isLinkedInSelected ? 'text-cyan-400' : 'hover:text-cyan-400'}`}
+                className={`transition-colors duration-300 rounded-md p-[12px] ${isLinkedInSelected ? 'text-cyan-400 hover:bg-[#191919]' : 'hover:text-cyan-400 hover:bg-[#191919]'}`}
                 href="https://www.linkedin.com/in/advay/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -60,7 +60,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
             </Link>
             <Link
                 ref={githubRef}
-                className={`transition-colors duration-300 p-[10px] ${isGithubSelected ? 'text-cyan-400' : 'hover:text-cyan-400'}`}
+                className={`transition-colors duration-300 rounded-md p-[12px] ${isGithubSelected ? 'text-cyan-400 hover:bg-[#191919]' : 'hover:text-cyan-400 hover:bg-[#191919]'}`}
                 href="https://www.github.com/advayc/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -69,7 +69,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
             </Link>
             <Link
                 ref={mailRef}
-                className={`transition-colors duration-300 p-[10px] ${isMailSelected ? 'text-cyan-400' : 'hover:text-cyan-400'}`}
+                className={`transition-colors duration-300 rounded-md p-[12px] ${isMailSelected ? 'text-cyan-400 hover:bg-[#191919]' : 'hover:text-cyan-400 hover:bg-[#191919]'}`}
                 href="mailto:advay.chandorkar@gmail.com"
             >
                 <MdMail size={27} />
