@@ -33,12 +33,14 @@ export default function File({
   return (
     <div
       ref={fileRef}
-      className={(
-        `${inter.className} cursor-pointer pt-2 border border-dotted border-transparent hover:bg-cyan-950 hover:border-cyan-500 text-white`
+      className={clsx(
+        inter.className,
+        "cursor-pointer pt-2 border border-dotted border-transparent hover:bg-cyan-950 hover:border-cyan-500 text-white",
+        isSelected && "bg-cyan-950 border-cyan-500"
       )}
     >
       <button
-        className={clsx("", className)}
+        className={clsx("custom-focus w-full", className)}
         onClick={() => setWindowOpen(true)}
       >
         <motion.div

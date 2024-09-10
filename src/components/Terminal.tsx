@@ -44,8 +44,10 @@ const Terminal: React.FC<TerminalProps> = ({
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [selectedLine, setSelectedLine] = useState<number | null>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const { setIsTerminalOpen } = useTerminal();
+  const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
 
   const handleClose = () => {
     onClose();
@@ -64,6 +66,19 @@ const Terminal: React.FC<TerminalProps> = ({
     const key = event.key.toLowerCase();
     let newPosition = { ...cursorPosition };
     const totalLines = calculateTotalLines();
+
+    if (key === 'escape') {
+      handleClose();
+      return;
+    }
+
+    if (lastKeyPressed === 'y' && key === 'y') {
+      setSelectedLine(cursorPosition.y);
+      setLastKeyPressed(null);
+      return;
+    }
+
+    setLastKeyPressed(key);
 
     switch (key) {
       case 'arrowup':
@@ -85,6 +100,7 @@ const Terminal: React.FC<TerminalProps> = ({
     }
 
     setCursorPosition(newPosition);
+    setSelectedLine(null);
     scrollToCursor();
   };
 
@@ -116,7 +132,11 @@ const Terminal: React.FC<TerminalProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [cursorPosition]);
+  }, [cursorPosition, lastKeyPressed]);
+
+  const selectedLineStyle = {
+    backgroundColor: 'rgba(0, 255, 247, 0.175)',
+  };
 
   const renderProjects = () => {
     if (!projects) return null;
@@ -125,7 +145,10 @@ const Terminal: React.FC<TerminalProps> = ({
       <div className="mt-4 font-mono text-sm">
         {projects.map((project, index) => (
           <div key={index} className="mb-4">
-            <div className="flex items-center ml-4 mt-2">
+            <div 
+              className="flex items-center ml-4 mt-2"
+              style={selectedLine === index + 2 ? selectedLineStyle : {}}
+            >
               <span className="text-gprimary mr-2">$</span>
               <Link href={project.repoUrl}>{project.title}</Link>
               {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="cursor"></span>}
@@ -145,7 +168,10 @@ const Terminal: React.FC<TerminalProps> = ({
       <div className="mt-4 font-mono text-sm">
         {workExperience.map((experience, index) => (
           <div key={index} className="mb-4">
-            <div className="flex items-center ml-4 mt-4">
+            <div 
+              className="flex items-center ml-4 mt-4"
+              style={selectedLine === index + 2 ? selectedLineStyle : {}}
+            >
               <span className="text-gprimary mr-2">$</span>
               <span className="text-gprimary font-semibold">{experience.title} at <Link href={experience.link}>{experience.company}</Link></span>
               {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="cursor"></span>}
@@ -209,13 +235,19 @@ const Terminal: React.FC<TerminalProps> = ({
         className="p-4 bg-[#151515] text-primary select-text overflow-y-auto rounded-b-lg custom-scrollbar" 
         style={{ maxHeight: isMaximized ? "calc(100% - 32px)" : "368px" }}
       >
-        <div className="flex items-center">
+        <div 
+          className="flex items-center"
+          style={selectedLine === 0 ? selectedLineStyle : {}}
+        >
           <span className="text-gprimary mr-2">$</span>
           <span className="text-cyan-500 font-semibold">{pathText}</span>
           <span className="text-[#2CCC12] font-semibold ml-2">{branchText}</span>
           {cursorPosition.y === 0 && <span className="cursor"></span>}
         </div>
-        <div className="flex mt-4">
+        <div 
+          className="flex mt-4"
+          style={selectedLine === 1 ? selectedLineStyle : {}}
+        >
           <span className="text-gprimary mr-2 font-mono">$</span>
           <span className="text-yellow-400 font-mono">echo</span>
           <span className="text-primary ml-2 font-mono leading-tight tracking-tight">{infoText}</span>
