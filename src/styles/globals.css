@@ -89,3 +89,12 @@ body.selecting::after {
 ::selection {
   background: rgba(0, 255, 247, 0.175);
 }
+
+@keyframes blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}

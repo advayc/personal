@@ -38,7 +38,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
   const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
   const { setIsTerminalOpen } = useTerminal();
   const [isFadingOut, setIsFadingOut] = useState(false);
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 2 }); // Start after the initial content
   const terminalRef = useRef<HTMLDivElement>(null);
 
   const handleClose = () => {
@@ -67,31 +67,44 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
 
     const key = event.key.toLowerCase();
     let newPosition = { ...cursorPosition };
+    const contentLength = 2 + (projects?.length || workExperience?.length || 0);
 
     switch (key) {
       case 'arrowup':
-      case 'w':
       case 'k':
         newPosition.y = Math.max(0, cursorPosition.y - 1);
         break;
       case 'arrowdown':
-      case 's':
       case 'j':
-        newPosition.y = Math.min((projects?.length || workExperience?.length || 0) - 1, cursorPosition.y + 1);
+        newPosition.y = Math.min(contentLength - 1, cursorPosition.y + 1);
         break;
       case 'arrowleft':
-      case 'a':
       case 'h':
         newPosition.x = Math.max(0, cursorPosition.x - 1);
         break;
       case 'arrowright':
-      case 'd':
       case 'l':
         newPosition.x = cursorPosition.x + 1;
         break;
     }
 
     setCursorPosition(newPosition);
+    scrollToCursor();
+  };
+
+  const scrollToCursor = () => {
+    if (terminalRef.current) {
+      const lineHeight = 24; 
+      const cursorY = cursorPosition.y * lineHeight;
+      const scrollTop = terminalRef.current.scrollTop;
+      const viewportHeight = terminalRef.current.clientHeight;
+
+      if (cursorY < scrollTop) {
+        terminalRef.current.scrollTop = cursorY;
+      } else if (cursorY > scrollTop + viewportHeight - lineHeight) {
+        terminalRef.current.scrollTop = cursorY - viewportHeight + lineHeight;
+      }
+    }
   };
 
   useEffect(() => {
@@ -100,15 +113,6 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [cursorPosition]);
-
-  const renderContent = () => {
-    if (projects) {
-      return renderProjects();
-    } else if (workExperience) {
-      return renderWorkExperience();
-    }
-    return null;
-  };
 
   const renderProjects = () => {
     if (!projects) return null;
@@ -120,7 +124,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
             <div className="flex items-center ml-4 mt-2">
               <span className="text-gprimary mr-2">$</span>
               <Link href={project.repoUrl}>{project.title}</Link>
-              {cursorPosition.y === index && <span className="bg-white animate-blink">&nbsp;</span>}
+              {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="bg-yellow-500 text-black animate-blink">&nbsp;</span>}
             </div>
             <div className="text-gray-300 mt-1 ml-8">{project.description}</div>
             <div className="text-primary mt-1 text-center italic">technologies used <span className="text-gprimary">-{">"}</span> {project.technologies}</div>
@@ -140,7 +144,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
             <div className={`flex items-center ml-4 mt-4`}>
               <span className="text-gprimary mr-2">$</span>
               <span className="text-gprimary font-semibold">{experience.title} at <Link href={experience.link}>{experience.company}</Link></span>
-              {cursorPosition.y === index && <span className="bg-white animate-blink">&nbsp;</span>}
+              {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="bg-yellow-500 text-black animate-blink">&nbsp;</span>}
             </div>
             <div className="text-primary mt-1 ml-8">{experience.duration}</div>
             <div className="text-gray-300 mt-1 ml-8">{experience.description}</div>
@@ -207,13 +211,15 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
           <span className="text-gprimary mr-2">$</span>
           <span className="text-cyan-500 font-semibold">{pathText}</span>
           <span className="text-[#2CCC12] font-semibold ml-2">{branchText}</span>
+          {cursorPosition.y === 0 && <span className="bg-yellow-500 text-black animate-blink">&nbsp;</span>}
         </div>
         <div className="flex mt-4">
           <span className="text-gprimary mr-2 font-mono">$</span>
           <span className="text-yellow-400 font-mono">echo</span>
           <span className="text-primary ml-2 font-mono leading-tight tracking-tight">{infoText}</span>
+          {cursorPosition.y === 1 && <span className="bg-yellow-500 text-black animate-blink">&nbsp;</span>}
         </div>
-        {renderContent()}
+        {projects ? renderProjects() : renderWorkExperience()}
       </div>
     </motion.div>
   );
