@@ -32,22 +32,24 @@ interface TerminalProps {
 
 const inter = Inter({ subsets: ["latin"] });
 
-const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, branchText, infoText, projects, workExperience }) => {
+const Terminal: React.FC<TerminalProps> = ({
+  onClose,
+  headerText,
+  pathText,
+  branchText,
+  infoText,
+  projects,
+  workExperience
+}) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isHoveringMaximize, setIsHoveringMaximize] = useState(false);
-  const { setIsTerminalOpen } = useTerminal();
-  const [isFadingOut, setIsFadingOut] = useState(false);
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 2 }); // Start after the initial content
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const terminalRef = useRef<HTMLDivElement>(null);
+  const { setIsTerminalOpen } = useTerminal();
 
   const handleClose = () => {
-    setIsFadingOut(true);
-    setTimeout(() => {
-      onClose();
-      setIsTerminalOpen(false);
-      document.activeElement instanceof HTMLElement && document.activeElement.blur();
-    }, 300);
+    onClose();
+    setIsTerminalOpen(false);
   };
 
   const handleMinimize = () => {
@@ -59,15 +61,9 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'F' || event.key === 'f') {
-      handleMaximize();
-    } else if (event.key === 'Escape' || event.key === 'C' || event.key === 'c') {
-      handleClose();
-    }
-
     const key = event.key.toLowerCase();
     let newPosition = { ...cursorPosition };
-    const contentLength = 2 + (projects?.length || workExperience?.length || 0);
+    const totalLines = calculateTotalLines();
 
     switch (key) {
       case 'arrowup':
@@ -76,7 +72,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
         break;
       case 'arrowdown':
       case 'j':
-        newPosition.y = Math.min(contentLength - 1, cursorPosition.y + 1);
+        newPosition.y = Math.min(totalLines - 1, cursorPosition.y + 1);
         break;
       case 'arrowleft':
       case 'h':
@@ -90,6 +86,14 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
 
     setCursorPosition(newPosition);
     scrollToCursor();
+  };
+
+  const calculateTotalLines = () => {
+    const baseLines = 2; // Path and echo lines
+    const projectLines = projects ? projects.length * 3 : 0; // 3 lines per project
+    const workExperienceLines = workExperience ? workExperience.length * 4 : 0; // 4 lines per work experience
+
+    return baseLines + projectLines + workExperienceLines;
   };
 
   const scrollToCursor = () => {
@@ -124,7 +128,7 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
             <div className="flex items-center ml-4 mt-2">
               <span className="text-gprimary mr-2">$</span>
               <Link href={project.repoUrl}>{project.title}</Link>
-              {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="bg-yellow-500 text-black animate-blink">&nbsp;</span>}
+              {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="cursor"></span>}
             </div>
             <div className="text-gray-300 mt-1 ml-8">{project.description}</div>
             <div className="text-primary mt-1 text-center italic">technologies used <span className="text-gprimary">-{">"}</span> {project.technologies}</div>
@@ -141,10 +145,10 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
       <div className="mt-4 font-mono text-sm">
         {workExperience.map((experience, index) => (
           <div key={index} className="mb-4">
-            <div className={`flex items-center ml-4 mt-4`}>
+            <div className="flex items-center ml-4 mt-4">
               <span className="text-gprimary mr-2">$</span>
               <span className="text-gprimary font-semibold">{experience.title} at <Link href={experience.link}>{experience.company}</Link></span>
-              {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="bg-yellow-500 text-black animate-blink">&nbsp;</span>}
+              {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="cursor"></span>}
             </div>
             <div className="text-primary mt-1 ml-8">{experience.duration}</div>
             <div className="text-gray-300 mt-1 ml-8">{experience.description}</div>
@@ -165,17 +169,17 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
           : isMaximized
           ? "w-[862px] h-[700px]"
           : "w-[600px] h-[400px]"
-      } rounded-lg fixed top-16 left-16 z-50 font-mono text-sm border-gray-800 rounded-b-lg ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
+      } rounded-lg fixed top-16 left-16 z-50 font-mono text-sm border-gray-800 rounded-b-lg`}
       initial={{ opacity: 1, x: 0, y: 0 }}
-      animate={{ opacity: isFadingOut ? 0 : 1 }}
+      animate={{ opacity: 1 }}
       drag
-      dragElastic={0} 
+      dragElastic={0}
       dragConstraints={{
         left: -60,
         top: -80,
         right: 840,
         bottom: 230
-      }} 
+      }}
     >
       <div 
         className="handle flex items-center justify-between bg-zinc-200 text-white px-4 py-1 rounded-t-lg cursor-move"
@@ -192,8 +196,6 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
           <div
             className="relative w-3 h-3 bg-gprimary rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer no-drag"
             onClick={handleMaximize}
-            onMouseEnter={() => setIsHoveringMaximize(true)}
-            onMouseLeave={() => setIsHoveringMaximize(false)}
           ></div>
         </div>
         <div className="flex-grow text-center text-black flex items-center justify-center">
@@ -211,13 +213,13 @@ const Terminal: React.FC<TerminalProps> = ({ onClose, headerText, pathText, bran
           <span className="text-gprimary mr-2">$</span>
           <span className="text-cyan-500 font-semibold">{pathText}</span>
           <span className="text-[#2CCC12] font-semibold ml-2">{branchText}</span>
-          {cursorPosition.y === 0 && <span className="bg-yellow-500 text-black animate-blink">&nbsp;</span>}
+          {cursorPosition.y === 0 && <span className="cursor"></span>}
         </div>
         <div className="flex mt-4">
           <span className="text-gprimary mr-2 font-mono">$</span>
           <span className="text-yellow-400 font-mono">echo</span>
           <span className="text-primary ml-2 font-mono leading-tight tracking-tight">{infoText}</span>
-          {cursorPosition.y === 1 && <span className="bg-yellow-500 text-black animate-blink">&nbsp;</span>}
+          {cursorPosition.y === 1 && <span className="cursor"></span>}
         </div>
         {projects ? renderProjects() : renderWorkExperience()}
       </div>
