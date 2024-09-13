@@ -2,7 +2,7 @@ export const fileConfigs = [
   {
     id: 'experience',
     filename: 'experience.exe',
-    imageSrc: 'public/computer.png',
+    imageSrc: '/computer.png',
     terminalConfig: {
       headerText: "advaychandorkar@personalsite: ~/personal/about (vim)",
       pathText: "~/personal/about",
@@ -54,7 +54,7 @@ export const fileConfigs = [
   {
     id: 'projects',
     filename: 'projects.app',
-    imageSrc: 'public/files.png',
+    imageSrc: '/files.png',
     terminalConfig: {
       headerText: "advaychandorkar@personalsite: ~/personal/projects (vim)",
       pathText: "~/personal/projects",
