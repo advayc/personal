@@ -36,6 +36,23 @@ interface TerminalState {
   }[];
 }
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Advay Chandorkar",
+  "url": "http://advayc.vercel.app/",
+  "image": "http://advayc.vercel.app/meta.png",
+  "sameAs": [
+    "https://github.com/advayc",
+    "https://linkedin.com/in/advay"
+  ],
+  "jobTitle": "Full Stack Developer",
+  "worksFor": {
+    "@type": "Organization",
+    "name": "Self-Employed"
+  }
+};
+
 export default function Home() {
   const { isTerminalOpen, setIsTerminalOpen } = useTerminal();
   const [selected, setSelected] = useState<ToggleOptionsType>('light');
@@ -88,6 +105,10 @@ export default function Home() {
       <Head>
         <title>advay chandorkar</title>
         <link rel="shortcut icon" href={selected === 'light' ? '/favicon.png' : '/favicon2.png'} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
       </Head>
       
       <div className="h-screen w-full bg-neutral-950 bg-grid-white/[0.021] relative flex items-center justify-center">

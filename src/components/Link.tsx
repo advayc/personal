@@ -7,7 +7,11 @@ interface LinkProps {
 
 const Link: React.FC<LinkProps> = ({ href, children }) => {
   return (
-    <a href={href} target="_blank" className="text-primary underline decoration-1 underline-offset-2 decoration-dashed hover:text-cyan-400 transition duration-300">
+    <a 
+      href={href} 
+      target="_blank" 
+      className="text-primary underline decoration-1 underline-offset-2 decoration-dashed hover:text-[var(--accent-color)] transition duration-300"
+    >
       {children}
     </a>
   );

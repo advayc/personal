@@ -6,6 +6,9 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --accent-color: #22D3EE;
+  --accent-color-rgb: 34, 211, 238;
+  --accent-color-hover: rgba(var(--accent-color-rgb), 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -69,8 +72,8 @@ body::after {
   left: 0;
   width: 0;
   height: 0;
-  background: rgba(0, 255, 255, 0.025);
-  border: 1px solid cyan;
+  background: rgba(var(--accent-color-rgb), 0.025);
+  border: 1px solid var(--accent-color);
   pointer-events: none;
   display: none;
 }
@@ -87,7 +90,7 @@ body.selecting::after {
 }
 
 ::selection {
-  background: rgba(0, 255, 247, 0.175);
+  background: rgba(var(--accent-color-rgb), 0.175);
 }
 
 .cursor {
@@ -105,4 +108,18 @@ body.selecting::after {
 
 .custom-focus:focus {
   outline: none;
+}
+
+.selection-box {
+  background: rgba(var(--accent-color-rgb), 0.1);
+  border: 1px solid var(--accent-color);
+}
+
+.file-hover:hover {
+  color: var(--accent-color);
+  background-color: var(--accent-color-hover);
+}
+
+.hover\:text-cyan-400:hover {
+  color: var(--accent-color);
 }

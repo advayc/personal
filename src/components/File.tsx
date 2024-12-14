@@ -35,8 +35,9 @@ export default function File({
       ref={fileRef}
       className={clsx(
         inter.className,
-        "cursor-pointer pt-2 border border-dotted border-transparent hover:bg-cyan-950 hover:border-cyan-500 text-white",
-        isSelected && "bg-cyan-950 border-cyan-500"
+        "cursor-pointer pt-2 border border-dotted border-transparent transition-all duration-300",
+        "hover:bg-[rgba(var(--accent-color-rgb),0.21)] hover:border-[var(--accent-color)] text-white",
+        isSelected && "bg-[rgba(var(--accent-color-rgb),0.1)] border-[var(--accent-color)]"
       )}
     >
       <button
