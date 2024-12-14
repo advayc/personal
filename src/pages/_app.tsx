@@ -5,11 +5,11 @@ import { SelectionBoxProvider } from '@/components/SelectionContext';
 import Head from "next/head";
 
 // SEO constants
-const SITE_URL = 'https://advay.site'; // Replace with your actual domain
+const SITE_URL = 'https://advayc.vercel.app/';
 const DEFAULT_TITLE = 'Advay Chandorkar | Full Stack Developer';
-const DEFAULT_DESCRIPTION = 'Full Stack Developer specializing in TypeScript, React, and Next.js. Building innovative web solutions with modern technologies.';
-const DEFAULT_KEYWORDS = 'Advay Chandorkar, Full Stack Developer, Web Development, React, TypeScript, Next.js, Software Engineer';
-const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`; // Add your OG image
+const DEFAULT_DESCRIPTION = '16yo Stack Developer specializing in TypeScript, React, and Next.js. Building innovative web solutions with modern technologies.';
+const DEFAULT_KEYWORDS = 'Advay Chandorkar, Full Stack Developer, Web Development, React, TypeScript, Next.js';
+const DEFAULT_IMAGE = `${SITE_URL}/meta.png`;
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
