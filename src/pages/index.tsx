@@ -93,6 +93,7 @@ export default function Home() {
       const existingPong = document.querySelector('[data-pong-instance]');
       if (!existingPong) {
         setPongTerminalOpen(true);
+        setIsTerminalOpen(true);
       }
       return;
     }
@@ -113,6 +114,7 @@ export default function Home() {
         workExperience: fileConfig.terminalConfig.workExperience
       };
       setTerminals([...terminals, newTerminal]);
+      setIsTerminalOpen(true);
     }
   };
 
