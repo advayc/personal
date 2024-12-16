@@ -84,7 +84,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
 
     return (
         <div 
-            className="fixed bottom-0 left-0 right-0 border-t border-white/5 pb-1"
+            className="fixed bottom-0 left-0 right-0 border-t border-white/5 py-[9px]"
             style={{
                 backgroundColor: ``,
                 backdropFilter: 'blur(2px)'
@@ -107,7 +107,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                     </Link>
                     <Link
                         ref={githubRef}
-                        className={`transition-all duration-300 rounded-md p-[15px] hover:bg-white/5 ${
+                        className={`transition-all duration-300 rounded-md p-[15px] hover:bg-[var(--accent-color-hover)] ${
                             isGithubSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
                         }`}
                         href="https://www.github.com/advayc/"
@@ -118,7 +118,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                     </Link>
                     <Link
                         ref={mailRef}
-                        className={`transition-all duration-300 rounded-md p-[15px] hover:bg-white/5 ${
+                        className={`transition-all duration-300 rounded-md p-[15px] hover:bg-[var(--accent-color-hover)] ${
                             isMailSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
                         }`}
                         href="mailto:advay.chandorkar@gmail.com"
@@ -128,7 +128,9 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                     <div className="relative">
                         <button
                             onClick={() => setShowColorPicker(!showColorPicker)}
-                            className="transition-all duration-300 rounded-md p-2.5 text-white/70 hover:bg-[var(--accent-color-hover)] hover:text-[var(--accent-color)]"
+                            className={`transition-all duration-300 rounded-md p-[15px] hover:bg-[var(--accent-color-hover)] ${
+                                showColorPicker ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
+                            }`}
                         >
                             <IoColorPaletteOutline size={28} />
                         </button>
