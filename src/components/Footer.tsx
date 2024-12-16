@@ -30,6 +30,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
     const [isLinkedInSelected, setIsLinkedInSelected] = useState(false);
     const [isGithubSelected, setIsGithubSelected] = useState(false);
     const [isMailSelected, setIsMailSelected] = useState(false);
+    const [isColorPickerSelected, setIsColorPickerSelected] = useState(false);
 
     useEffect(() => {
       const updateDateTime = () => {
@@ -76,6 +77,9 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
       if (mailRef.current) {
         setIsMailSelected(isElementInSelectionBox(mailRef.current, selectionBox));
       }
+      if (colorPickerRef.current) {
+        setIsColorPickerSelected(isElementInSelectionBox(colorPickerRef.current, selectionBox));
+      }
     }, [selectionBox]);
 
     useEffect(() => {
@@ -88,15 +92,6 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
       window.addEventListener('keydown', handleEscKey);
       return () => window.removeEventListener('keydown', handleEscKey);
     }, [showColorPicker]);
-
-    useEffect(() => {
-      if (colorPickerRef.current) {
-        const isSelected = isElementInSelectionBox(colorPickerRef.current, selectionBox);
-        if (isSelected) {
-          setShowColorPicker(true);
-        }
-      }
-    }, [selectionBox]);
 
     const hexToRgb = (hex: string) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -150,8 +145,8 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                         <button
                             ref={colorPickerRef}
                             onClick={() => setShowColorPicker(!showColorPicker)}
-                            className={`transition-all duration-300 rounded-md p-[15px] hover:bg-[var(--accent-color-hover)] ${
-                                showColorPicker ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
+                            className={`transition-all duration-300 rounded-md p-[15px] hover:bg-[var(--accent-color-hover)] outline-none ${
+                                isColorPickerSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
                             }`}
                         >
                             <IoColorPaletteOutline size={28} />
