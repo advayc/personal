@@ -142,21 +142,21 @@ const Terminal: React.FC<TerminalProps> = ({
 
   useEffect(() => {
     const updateConstraints = () => {
-      const terminalWidth = isMaximized ? 862 : 600;  // Width of terminal
-      const terminalHeight = isMaximized ? 700 : 400; // Height of terminal
+      const terminalWidth = isMaximized ? 862 : 600;
+      const terminalHeight = isMaximized ? 700 : 400;
 
       setDragConstraints({
-        left: -(window.innerWidth - terminalWidth),
-        top: -90, // Allow some space from top
-        right: window.innerWidth - terminalWidth,
-        bottom: window.innerHeight - terminalHeight - 90 // Account for footer height
+        left: -terminalWidth/2,
+        top: -terminalHeight/2,  // Allow more upward movement
+        right: window.innerWidth - terminalWidth/2,
+        bottom: window.innerHeight - terminalHeight - 64 // Account for footer
       });
     };
 
     updateConstraints();
     window.addEventListener('resize', updateConstraints);
     return () => window.removeEventListener('resize', updateConstraints);
-  }, [isMaximized]); // Add isMaximized as dependency to update constraints when maximized state changes
+  }, [isMaximized]);
 
   const selectedLineStyle = {
     backgroundColor: 'rgba(0, 255, 247, 0.175)',
@@ -219,7 +219,7 @@ const Terminal: React.FC<TerminalProps> = ({
           : isMaximized
           ? "w-[862px] h-[700px]"
           : "w-[600px] h-[400px]"
-      } rounded-lg fixed top-16 left-16 z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg backdrop-blur-sm`}
+      } rounded-lg fixed top-16 left-16 z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90`}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}

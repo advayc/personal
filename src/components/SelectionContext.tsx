@@ -19,6 +19,13 @@ const SelectionBoxContext = createContext<SelectionBoxState>({
 
 export const useSelectionBox = () => useContext(SelectionBoxContext);
 
+const isEventInAnyTerminal = (event: MouseEvent): boolean => {
+  const terminalElements = document.querySelectorAll('.terminal-container');
+  return Array.from(terminalElements).some(element => 
+    element.contains(event.target as Node)
+  );
+};
+
 export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [selectionBox, setSelectionBox] = useState<SelectionBoxState>({
     isSelecting: false,
@@ -31,7 +38,7 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      if (selectionBox.isSelecting && !isTerminalOpen && !isDragging && !isEventInTerminal(event)) {
+      if (selectionBox.isSelecting && !isTerminalOpen && !isDragging && !isEventInAnyTerminal(event)) {
         updateSelectionBox(
           { x: selectionBox.left, y: selectionBox.top },
           { x: event.clientX, y: event.clientY }
@@ -40,7 +47,7 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     const handleMouseDown = (event: MouseEvent) => {
-      if (!isTerminalOpen && !isDragging && !isEventInTerminal(event)) {
+      if (!isTerminalOpen && !isDragging && !isEventInAnyTerminal(event)) {
         setSelectionBox({
           isSelecting: true,
           left: event.clientX,
@@ -94,11 +101,6 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
       document.documentElement.style.removeProperty('--selection-top');
       document.documentElement.style.removeProperty('--selection-width');
       document.documentElement.style.removeProperty('--selection-height');
-    };
-
-    const isEventInTerminal = (event: MouseEvent): boolean => {
-      const terminalElement = document.querySelector('.terminal-container');
-      return terminalElement ? terminalElement.contains(event.target as Node) : false;
     };
 
     window.addEventListener('mousemove', handleMouseMove);

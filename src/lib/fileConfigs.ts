@@ -22,7 +22,7 @@ export const fileConfigs = [
           company: "VEX Robotics",
           duration: "May 2024 - Present · 4 mos",
           description: "Team Lead @ VEX Robotics Team 31331B",
-          link: "https://www.linkedin.com/company/vexrobotics/"
+          link: "https://github.com/advayc/31331B-VRC-High-Stakes"
         },
         {
           title: "Media Captain",
