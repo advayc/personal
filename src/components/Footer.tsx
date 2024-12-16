@@ -25,6 +25,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
     const linkedInRef = useRef<HTMLAnchorElement>(null);
     const githubRef = useRef<HTMLAnchorElement>(null);
     const mailRef = useRef<HTMLAnchorElement>(null);
+    const colorPickerRef = useRef<HTMLButtonElement>(null);
 
     const [isLinkedInSelected, setIsLinkedInSelected] = useState(false);
     const [isGithubSelected, setIsGithubSelected] = useState(false);
@@ -74,6 +75,26 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
       }
       if (mailRef.current) {
         setIsMailSelected(isElementInSelectionBox(mailRef.current, selectionBox));
+      }
+    }, [selectionBox]);
+
+    useEffect(() => {
+      const handleEscKey = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && showColorPicker) {
+          setShowColorPicker(false);
+        }
+      };
+
+      window.addEventListener('keydown', handleEscKey);
+      return () => window.removeEventListener('keydown', handleEscKey);
+    }, [showColorPicker]);
+
+    useEffect(() => {
+      if (colorPickerRef.current) {
+        const isSelected = isElementInSelectionBox(colorPickerRef.current, selectionBox);
+        if (isSelected) {
+          setShowColorPicker(true);
+        }
       }
     }, [selectionBox]);
 
@@ -127,6 +148,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                     </Link>
                     <div className="relative">
                         <button
+                            ref={colorPickerRef}
                             onClick={() => setShowColorPicker(!showColorPicker)}
                             className={`transition-all duration-300 rounded-md p-[15px] hover:bg-[var(--accent-color-hover)] ${
                                 showColorPicker ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'

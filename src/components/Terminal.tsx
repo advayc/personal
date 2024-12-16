@@ -48,6 +48,12 @@ const Terminal: React.FC<TerminalProps> = ({
   const terminalRef = useRef<HTMLDivElement>(null);
   const { setIsTerminalOpen } = useTerminal();
   const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
+  const [dragConstraints, setDragConstraints] = useState({
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0
+  });
 
   const handleClose = () => {
     onClose();
@@ -134,6 +140,24 @@ const Terminal: React.FC<TerminalProps> = ({
     };
   }, [cursorPosition, lastKeyPressed]);
 
+  useEffect(() => {
+    const updateConstraints = () => {
+      const terminalWidth = isMaximized ? 862 : 600;  // Width of terminal
+      const terminalHeight = isMaximized ? 700 : 400; // Height of terminal
+
+      setDragConstraints({
+        left: -(window.innerWidth - terminalWidth),
+        top: -90, // Allow some space from top
+        right: window.innerWidth - terminalWidth,
+        bottom: window.innerHeight - terminalHeight - 90 // Account for footer height
+      });
+    };
+
+    updateConstraints();
+    window.addEventListener('resize', updateConstraints);
+    return () => window.removeEventListener('resize', updateConstraints);
+  }, [isMaximized]); // Add isMaximized as dependency to update constraints when maximized state changes
+
   const selectedLineStyle = {
     backgroundColor: 'rgba(0, 255, 247, 0.175)',
   };
@@ -189,23 +213,26 @@ const Terminal: React.FC<TerminalProps> = ({
 
   return (
     <motion.div
-      className={`terminal-container ${inter.className} transition-opacity duration-300 ease-in-out ${
+      className={`terminal-container ${inter.className} transition-all duration-300 ease-out ${
         isMinimized
           ? "hidden"
           : isMaximized
           ? "w-[862px] h-[700px]"
           : "w-[600px] h-[400px]"
-      } rounded-lg fixed top-16 left-16 z-50 font-mono text-sm border-gray-800 rounded-b-lg`}
-      initial={{ opacity: 1, x: 0, y: 0 }}
-      animate={{ opacity: 1 }}
+      } rounded-lg fixed top-16 left-16 z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg backdrop-blur-sm`}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.2 }}
       drag
+      dragMomentum={false}
       dragElastic={0}
-      dragConstraints={{
-        left: -60,
-        top: -80,
-        right: 840,
-        bottom: 230
+      dragTransition={{
+        power: 0,
+        timeConstant: 0,
+        modifyTarget: target => target
       }}
+      dragConstraints={dragConstraints}
+      whileDrag={{ cursor: "grabbing" }}
     >
       <div 
         className="handle flex items-center justify-between bg-zinc-200 text-white px-4 py-1 rounded-t-lg cursor-move"
