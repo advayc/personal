@@ -4,10 +4,30 @@ import { TerminalProvider } from '@/components/TerminalContext';
 import { SelectionBoxProvider } from '@/components/SelectionContext';
 import Head from "next/head";
 
+// Add this function at the top of the file, after the imports
+function calculateAge(birthDate: Date): number {
+  const today = new Date();
+  // Convert to EST
+  const estOffset = -5; // EST is UTC-5
+  const utc = today.getTime() + (today.getTimezoneOffset() * 60000);
+  const estDate = new Date(utc + (3600000 * estOffset));
+  
+  let age = estDate.getFullYear() - birthDate.getFullYear();
+  const m = estDate.getMonth() - birthDate.getMonth();
+  
+  if (m < 0 || (m === 0 && estDate.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
+}
+
 // SEO constants
+const BIRTH_DATE = new Date('2008-12-16T00:00:00-05:00'); // EST timezone
+const AGE = calculateAge(BIRTH_DATE);
 const SITE_URL = 'https://advayc.vercel.app/';
 const DEFAULT_TITLE = 'Advay Chandorkar | Full Stack Developer';
-const DEFAULT_DESCRIPTION = '16yo Stack Developer specializing in TypeScript, React, and Next.js. Building innovative web solutions with modern technologies.';
+const DEFAULT_DESCRIPTION = `${AGE}yo Stack Developer specializing in TypeScript, React, and Next.js. Building innovative web solutions with modern technologies.`;
 const DEFAULT_KEYWORDS = 'Advay Chandorkar, Full Stack Developer, Web Development, React, TypeScript, Next.js';
 const DEFAULT_IMAGE = `${SITE_URL}/meta.png`;
 

@@ -9,6 +9,7 @@ import { useTerminal } from "@/components/TerminalContext";
 import Link from '@/components/Link';
 import Head from 'next/head'; 
 import {fileConfigs} from '@/lib/fileConfigs';
+import { calculateAge } from '@/utils/age';
 
 const inter = Inter({ subsets: ["latin"] });
 type ToggleOptionsType = 'dark' | 'light';
@@ -52,6 +53,9 @@ const structuredData = {
     "name": "Self-Employed"
   }
 };
+
+const BIRTH_DATE = new Date(2008, 11, 16);
+const AGE = calculateAge(BIRTH_DATE);
 
 export default function Home() {
   const { isTerminalOpen, setIsTerminalOpen } = useTerminal();
@@ -125,7 +129,7 @@ export default function Home() {
           >
             <div className="flex flex-col leading-relaxed text-primary text-center">
               <p>
-                I'm a 15-year-old developer from <Link href={"https://www.google.com/maps/place/Mississauga,+ON,+Canada/@43.5774568,-79.6591567,11z/data=!3m1!4b1!4m6!3m5!1s0x882b469fe76b05b7:0x3146cbed75966db!8m2!3d43.5852972!4d-79.6449838!16zL20vMDE1NGd4?entry=ttu&g_ep=EgoyMDI0MDgyMC4xIKXMDSoASAFQAw%3D%3D"}>
+                I'm a {AGE}-year-old developer from <Link href={"https://www.google.com/maps/place/Mississauga,+ON,+Canada/@43.5774568,-79.6591567,11z/data=!3m1!4b1!4m6!3m5!1s0x882b469fe76b05b7:0x3146cbed75966db!8m2!3d43.5852972!4d-79.6449838!16zL20vMDE1NGd4?entry=ttu&g_ep=EgoyMDI0MDgyMC4xIKXMDSoASAFQAw%3D%3D"}>
                   Mississauga, ON</Link> with a passion for engineering and problem solving.
               </p>
               <p className="mt-1">

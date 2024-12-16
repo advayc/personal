@@ -1,7 +1,7 @@
 {
   "name": "Advay Chandorkar Portfolio",
   "short_name": "advayc",
-  "description": "16yo Developer specializing in TypeScript, React, and Next.js",
+  "description": "${AGE}yo Developer specializing in TypeScript, React, and Next.js",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
