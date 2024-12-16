@@ -2,7 +2,7 @@ export const fileConfigs = [
   {
     id: 'experience',
     filename: 'experience.exe',
-    imageSrc: '/computer.png',
+    imageSrc: '/icons/computer.png',
     terminalConfig: {
       headerText: "advaychandorkar@personalsite: ~/personal/about (vim)",
       pathText: "~/personal/about",
@@ -54,7 +54,7 @@ export const fileConfigs = [
   {
     id: 'projects',
     filename: 'projects.app',
-    imageSrc: '/files.png',
+    imageSrc: '/icons/files.png',
     terminalConfig: {
       headerText: "advaychandorkar@personalsite: ~/personal/projects (vim)",
       pathText: "~/personal/projects",
@@ -99,5 +99,10 @@ export const fileConfigs = [
         }
       ]
     }
+  },
+  {
+    id: 'pong',
+    filename: 'pong.exe',
+    imageSrc: '/icons/globe.png'
   }
 ];

@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { useSelectionBox, isElementInSelectionBox } from './SelectionContext';
 import Image from 'next/image';
 import { Inter } from "next/font/google";
+import PongTerminal from './PongTerminal';
 const inter = Inter({ subsets: ["latin"] });
 
 interface FileProps {
@@ -30,6 +31,17 @@ export default function File({
     }
   }, [selectionBox]);
 
+  const handleClick = () => {
+    if (filename === 'pong.exe') {
+      const existingPong = document.querySelector('[data-pong-instance]');
+      if (!existingPong) {
+        setWindowOpen(true);
+      }
+    } else {
+      setWindowOpen(true);
+    }
+  };
+
   return (
     <div
       ref={fileRef}
@@ -42,7 +54,7 @@ export default function File({
     >
       <button
         className={clsx("custom-focus w-full", className)}
-        onClick={() => setWindowOpen(true)}
+        onClick={handleClick}
       >
         <motion.div
           initial={{ opacity: 0 }}

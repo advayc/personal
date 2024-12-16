@@ -10,6 +10,7 @@ import Link from '@/components/Link';
 import Head from 'next/head'; 
 import {fileConfigs} from '@/lib/fileConfigs';
 import { calculateAge } from '@/utils/age';
+import PongTerminal from "@/components/PongTerminal";
 
 const inter = Inter({ subsets: ["latin"] });
 type ToggleOptionsType = 'dark' | 'light';
@@ -21,20 +22,24 @@ interface TerminalState {
   pathText: string;
   branchText: string;
   infoText: string;
-  projects?: {
-    title: string;
-    description: string;
-    repoUrl: string;
-    technologies: string;
-  }[];
-  workExperience?: {
-    title: string;
-    company: string;
-    duration: string;
-    description: string;
-    technologies?: string;
-    link: string;
-  }[];
+  projects?: Project[];
+  workExperience?: WorkExperience[];
+}
+
+interface Project {
+  title: string;
+  description: string;
+  repoUrl: string;
+  technologies: string;
+}
+
+interface WorkExperience {
+  title: string;
+  company: string;
+  duration: string;
+  description: string;
+  technologies?: string;
+  link: string;
 }
 
 const structuredData = {
@@ -61,6 +66,7 @@ export default function Home() {
   const { isTerminalOpen, setIsTerminalOpen } = useTerminal();
   const [selected, setSelected] = useState<ToggleOptionsType>('light');
   const [terminals, setTerminals] = useState<TerminalState[]>([]);
+  const [pongTerminalOpen, setPongTerminalOpen] = useState(false);
 
   useEffect(() => {
     if (selected === 'light') {
@@ -83,20 +89,35 @@ export default function Home() {
   };
 
   const openTerminal = (fileId: string) => {
-    if (terminals.length < fileConfigs.length) {
-      const fileConfig = fileConfigs.find(config => config.id === fileId);
-      if (fileConfig) {
-        const newTerminal: TerminalState = {
-          id: terminals.length,
-          position: { 
-            x: -185,
-            y: -130 + (terminals.length * 80) 
-          },
-          ...fileConfig.terminalConfig
-        };
-        setTerminals([...terminals, newTerminal]);
+    if (fileId === 'pong') {
+      const existingPong = document.querySelector('[data-pong-instance]');
+      if (!existingPong) {
+        setPongTerminalOpen(true);
       }
+      return;
     }
+
+    const fileConfig = fileConfigs.find(config => config.id === fileId);
+    if (fileConfig && fileConfig.terminalConfig) {
+      const newTerminal: TerminalState = {
+        id: terminals.length,
+        position: { 
+          x: -185,
+          y: -130 + (terminals.length * 80) 
+        },
+        headerText: fileConfig.terminalConfig.headerText,
+        pathText: fileConfig.terminalConfig.pathText,
+        branchText: fileConfig.terminalConfig.branchText,
+        infoText: fileConfig.terminalConfig.infoText,
+        projects: fileConfig.terminalConfig.projects,
+        workExperience: fileConfig.terminalConfig.workExperience
+      };
+      setTerminals([...terminals, newTerminal]);
+    }
+  };
+
+  const handleClosePong = () => {
+    setPongTerminalOpen(false);
   };
 
   return (
@@ -171,6 +192,12 @@ export default function Home() {
               />
             </motion.div>
           ))}
+          {pongTerminalOpen && (
+            <PongTerminal
+              onClose={handleClosePong}
+              headerText="advaychandorkar@personalsite: ~/games/pong"
+            />
+          )}
         </motion.div>
       </div>
       <Footer selected={selected} setSelected={setSelected} />
