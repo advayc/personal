@@ -23,6 +23,22 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="author" content="Advay Chandorkar" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         
+        {/* Google Site Verification */}
+        <meta name="google-site-verification" content="30z2hGJJbeDm2vE7ctaz5MxQE8TMgULkFW-wEZ5RsdM" />
+        
+        {/* Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-XXXXXXXX');
+            `
+          }}
+        />
+        
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
