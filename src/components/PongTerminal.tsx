@@ -86,7 +86,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
         setErrorMessage(`you forgot the semi-colon`);
         setInput('');
       }
-      if (input.trim().toLowerCase() === 'play;') {
+      else if (input.trim().toLowerCase() === 'play;') {
         setErrorMessage('');
         setInput('');
         setCountdown(3);
