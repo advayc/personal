@@ -9,8 +9,6 @@ interface PongProps {
 const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [paused, setPaused] = useState(true);
-  const [playerScore, setPlayerScore] = useState(0);
-  const [aiScore, setAiScore] = useState(0);
   const [accentColor, setAccentColor] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
@@ -23,8 +21,10 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
   const ballSize = 12;
   const paddleSpeed = 10;
   const aiSpeed = 5;
+  const initialBallSpeed = 3;
 
-  const initialBallSpeed = 5;
+  // Use refs for scores to ensure immediate updates
+  const scores = useRef({ player: 0, ai: 0 });
   const gameState = useRef({
     playerY: height / 2 - paddleHeight / 2,
     aiY: height / 2 - paddleHeight / 2,
@@ -47,7 +47,7 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isFocused) return;
-      e.preventDefault(); // Prevent default to avoid focus outline
+      e.preventDefault();
       
       if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') {
         gameState.current.keys.up = true;
@@ -84,21 +84,13 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
   }, [width, height, paused, gameStarted]);
 
   useEffect(() => {
-    if (playerScore >= WINNING_SCORE || aiScore >= WINNING_SCORE) {
+    if (scores.current.player >= WINNING_SCORE || scores.current.ai >= WINNING_SCORE) {
       setPaused(true);
-      onGameEnd(playerScore > aiScore ? 'Player' : 'AI');
+      onGameEnd(scores.current.player > scores.current.ai ? 'Player' : 'AI');
+      // Reset scores after game ends
+      scores.current = { player: 0, ai: 0 };
     }
-  }, [playerScore, aiScore, onGameEnd]);
-
-  useEffect(() => {
-    // Force redraw when scores change
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      drawGame(ctx);
-    }
-  }, [playerScore, aiScore]);
+  }, [scores.current.player, scores.current.ai, onGameEnd]);
 
   const updateGame = () => {
     const state = gameState.current;
@@ -113,7 +105,7 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
       }
 
       // Ball collision with paddles
-      const ballCenterY = state.ballY + ballSize/2;
+      const ballCenterY = state.ballY + ballSize / 2;
       if (
         (state.ballX <= paddleWidth && 
          ballCenterY >= state.playerY && 
@@ -128,21 +120,21 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
 
       // Scoring
       if (state.ballX <= 0) {
-        setAiScore(prev => prev + 1);
+        scores.current.ai += 1;
         resetBall();
       } else if (state.ballX >= width) {
-        setPlayerScore(prev => prev + 1);
+        scores.current.player += 1;
         resetBall();
       }
 
-      // Make AI less perfect
-      const aiTarget = state.ballY + ballSize/2 - paddleHeight/2;
-      const randomDelay = Math.random() * 0.7; // Add randomness to AI reactions
+      // AI logic
+      const aiTarget = state.ballY + ballSize / 2 - paddleHeight / 2;
+      const randomDelay = Math.random() * 0.7;
       
-      if (state.ballSpeedX > 0) { // Only move when ball is coming towards AI
-        if (state.aiY < aiTarget - paddleHeight/3) {
+      if (state.ballSpeedX > 0) {
+        if (state.aiY < aiTarget - paddleHeight / 3) {
           state.aiY += aiSpeed * (1 - randomDelay);
-        } else if (state.aiY > aiTarget + paddleHeight/3) {
+        } else if (state.aiY > aiTarget + paddleHeight / 3) {
           state.aiY -= aiSpeed * (1 - randomDelay);
         }
       }
@@ -183,15 +175,15 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Always draw scores, even when paused
+    // Draw scores
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 72px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText(playerScore.toString(), width * 0.25, 40);
-    ctx.fillText(aiScore.toString(), width * 0.75, 40);
+    ctx.fillText(scores.current.player.toString(), width * 0.25, 40);
+    ctx.fillText(scores.current.ai.toString(), width * 0.75, 40);
 
-    // Draw rounded paddles
+    // Draw paddles
     ctx.fillStyle = '#FFFFFF';
     // Player paddle
     ctx.beginPath();
@@ -207,11 +199,11 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
     ctx.shadowColor = accentColor;
     ctx.shadowBlur = 15;
     ctx.beginPath();
-    ctx.arc(state.ballX + ballSize/2, state.ballY + ballSize/2, ballSize/2, 0, Math.PI * 2);
+    ctx.arc(state.ballX + ballSize / 2, state.ballY + ballSize / 2, ballSize / 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // Modified overlay logic
+    // Draw overlay if paused or not focused
     if (!isFocused || paused) {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
       ctx.fillRect(0, 0, width, height);
@@ -231,19 +223,19 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
     }
 
     // Draw game over screen if someone won
-    if (playerScore >= WINNING_SCORE || aiScore >= WINNING_SCORE) {
+    if (scores.current.player >= WINNING_SCORE || scores.current.ai >= WINNING_SCORE) {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
       ctx.fillRect(0, 0, width, height);
       
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 48px monospace';
       ctx.textAlign = 'center';
-      const finalText = playerScore > aiScore ? 'You Won!' : 'Game Over';
+      const finalText = scores.current.player > scores.current.ai ? 'You Won!' : 'Game Over';
       ctx.fillText(finalText, width / 2, height / 2 - 30);
       
       ctx.font = '20px monospace';
       ctx.fillStyle = accentColor;
-      ctx.fillText(`Final Score: ${playerScore} - ${aiScore}`, width / 2, height / 2 + 20);
+      ctx.fillText(`Final Score: ${scores.current.player} - ${scores.current.ai}`, width / 2, height / 2 + 20);
     }
   };
 
@@ -267,4 +259,4 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
   );
 };
 
-export default Pong; 
+export default Pong;
