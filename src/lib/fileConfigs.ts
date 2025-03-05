@@ -12,7 +12,7 @@ export const fileConfigs = [
         {
           title: "Lead Web Developer",
           company: "FutureMD",
-          duration: "Jun 2024 - Present · 3 mos",
+          duration: "Jun 2024 - Present · 9 mos",
           description: "FutureMD is a student-led, registered nonprofit organization dedicated to educating teens about life during and after medical school.",
           link: "https://www.linkedin.com/company/futuremdteam/",
           technologies: "Next.JS, Typescript, Tailwind CSS"
@@ -20,9 +20,17 @@ export const fileConfigs = [
         {
           title: "Team Lead",
           company: "VEX Robotics",
-          duration: "May 2024 - Present · 4 mos",
-          description: "Team Lead @ VEX Robotics Team 31331B",
+          duration: "May 2024 - Present · 10 mos",
+          description: "Team Lead @ VEX Robotics Team 31331B, Provincial Qualifiers",
           link: "https://github.com/advayc/31331B-VRC-High-Stakes"
+        },
+        {
+          title: "Trainer",
+          company: "Glenforest Computer Science Club",
+          duration: "Sept 2024 - Present · 6 mos",
+          description: "Created a Github repository with solutions to 70+ CCC solutions",
+          link: "https://gfsscs.ca/",
+          technologies: "Leadership, Collaboration, Teamwork"
         },
         {
           title: "Media Captain",
@@ -72,6 +80,12 @@ export const fileConfigs = [
           description: "Python functions to visualize weighted and unweighted graphs and paths using Matplotlib and Networkx libraries.",
           repoUrl: "https://github.com/advayc/graph-visualizer",
           technologies: "Python, Matplotlib, Networkx"
+        },
+        {
+          title: "Competitive Programming Solutions",
+          description: "Full Python and C++ Solutions to 100+ Leetcode, Codeforces, DMOJ and CCC solutions. Obtained a DMOJ rating of 1597 (Expert)",
+          repoUrl: "https://github.com/advayc/ccc-solutions",
+          technologies: "Python, Github, Problem-Solving"
         },
         {
           title: "Chatify",
