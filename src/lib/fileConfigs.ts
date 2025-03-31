@@ -70,6 +70,12 @@ export const fileConfigs = [
       infoText: "take a look into some of my projects!",
       projects: [
         {
+          title: "Notes App",
+          description: "Notes app built in typescript with supabase authentication",
+          repoUrl: "https://github.com/advayc/notes",
+          technologies: "NextJS, Typescript, Supabase"
+        },
+        {
           title: "FutureMD Website",
           description: "Website for A youth-led nonprofit organization with the goal to educate teens about life during and after medical school!",
           repoUrl: "https://github.com/advayc/futuremd-site",
