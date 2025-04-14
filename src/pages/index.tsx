@@ -156,8 +156,8 @@ export default function Home() {
                   Mississauga, ON</Link> with a passion for engineering and problem solving.
               </p>
               <p className="mt-1">
-                Currently, I'm a grade 11 IB student at <Link href="https://glenforest.peelschools.org/about-us">Glenforest SS</Link> and
-                at the moment, I'm working at <Link href="https://futuremd.tech/">FutureMD</Link>.
+                Currently, I'm a grade 11 IB student and
+                at the moment, I'm working on <Link href="https://futuremd.tech/">FutureMD</Link>.
               </p>
               <p className="mt-1">
                 To learn more about me, click the files!
