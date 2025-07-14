@@ -10,25 +10,33 @@ export const fileConfigs = [
       infoText: "i like to ride bikes, play badminton, and tinker on projects that involve web development, 3D printing, electronics, and design.",
       workExperience: [
         {
+          title: "Software Developer",
+          company: "NeurotechUoft",
+          duration: "Jun 2025 - Present",
+          description: "At Neurotech UofT, we are pioneering innovation in neurotechnology by merging engineering and neuroscience to create meaningful change.",
+          link: "https://neurotechuoft.ca/",
+          technologies: "Next.JS, Typescript, Tailwind CSS"
+        },
+        {
           title: "Lead Web Developer",
           company: "FutureMD",
-          duration: "Jun 2024 - Present · 9 mos",
+          duration: "Jun 2024 - Present",
           description: "FutureMD is a student-led, registered nonprofit organization dedicated to educating teens about life during and after medical school.",
-          link: "https://www.linkedin.com/company/futuremdteam/",
+          link: "https://futuremd.net/",
           technologies: "Next.JS, Typescript, Tailwind CSS"
         },
         {
           title: "Team Lead",
           company: "VEX Robotics",
-          duration: "May 2024 - Present · 10 mos",
+          duration: "May 2024 - Present",
           description: "Team Lead @ VEX Robotics Team 31331B, Provincial Qualifiers",
           link: "https://github.com/advayc/31331B-VRC-High-Stakes"
         },
         {
           title: "Trainer",
           company: "Glenforest Computer Science Club",
-          duration: "Sept 2024 - Present · 6 mos",
-          description: "Created a Github repository with solutions to 70+ CCC solutions",
+          duration: "Sept 2024 - Present",
+          description: "Created a Github repository with solutions to 70+ CCC solutions, mentored students for the CCC",
           link: "https://gfsscs.ca/",
           technologies: "Leadership, Collaboration, Teamwork"
         },
@@ -44,7 +52,7 @@ export const fileConfigs = [
           title: "Build & Electrical Member",
           company: "FRC 6070: Gryphon Machine",
           duration: "Sep 2022 - Jun 2023 · 10 mos",
-          description: "Built and Wired robot for the 2023 Charged Up First Robotics season where we, competed in two competitions; The Western University District Event and The Windsor Essex Great Lakes District Event ",
+          description: "Built and Wired robot for the 2023 Charged Up First Robotics season where we competed in two competitions; The Western University District Event and The Windsor Essex Great Lakes District Event ",
           link: "https://www.linkedin.com/company/frc-6070-gryphon-machine/",
           technologies: "Electrical Wiring, Manufacturing Tools"
         },
