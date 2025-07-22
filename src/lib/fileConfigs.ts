@@ -78,6 +78,12 @@ export const fileConfigs = [
       infoText: "take a look into some of my projects!",
       projects: [
         {
+          title: "Sitemaker",
+          description: "Turn your resume into a full personal website",
+          repoUrl: "https://github.com/advayc/sitemaker",
+          technologies: "NextJS, Typescript, Gemeni"
+        },
+        {
           title: "Notes App",
           description: "Notes app built in typescript with supabase authentication",
           repoUrl: "https://github.com/advayc/notes",
