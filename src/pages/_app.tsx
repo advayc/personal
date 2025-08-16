@@ -29,7 +29,6 @@ const SITE_URL = 'https://advayc.vercel.app/';
 const DEFAULT_TITLE = 'Advay Chandorkar | Full Stack Developer';
 const DEFAULT_DESCRIPTION = `${AGE}yo Stack Developer specializing in TypeScript, React, and Next.js. Building innovative web solutions with modern technologies.`;
 const DEFAULT_KEYWORDS = 'Advay Chandorkar, Full Stack Developer, Web Development, React, TypeScript, Next.js';
-const DEFAULT_IMAGE = `${SITE_URL}/meta.png`;
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -64,7 +63,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content={DEFAULT_TITLE} />
         <meta property="og:description" content={DEFAULT_DESCRIPTION} />
-        <meta property="og:image" content={DEFAULT_IMAGE} />
         <meta property="og:site_name" content="Advay Chandorkar Portfolio" />
         
         {/* Twitter */}
@@ -72,7 +70,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="twitter:url" content={SITE_URL} />
         <meta property="twitter:title" content={DEFAULT_TITLE} />
         <meta property="twitter:description" content={DEFAULT_DESCRIPTION} />
-        <meta property="twitter:image" content={DEFAULT_IMAGE} />
         
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
