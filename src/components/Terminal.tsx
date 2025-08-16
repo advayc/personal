@@ -10,11 +10,12 @@ interface Project {
   description: string;
   repoUrl: string;
   technologies: string;
+  projectLink?: string; // optional live/demo link
 }
 
 interface WorkExperience {
   title: string;
-  company: string;
+  company?: string;
   duration: string;
   description: string;
   technologies?: string;
@@ -242,6 +243,14 @@ const Terminal: React.FC<TerminalProps> = ({
             >
               <span className="text-gprimary mr-2">$</span>
               <Link href={project.repoUrl}>{project.title}</Link>
+              {project.projectLink && (
+                <span className="ml-2 text-xs text-white/40">[
+                  <a
+                    href={project.projectLink}
+                    target="_blank"
+                    className="text-[var(--accent-color)] hover:underline"
+                  >live</a>]</span>
+              )}
               {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="cursor"></span>}
             </div>
             <div className="text-gray-300 mt-1 ml-8">{project.description}</div>

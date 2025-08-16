@@ -80,54 +80,57 @@ export const fileConfigs = [
         {
           title: "Sitemaker",
           description: "Turn your resume into a full personal website",
+          // projectLink is an optional live / demo URL for the project (add or edit freely)
+          projectLink: "https://sitemaker-beta.vercel.app/",
           repoUrl: "https://sitemaker-beta.vercel.app/",
           technologies: "NextJS, Typescript, Gemeni"
         },
         {
           title: "Notes App",
           description: "Notes app built in typescript with supabase authentication",
+          projectLink: "https://advayc-notes.vercel.app/",
           repoUrl: "https://github.com/advayc/notes",
           technologies: "NextJS, Typescript, Supabase"
         },
         {
           title: "FutureMD Website",
           description: "Website for A youth-led nonprofit organization with the goal to educate teens about life during and after medical school!",
+          projectLink: "https://futuremd.net/",
           repoUrl: "https://github.com/advayc/futuremd-site",
           technologies: "NextJS, Typescript, Tailwind CSS"
         },
         {
           title: "Graph Visualizer",
           description: "Python functions to visualize weighted and unweighted graphs and paths using Matplotlib and Networkx libraries.",
+          projectLink: "https://github.com/advayc/graph-visualizer",
           repoUrl: "https://github.com/advayc/graph-visualizer",
           technologies: "Python, Matplotlib, Networkx"
         },
         {
           title: "Competitive Programming Solutions",
           description: "Full Python and C++ Solutions to 100+ Leetcode, Codeforces, DMOJ and CCC solutions. Obtained a DMOJ rating of 1597 (Expert)",
+          projectLink: "https://github.com/advayc/ccc-solutions",
           repoUrl: "https://github.com/advayc/ccc-solutions",
           technologies: "Python, Github, Problem-Solving"
         },
         {
-          title: "Chatify",
-          description: "Chatify! A tool to communicate with family, friends, and communities online. Paired with great features like End-To-End encryption, and customizability!",
-          repoUrl: "https://github.com/Abdifatah-Abdi/Chatify-Old",
-          technologies: "Javascript, NodeJS, Socket.io"
-        },
-        {
           title: "LCD Calculator",
           description: "ATMEGA 324PA microcontroller-based calculator with LCD display and ADC input.",
+          projectLink: "https://github.com/advayc/calculator",
           repoUrl: "https://github.com/advayc/calculator",
           technologies: "Arduino, C++, electronics"
         },
         {
           title: "Rhymebot",
           description: "Elevate your writing with the ultimate rhyming, synonym, and antonym companion. Craft masterpieces anytime, anywhere with ease.",
+          projectLink: "https://github.com/advayc/rhymebot",
           repoUrl: "https://github.com/advayc/rhymebot",
           technologies: "Javascript, HTML, CSS"
         },
         {
           title: "Humanoid Robot",
           description: "Walking and dancing humanoid robot using 7 servo motors and custom Arduino nano board.",
+          projectLink: "https://github.com/advayc/Biped",
           repoUrl: "https://github.com/advayc/Biped",
           technologies: "Arduino, C++, electronics"
         }
@@ -138,5 +141,10 @@ export const fileConfigs = [
     id: 'pong',
     filename: 'pong.exe',
     imageSrc: '/icons/globe.png'
+  },
+  {
+    id: 'snake',
+    filename: 'snake.exe',
+    imageSrc: '/icons/msn3.png'
   }
 ];

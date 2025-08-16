@@ -8,18 +8,22 @@ import { useSelectionBox, isElementInSelectionBox } from '@/components/Selection
 type ToggleOptionsType = 'dark' | 'light';
 
 interface FooterProps {
-  selected?: ToggleOptionsType;
-  setSelected?: React.Dispatch<React.SetStateAction<ToggleOptionsType>>;
+    selected?: ToggleOptionsType;
+    setSelected?: React.Dispatch<React.SetStateAction<ToggleOptionsType>>;
+    accentColorProp?: string;
+    setAccentColorProp?: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: propSetSelected }) => {
+const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: propSetSelected, accentColorProp, setAccentColorProp }) => {
     const [internalSelected, setInternalSelected] = useState<ToggleOptionsType>('light');
-    const [accentColor, setAccentColor] = useState('#22D3EE');
+        const [internalAccentColor, setInternalAccentColor] = useState('#22D3EE');
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [currentTime, setCurrentTime] = useState('');
     const [currentDate, setCurrentDate] = useState('');
     const selected = propSelected ?? internalSelected;
     const setSelected = propSetSelected ?? setInternalSelected;
+        const accentColor = accentColorProp ?? internalAccentColor;
+        const setAccentColor = setAccentColorProp ?? setInternalAccentColor;
     const selectionBox = useSelectionBox();
 
     const linkedInRef = useRef<HTMLAnchorElement>(null);
@@ -158,6 +162,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                                     <div className="relative">
                                         <input
                                             type="color"
+                                            title="Accent color picker"
                                             value={accentColor}
                                             onChange={(e) => setAccentColor(e.target.value)}
                                             className="w-[200px] h-[200px] cursor-pointer rounded-lg"
@@ -165,6 +170,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-3 rounded-b-lg">
                                             <input
                                                 type="text"
+                                                title="Hex color value"
                                                 value={accentColor.toUpperCase()}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
