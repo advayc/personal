@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { FaLinkedin, FaGithub } from "react-icons/fa";
+import { FaLinkedin, FaGithub, FaFileAlt } from "react-icons/fa";
 import { MdMail } from "react-icons/md";
 import { IoColorPaletteOutline } from "react-icons/io5";
 import Link from 'next/link';
@@ -110,8 +110,8 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                 backdropFilter: 'blur(2px)'
             }}
         >
-            <div className="flex items-center justify-between h-12">
-                <div className="w-[200px]" />
+                        <div className="flex items-center justify-between h-12">
+                            <div className="w-[200px]" />
                 
                 <div className="flex items-center gap-1">
                     <Link
@@ -135,6 +135,15 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                         rel="noopener noreferrer"
                     >
                         <FaGithub size={28} />
+                    </Link>
+                    <Link
+                        className={`transition-all duration-300 rounded-md p-[15px] hover:bg-[var(--accent-color-hover)] text-white/70 hover:text-[var(--accent-color)]`}
+                        href="/resume.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Resume PDF"
+                    >
+                        <FaFileAlt size={28} />
                     </Link>
                     <Link
                         ref={mailRef}

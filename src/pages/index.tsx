@@ -11,6 +11,7 @@ import Head from 'next/head';
 import {fileConfigs} from '@/lib/fileConfigs';
 import { calculateAge } from '@/utils/age';
 import PongTerminal from "@/components/PongTerminal";
+import SnakeTerminal from "@/components/SnakeTerminal";
 import CommandPalette from "@/components/CommandPalette";
 import ShortcutHint from "@/components/ShortcutHint";
 
@@ -70,10 +71,24 @@ export default function Home() {
   const [selected, setSelected] = useState<ToggleOptionsType>('light');
   const [terminals, setTerminals] = useState<TerminalState[]>([]);
   const [pongTerminalOpen, setPongTerminalOpen] = useState(false);
+  const [snakeTerminalOpen, setSnakeTerminalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  // persisted settings
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
-  const [fontFamily, setFontFamily] = useState<string>('ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace');
+  const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
   const [bgStyle, setBgStyle] = useState<'grid' | 'dots'>('grid');
+
+  // load settings from localStorage
+  useEffect(() => {
+    try {
+      const storedAccent = localStorage.getItem('siteAccentColor');
+      const storedFont = localStorage.getItem('siteFontFamily');
+      const storedBg = localStorage.getItem('siteBgStyle');
+      if (storedAccent) setAccentColor(storedAccent);
+      if (storedFont) setFontFamily(storedFont);
+      if (storedBg === 'grid' || storedBg === 'dots') setBgStyle(storedBg);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -94,7 +109,11 @@ export default function Home() {
       const r = parseInt(rgb.slice(0,2),16), g=parseInt(rgb.slice(2,4),16), b=parseInt(rgb.slice(4,6),16);
       document.documentElement.style.setProperty('--accent-color-rgb', `${r}, ${g}, ${b}`);
     }
+    try { localStorage.setItem('siteAccentColor', accentColor); } catch {}
   }, [accentColor]);
+
+  useEffect(() => { try { localStorage.setItem('siteFontFamily', fontFamily); } catch {} }, [fontFamily]);
+  useEffect(() => { try { localStorage.setItem('siteBgStyle', bgStyle); } catch {} }, [bgStyle]);
 
   useEffect(() => {
     if (selected === 'light') {
@@ -125,6 +144,14 @@ export default function Home() {
       }
       return;
     }
+    if (fileId === 'snake') {
+      const existingSnake = document.querySelector('[data-snake-instance]');
+      if (!existingSnake) {
+        setSnakeTerminalOpen(true);
+        setIsTerminalOpen(true);
+      }
+      return;
+    }
 
     const fileConfig = fileConfigs.find(config => config.id === fileId);
     if (fileConfig && fileConfig.terminalConfig) {
@@ -149,6 +176,7 @@ export default function Home() {
   const handleClosePong = () => {
     setPongTerminalOpen(false);
   };
+  const handleCloseSnake = () => { setSnakeTerminalOpen(false); };
 
   return (
     <motion.main 
@@ -160,13 +188,41 @@ export default function Home() {
       <Head>
         <title>advay chandorkar</title>
         <link rel="shortcut icon" href={selected === 'light' ? '/favicon.png' : '/favicon2.png'} />
+        {/* Preload & load selected fonts if they involve external families */}
+        {fontFamily.includes('Inter') && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+          </>
+        )}
+        {fontFamily.includes('Space Mono') && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+          </>
+        )}
+        {fontFamily.includes('SF Mono') && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
+          </>
+        )}
+        {fontFamily.includes('JetBrains Mono') && (
+          <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        )}
+        {fontFamily.includes('Roboto Mono') && (
+          <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </Head>
       
-      <div className="h-screen w-full bg-neutral-950 relative flex items-center justify-center px-4 sm:px-0"
+  <div className="h-screen w-full bg-neutral-950 relative flex items-center justify-center px-4 sm:px-0"
         style={bgStyle === 'grid' ? { backgroundImage: `linear-gradient(rgba(34,211,238,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.05) 1px, transparent 1px)`, backgroundSize: '40px 40px', fontFamily } : { backgroundImage: `radial-gradient(circle at 1px 1px, rgba(34,211,238,0.14) 1px, transparent 0)`, backgroundSize: '26px 26px', fontFamily }}>
         <motion.div variants={fadeIn} className="relative">
           <motion.h1 
@@ -227,6 +283,12 @@ export default function Home() {
             <PongTerminal
               onClose={handleClosePong}
               headerText="advaychandorkar@personalsite: ~/games/pong"
+            />
+          )}
+          {snakeTerminalOpen && (
+            <SnakeTerminal
+              onClose={handleCloseSnake}
+              headerText="advaychandorkar@personalsite: ~/games/snake"
             />
           )}
         </motion.div>

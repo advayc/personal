@@ -14,6 +14,10 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
   const [gameStarted, setGameStarted] = useState(false);
   const WINNING_SCORE = 10;
+  const [bestDiff, setBestDiff] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    try { return parseInt(localStorage.getItem('pongBestDiff')||'0',10) || 0; } catch { return 0; }
+  });
 
   // Game state
   const paddleHeight = 80;
@@ -87,7 +91,12 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
     if (scores.current.player >= WINNING_SCORE || scores.current.ai >= WINNING_SCORE) {
       setPaused(true);
       onGameEnd(scores.current.player > scores.current.ai ? 'Player' : 'AI');
-      // Reset scores after game ends
+      const diff = scores.current.player - scores.current.ai;
+      setBestDiff(prev => {
+        const newBest = diff > prev ? diff : prev;
+        try { localStorage.setItem('pongBestDiff', String(newBest)); } catch {}
+        return newBest;
+      });
       scores.current = { player: 0, ai: 0 };
     }
   }, [scores.current.player, scores.current.ai, onGameEnd]);
@@ -182,6 +191,13 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
     ctx.textBaseline = 'top';
     ctx.fillText(scores.current.player.toString(), width * 0.25, 40);
     ctx.fillText(scores.current.ai.toString(), width * 0.75, 40);
+    // Best diff indicator
+    if (bestDiff > 0) {
+      ctx.font = '12px monospace';
+      ctx.fillStyle = '#888';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Best +${bestDiff}`, 10, 10);
+    }
 
     // Draw paddles
     ctx.fillStyle = '#FFFFFF';

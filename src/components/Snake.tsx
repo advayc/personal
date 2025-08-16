@@ -17,6 +17,10 @@ const Snake: React.FC<SnakeProps> = ({ width, height, onGameEnd }) => {
   const [food, setFood] = useState<Point>({ x: 15, y: 10 });
   const [score, setScore] = useState(0);
   const [running, setRunning] = useState(true);
+  const [best, setBest] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    try { return parseInt(localStorage.getItem('snakeHighScore')||'0',10) || 0; } catch { return 0; }
+  });
 
   const cols = Math.floor(width / CELL);
   const rows = Math.floor(height / CELL);
@@ -24,12 +28,24 @@ const Snake: React.FC<SnakeProps> = ({ width, height, onGameEnd }) => {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (!running) return;
-      switch (e.key) {
-        case 'ArrowUp': if (dir.y !== 1) setDir({ x: 0, y: -1 }); break;
-        case 'ArrowDown': if (dir.y !== -1) setDir({ x: 0, y: 1 }); break;
-        case 'ArrowLeft': if (dir.x !== 1) setDir({ x: -1, y: 0 }); break;
-        case 'ArrowRight': if (dir.x !== -1) setDir({ x: 1, y: 0 }); break;
-      }
+        switch (e.key) {
+            case 'ArrowUp':
+            case 'w':
+                if (dir.y !== 1) setDir({ x: 0, y: -1 });
+                break;
+            case 'ArrowDown':
+            case 's':
+                if (dir.y !== -1) setDir({ x: 0, y: 1 });
+                break;
+            case 'ArrowLeft':
+            case 'a':
+                if (dir.x !== 1) setDir({ x: -1, y: 0 });
+                break;
+            case 'ArrowRight':
+            case 'd':
+                if (dir.x !== -1) setDir({ x: 1, y: 0 });
+                break;
+        }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
@@ -47,6 +63,11 @@ const Snake: React.FC<SnakeProps> = ({ width, height, onGameEnd }) => {
         ) {
           setRunning(false);
           onGameEnd?.(score);
+          setBest(prev => {
+            const newBest = Math.max(prev, score);
+            try { localStorage.setItem('snakeHighScore', String(newBest)); } catch {}
+            return newBest;
+          });
           return prev;
         }
         const newSnake = [head, ...prev];
@@ -71,29 +92,46 @@ const Snake: React.FC<SnakeProps> = ({ width, height, onGameEnd }) => {
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
-    ctx.fillStyle = '#111';
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#22D3EE';
+
+    ctx.clearRect(0,0,width,height);
+    ctx.fillStyle = '#0f0f0f';
     ctx.fillRect(0, 0, width, height);
 
-    // grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-    for (let x = 0; x < width; x += CELL) {
-      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,height); ctx.stroke();
+    // subtle grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= width; x += CELL) {
+      ctx.beginPath(); ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,height); ctx.stroke();
     }
-    for (let y = 0; y < height; y += CELL) {
-      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(width,y); ctx.stroke();
+    for (let y = 0; y <= height; y += CELL) {
+      ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(width,y+0.5); ctx.stroke();
     }
 
-    // food
-    ctx.fillStyle = 'var(--accent-color)';
-    ctx.fillRect(food.x * CELL, food.y * CELL, CELL, CELL);
+    // food (apple circle)
+    const fx = food.x * CELL + CELL/2;
+    const fy = food.y * CELL + CELL/2;
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.arc(fx, fy, CELL * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+    // tiny leaf
+    ctx.fillStyle = '#34d399';
+    ctx.beginPath();
+    ctx.ellipse(fx + 2, fy - CELL*0.35, 3, 5, Math.PI/6, 0, Math.PI*2);
+    ctx.fill();
 
     // snake
-    ctx.fillStyle = '#fff';
     snake.forEach((s,i) => {
-      ctx.globalAlpha = 1 - i * 0.035;
-      ctx.fillRect(s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2);
+      const alpha = 1 - i * 0.04;
+      const sx = s.x * CELL;
+      const sy = s.y * CELL;
+      const grad = ctx.createLinearGradient(sx, sy, sx + CELL, sy + CELL);
+      grad.addColorStop(0, 'rgba(255,255,255,'+alpha+')');
+      grad.addColorStop(1, 'rgba(255,255,255,'+Math.max(alpha-0.3,0)+')');
+      ctx.fillStyle = grad;
+      ctx.fillRect(sx+1, sy+1, CELL-2, CELL-2);
     });
-    ctx.globalAlpha = 1;
   }, [snake, food, width, height]);
 
   return (
@@ -102,14 +140,14 @@ const Snake: React.FC<SnakeProps> = ({ width, height, onGameEnd }) => {
       {!running && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white space-y-3 font-mono">
           <div className="text-2xl tracking-tight">Game Over</div>
-          <div className="text-sm">Score: {score}</div>
+          <div className="text-sm">Score: {score} {best>0 && <span className="text-white/40">(Best {best})</span>}</div>
           <button
             onClick={() => { setSnake([{x:10,y:10}]); setDir({x:1,y:0}); setScore(0); setRunning(true); }}
             className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 border border-white/20 text-xs"
           >Restart</button>
         </div>
       )}
-      <div className="absolute top-2 left-2 text-white/60 text-xs font-mono bg-black/40 px-2 py-1 rounded border border-white/10">Score {score}</div>
+  <div className="absolute top-2 left-2 text-white/60 text-xs font-mono bg-black/40 px-2 py-1 rounded border border-white/10">Score {score}{best>0 && ` / ${best}`}</div>
     </div>
   );
 };
