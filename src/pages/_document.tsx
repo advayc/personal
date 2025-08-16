@@ -21,18 +21,12 @@ class MyDocument extends Document {
           <meta property="og:image" content="/meta.png" />
           <meta property="og:site_name" content="Advay Chandorkar" />
           <meta property="og:locale" content="en_US" />
-          
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:title" content="Advay Chandorkar" />
-          <meta name="twitter:description" content="portfolio site" />
-          <meta name="twitter:image" content="/meta.png" />
-          <meta name="twitter:site" content="@advayc" />
-          <meta name="twitter:creator" content="@advayc" />
-          
+                    
           <meta name="theme-color" content="#22D3EE" />
           
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
+          <meta property="og:image:alt" content="Preview of Advay Chandorkar's developer portfolio" />
           <meta name="mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="default" />
