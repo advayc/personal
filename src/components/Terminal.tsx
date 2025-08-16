@@ -244,12 +244,18 @@ const Terminal: React.FC<TerminalProps> = ({
               <span className="text-gprimary mr-2">$</span>
               <Link href={project.repoUrl}>{project.title}</Link>
               {project.projectLink && (
-                <span className="ml-2 text-xs text-white/40">[
+                <span className="ml-2 text-xs text-white/40 mr-4">[
                   <a
                     href={project.projectLink}
                     target="_blank"
                     className="text-[var(--accent-color)] hover:underline"
                   >live</a>]</span>
+                  <span className="ml-2 text-xs text-white/40 mr-4">[
+                  <a
+                    href={project.repoUrl}
+                    target="_blank"
+                    className="text-[var(--accent-color)] hover:underline"
+                  >repository</a>]</span>
               )}
               {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="cursor"></span>}
             </div>
