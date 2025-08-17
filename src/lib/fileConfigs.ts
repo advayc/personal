@@ -86,6 +86,13 @@ export const fileConfigs = [
           technologies: "NextJS, Typescript, Gemeni"
         },
         {
+          title: "nums",
+          description: "Custom Go HTTP API to count website visits",
+          projectLink: "https://sitemaker-beta.vercel.app/",
+          repoUrl: "https://github.com/advayc/nums",
+          technologies: "Golang (Go), cURL, Vercel"
+        },
+        {
           title: "Notes App",
           description: "Notes app built in typescript with supabase authentication",
           projectLink: "https://advayc-notes.vercel.app/",
