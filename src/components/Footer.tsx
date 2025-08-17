@@ -5,6 +5,8 @@ import { IoColorPaletteOutline } from "react-icons/io5";
 import Link from 'next/link';
 import { useSelectionBox, isElementInSelectionBox } from '@/components/SelectionContext';
 
+import HitCounter from './HitCounter';
+
 type ToggleOptionsType = 'dark' | 'light';
 
 interface FooterProps {
@@ -110,6 +112,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                 backdropFilter: 'blur(2px)'
             }}
         >
+            
                         <div className="flex items-center justify-between h-12">
                             <div className="w-[200px]" />
                 
@@ -209,7 +212,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                 </div>
                 
                 <div className="w-[200px] flex justify-end pr-3">
-                    <div className="flex flex-col items-end">
+                    <div className="flex flex-col items-end gap-1">
                         <span className="font-medium text-sm text-white/80">{currentTime}</span>
                         <span className="text-xs text-white/60">{currentDate}</span>
                     </div>

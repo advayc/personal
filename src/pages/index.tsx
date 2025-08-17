@@ -14,6 +14,7 @@ import PongTerminal from "@/components/PongTerminal";
 import SnakeTerminal from "@/components/SnakeTerminal";
 import CommandPalette from "@/components/CommandPalette";
 import ShortcutHint from "@/components/ShortcutHint";
+import HitCounter from '@/components/HitCounter';
 
 // const inter = Inter({ subsets: ["latin"] });
 type ToggleOptionsType = 'dark' | 'light';
@@ -247,9 +248,12 @@ export default function Home() {
               <p className="mt-1">
                 To learn more about me, click the files! - or view my resume <Link href="/resume.pdf">here</Link>.
               </p>
+              <div className="mt-2">
+                <HitCounter id="home" variant="hero" fontFamily={fontFamily} />
+              </div>
             </div>
           </motion.div>
-          <div className="absolute left-1/2 transform -translate-x-1/2 mt-4 flex gap-4 flex-wrap justify-center max-w-[90vw]">
+          <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-4 flex-wrap justify-center max-w-[90vw]">
             {fileConfigs.map((fileConfig) => (
               <File
                 key={fileConfig.id}
@@ -281,14 +285,14 @@ export default function Home() {
           ))}
           {pongTerminalOpen && (
             <PongTerminal
-              onClose={handleClosePong}
-              headerText="advaychandorkar@personalsite: ~/games/pong"
+            onClose={handleClosePong}
+            headerText="advaychandorkar@personalsite: ~/games/pong"
             />
           )}
           {snakeTerminalOpen && (
             <SnakeTerminal
-              onClose={handleCloseSnake}
-              headerText="advaychandorkar@personalsite: ~/games/snake"
+            onClose={handleCloseSnake}
+            headerText="advaychandorkar@personalsite: ~/games/snake"
             />
           )}
         </motion.div>
