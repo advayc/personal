@@ -18,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (!SECRET_TOKEN) {
+    console.error('Missing HIT_COUNTER_SECRET_TOKEN environment variable');
     return res.status(500).json({ error: 'Server misconfiguration (missing secret)' });
   }
 
@@ -29,15 +30,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // helper to fetch & parse with graceful JSON handling
   const hitFetch = async (endpoint: string) => {
     const url = `${endpoint}?id=${encodeURIComponent(id)}`;
+    console.log(`Hitting counter at: ${endpoint} for id: ${id}`);
+    
     const resp = await fetch(url, {
       method: req.method,
       headers: { 'X-Auth-Token': SECRET_TOKEN },
       cache: 'no-store'
     });
+    
     let json: any = null;
     const ctype = resp.headers.get('content-type') || '';
     if (ctype.includes('application/json')) {
-      try { json = await resp.json(); } catch { json = null; }
+      try { 
+        json = await resp.json(); 
+        console.log('Response:', json);
+      } catch (e) { 
+        console.error('Failed to parse JSON:', e);
+        json = null; 
+      }
     } else if (resp.ok) {
       // If upstream changes to non-JSON but ok, fabricate minimal shape.
       json = { hits: null };
@@ -50,6 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Retry once by forcing canonical /hit if first attempt failed (e.g., misconfigured env without /hit)
     if (!resp.ok && resp.status === 404) {
+      console.log('404 response, retrying with canonical endpoint');
       const forced = normalizeHitEndpoint(RAW_BASE);
       if (forced !== HIT_ENDPOINT) {
         HIT_ENDPOINT = forced; // update cached
@@ -58,6 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (!resp.ok) {
+      console.error(`Upstream error: ${resp.status}`, json);
       return res.status(resp.status).json(json || { error: 'Upstream error' });
     }
 

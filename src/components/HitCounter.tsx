@@ -39,21 +39,58 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
 
   useEffect(() => {
     if (incrementedRef.current) return;
-    incrementedRef.current = true;
-    const method = initiallyFetchOnly ? 'GET' : 'POST';
-    (async () => {
+    
+    // First, increment the count
+    const incrementCount = async () => {
       try {
-        const res = await fetch(`/api/hit?id=${encodeURIComponent(id)}`, { method, cache: 'no-store' });
-        const json = await res.json();
-        if (res.ok && typeof json.hits === 'number') {
-          setHits(json.hits);
-        } else {
-          console.error('Hit counter error', json);
+        if (!initiallyFetchOnly) {
+          const res = await fetch(`/api/hit?id=${encodeURIComponent(id)}`, { 
+            method: 'GET', // Use GET for simplicity with the API
+            cache: 'no-store',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          });
+          
+          if (res.ok) {
+            const json = await res.json();
+            if (typeof json.hits === 'number') {
+              setHits(json.hits);
+              incrementedRef.current = true;
+              return;
+            }
+          }
+          console.error('Failed to increment hit count:', await res.text());
         }
       } catch (e) {
-        console.error('Failed to load hits', e);
+        console.error('Failed to increment hit count:', e);
       }
-    })();
+      
+      // If increment fails or initiallyFetchOnly is true, just fetch the count
+      fetchCount();
+    };
+    
+    // Fetch the count without incrementing
+    const fetchCount = async () => {
+      try {
+        const res = await fetch(`/api/count?id=${encodeURIComponent(id)}`, { 
+          cache: 'no-store',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        
+        if (res.ok) {
+          const json = await res.json();
+          if (typeof json.hits === 'number') {
+            setHits(json.hits);
+            incrementedRef.current = true;
+            return;
+          }
+        }
+        console.error('Failed to fetch hit count:', await res.text());
+      } catch (e) {
+        console.error('Failed to fetch hit count:', e);
+      }
+    };
+    
+    incrementCount();
   }, [id, initiallyFetchOnly]);
 
   const animated = useAnimatedNumber(hits);
