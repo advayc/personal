@@ -12,6 +12,7 @@ import {fileConfigs} from '@/lib/fileConfigs';
 import { calculateAge } from '@/utils/age';
 import PongTerminal from "@/components/PongTerminal";
 import SnakeTerminal from "@/components/SnakeTerminal";
+import DrawTerminal from "@/components/DrawTerminal";
 import CommandPalette from "@/components/CommandPalette";
 import ShortcutHint from "@/components/ShortcutHint";
 import HitCounter from '@/components/HitCounter';
@@ -73,6 +74,7 @@ export default function Home() {
   const [terminals, setTerminals] = useState<TerminalState[]>([]);
   const [pongTerminalOpen, setPongTerminalOpen] = useState(false);
   const [snakeTerminalOpen, setSnakeTerminalOpen] = useState(false);
+  const [drawTerminalOpen, setDrawTerminalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   // persisted settings
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
@@ -153,6 +155,14 @@ export default function Home() {
       }
       return;
     }
+    if (fileId === 'draw') {
+      const existingDraw = document.querySelector('[data-draw-instance]');
+      if (!existingDraw) {
+        setDrawTerminalOpen(true);
+        setIsTerminalOpen(true);
+      }
+      return;
+    }
 
     const fileConfig = fileConfigs.find(config => config.id === fileId);
     if (fileConfig && fileConfig.terminalConfig) {
@@ -178,6 +188,7 @@ export default function Home() {
     setPongTerminalOpen(false);
   };
   const handleCloseSnake = () => { setSnakeTerminalOpen(false); };
+  const handleCloseDraw = () => { setDrawTerminalOpen(false); };
 
   return (
     <motion.main 
@@ -293,6 +304,12 @@ export default function Home() {
             <SnakeTerminal
             onClose={handleCloseSnake}
             headerText="advaychandorkar@personalsite: ~/games/snake"
+            />
+          )}
+          {drawTerminalOpen && (
+            <DrawTerminal
+              onClose={handleCloseDraw}
+              headerText="draw.exe"
             />
           )}
         </motion.div>

@@ -36,14 +36,14 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
   const [dragConstraints, setDragConstraints] = useState({
     left: 0,
     top: 0,
-    right: window.innerWidth - 600,
-    bottom: window.innerHeight - 432
+    right: window.innerWidth - 560,
+    bottom: window.innerHeight - 392
   });
 
   useEffect(() => {
     const updateConstraints = () => {
-      const terminalWidth = isMaximized ? 862 : 600;
-      const terminalHeight = isMaximized ? 700 : 400;
+  const terminalWidth = isMaximized ? 862 : 560;
+  const terminalHeight = isMaximized ? 700 : 360;
       setDragConstraints({
         left: 0,
         top: 0,
@@ -145,9 +145,9 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
           ? "hidden"
           : isMaximized
           ? "w-[862px] h-[700px]"
-          : "w-[600px] h-[400px]"
+          : "w-[560px] h-[360px]"
       } rounded-lg fixed z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90 overflow-hidden focus:outline-none`}
-      initial={{ opacity: 0, scale: 0.95, top: 64, left: 64 }}
+      initial={{ opacity: 0, scale: 0.95, top: 32, left: 64 }}
       animate={
         isClosing 
           ? { 
@@ -168,7 +168,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
       drag
       dragMomentum={false}
       dragElastic={0}
-      dragConstraints={{ left: 0, top: 0, right: window.innerWidth - 600, bottom: window.innerHeight - 400 }}
+  dragConstraints={dragConstraints}
       whileDrag={{ cursor: "grabbing" }}
       data-pong-instance
     >
@@ -238,8 +238,8 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
             className="mt-4 overflow-hidden bg-transparent"
           >
             <Pong 
-              width={isMaximized ? 800 : 550} 
-              height={isMaximized ? 600 : 300}
+              width={isMaximized ? 800 : 520} 
+              height={isMaximized ? 600 : 280}
               onGameEnd={handleGameEnd}
             />
           </motion.div>

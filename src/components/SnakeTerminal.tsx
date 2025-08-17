@@ -15,13 +15,19 @@ const SnakeTerminal: React.FC<SnakeTerminalProps> = ({ onClose, headerText }) =>
 
   const handleClose = () => { onClose(); setIsTerminalOpen(false); };
 
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, []);
+
   return (
     <motion.div
-      className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': isMaximized? 'w-[862px] h-[700px]':'w-[600px] h-[400px]'} rounded-lg fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/90 overflow-hidden`}
-      initial={{ opacity: 0, scale: 0.95, top: 64, left: 64 }}
+      className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': isMaximized? 'w-[862px] h-[700px]':'w-[560px] h-[360px]'} rounded-lg fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/90 overflow-hidden`}
+      initial={{ opacity: 0, scale: 0.95, top: 32, left: 64 }}
       animate={{ opacity: 1, scale: 1 }}
       drag dragMomentum={false} dragElastic={0}
-      dragConstraints={{ left: 0, top: 0, right: window.innerWidth - 600, bottom: window.innerHeight - 400 }}
+      dragConstraints={{ left: 0, top: 0, right: window.innerWidth - 560, bottom: window.innerHeight - 360 }}
       whileDrag={{ cursor: 'grabbing' }}
       data-snake-instance
     >
@@ -36,8 +42,8 @@ const SnakeTerminal: React.FC<SnakeTerminalProps> = ({ onClose, headerText }) =>
           <span className="font-medium text-[13px]">{headerText}</span>
         </div>
       </div>
-      <div className="p-4 bg-[#151515] flex items-center justify-center" style={{height: isMaximized? 'calc(100% - 32px)' : '368px'}}>
-        <Snake width={isMaximized? 800: 550} height={isMaximized? 600: 300} />
+      <div className="p-4 bg-[#151515] flex items-center justify-center" style={{height: isMaximized? 'calc(100% - 32px)' : '328px'}}>
+        <Snake width={isMaximized? 800: 520} height={isMaximized? 600: 280} />
       </div>
     </motion.div>
   );

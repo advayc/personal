@@ -154,4 +154,16 @@ export const fileConfigs = [
     filename: 'snake.exe',
     imageSrc: '/icons/msn3.png'
   }
+  ,
+  {
+    id: 'draw',
+    filename: 'draw.exe',
+    imageSrc: '/icons/draw.png',
+    terminalConfig: {
+      headerText: "advaychandorkar@personalsite: ~/personal/draw (vim)",
+      pathText: "~/personal/draw",
+      branchText: "main ✔",
+      infoText: "create something cool!"
+    }
+  }
 ];

@@ -37,6 +37,11 @@ export default function File({
       if (!existingPong) {
         setWindowOpen(true);
       }
+    } else if (filename === 'draw.exe') {
+      const existingDraw = document.querySelector('[data-draw-instance]');
+      if (!existingDraw) {
+        setWindowOpen(true);
+      }
     } else {
       setWindowOpen(true);
     }
