@@ -23,8 +23,9 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
   const dragControls = useDragControls();
 
   // Larger default drawing surface inside terminal; terminal container will size around this
-  const width = isMaximized ? 1150 : 870; // increased width by 50
-  const height = isMaximized ? 560 : 460; // lowered height by additional 40
+  // Reduced expanded (maximized) size per request; slightly smaller default as well
+  const width = isMaximized ? 900 : 760;
+  const height = isMaximized ? 480 : 360;
 
   const pushHistory = useCallback(() => {
     const canvas = canvasWrapperRef.current?.querySelector('canvas');
@@ -137,26 +138,26 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
 
   const handleClose = () => { onClose(); setIsTerminalOpen(false); };
 
-  const handleContainerPointerDown = (e: React.PointerEvent) => {
-    const header = (e.target as HTMLElement).closest('.draw-header');
-    if (header) {
-      dragControls.start(e);
-    }
+  // Start drag ONLY when the header is grabbed
+  const handleHeaderPointerDown = (e: React.PointerEvent) => {
+    dragControls.start(e);
   };
 
   return (
     <motion.div
       className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': ''} fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/95 rounded-lg shadow-lg shadow-black/40`}
-  style={{ width: width + 40, height: height + 140, top: 40, left: 96, touchAction: 'none' }}
+      style={{ width: width + 40, height: height + 140, top: 40, left: 96, touchAction: 'none' }}
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       data-draw-instance
-      drag={false}
+      drag={true}
       dragControls={dragControls}
       dragListener={false}
-      onPointerDown={handleContainerPointerDown}
     >
-      <div className="draw-header flex items-center justify-between bg-white text-white px-4 py-2 cursor-move select-none rounded-t">
+      <div
+        className="draw-header flex items-center justify-between bg-white text-black px-4 py-2 cursor-move select-none rounded-t"
+        onPointerDown={handleHeaderPointerDown}
+      >
         <div className="flex space-x-2">
           <div className="w-3 h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 cursor-pointer" onClick={handleClose} />
           <div className="w-3 h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)} />
