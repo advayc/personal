@@ -254,7 +254,7 @@ export default function Home() {
               </p>
               <p className="mt-1">
                 Currently, I'm a grade 11 IB student and
-                at the moment, I'm working on <Link href="https://futuremd.tech/">FutureMD</Link>.
+                at the moment, I'm working on <Link href="https://futuremd.net/">FutureMD</Link>.
               </p>
               <p className="mt-1">
                 To learn more about me, click the files! - or view my resume <Link href="/resume.pdf">here</Link>.
