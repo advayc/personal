@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 // import { Inter } from "next/font/google";
 import { motion } from "framer-motion";
 import Terminal from "@/components/Terminal";
@@ -138,7 +138,7 @@ export default function Home() {
     visible: { opacity: 1, transition: { duration: 0.9 } }
   };
 
-  const openTerminal = (fileId: string) => {
+  const openTerminal = useCallback((fileId: string) => {
     if (fileId === 'pong') {
       const existingPong = document.querySelector('[data-pong-instance]');
       if (!existingPong) {
@@ -188,13 +188,19 @@ export default function Home() {
       setTerminals([...terminals, newTerminal]);
       setIsTerminalOpen(true);
     }
-  };
+  }, [terminals, setIsTerminalOpen]);
 
-  const handleClosePong = () => {
+  const handleClosePong = useCallback(() => {
     setPongTerminalOpen(false);
-  };
-  const handleCloseSnake = () => { setSnakeTerminalOpen(false); };
-  const handleCloseDraw = () => { setDrawTerminalOpen(false); };
+  }, []);
+  
+  const handleCloseSnake = useCallback(() => { 
+    setSnakeTerminalOpen(false); 
+  }, []);
+  
+  const handleCloseDraw = useCallback(() => { 
+    setDrawTerminalOpen(false); 
+  }, []);
 
   return (
     <motion.main 
