@@ -21,6 +21,14 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
   const { setIsTerminalOpen } = useTerminal();
   const dragControls = useDragControls();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const evalMobile = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 700);
+    evalMobile();
+    window.addEventListener('resize', evalMobile);
+    return () => window.removeEventListener('resize', evalMobile);
+  }, []);
 
   // Larger default drawing surface inside terminal; terminal container will size around this
   // Reduced expanded (maximized) size per request; slightly smaller default as well
@@ -145,17 +153,17 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
 
   return (
     <motion.div
-      className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': ''} fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/95 rounded-lg shadow-lg shadow-black/40`}
-      style={{ width: width + 40, height: height + 140, top: 40, left: 96, touchAction: 'none' }}
+      className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': ''} fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/95 ${isMobile ? 'w-screen h-[75vh] rounded-none border-x-0' : 'rounded-lg'} shadow-lg shadow-black/40`}
+      style={{ width: isMobile ? undefined : width + 40, height: isMobile ? undefined : height + 140, top: isMobile ? 0 : 40, left: isMobile ? 0 : 96, touchAction: 'none' }}
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       data-draw-instance
-      drag={true}
+      drag={!isMobile}
       dragControls={dragControls}
       dragListener={false}
     >
       <div
-        className="draw-header flex items-center justify-between bg-white text-black px-4 py-2 cursor-move select-none rounded-t"
+        className={`draw-header flex items-center justify-between bg-white text-black px-4 py-2 cursor-move select-none ${isMobile ? '' : 'rounded-t'}`}
         onPointerDown={handleHeaderPointerDown}
       >
         <div className="flex space-x-2">
@@ -167,7 +175,7 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
           <span className="font-medium">advaychandorkar@personalsite: ~/personal/{mode === 'whiteboard' ? 'whiteboard' : 'draw'} mode</span>
         </div>
       </div>
-      <div className="flex flex-col bg-[#0e0e0e] h-full">
+  <div className="flex flex-col bg-[#0e0e0e] h-full">
         <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-white/5 bg-[#141414] select-none">
           <button onClick={toggleMode} className={`px-2 py-1 rounded text-xs font-semibold transition ${mode==='whiteboard'? 'bg-white text-black':'bg-[var(--accent-color)] text-black'}`} title="Shift+W toggle mode">{mode==='whiteboard'?'Whiteboard':'Draw'}</button>
           <div className="flex items-center gap-1">
@@ -243,10 +251,10 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
             <button onClick={saveImage} className="px-3 py-1 text-xs rounded bg-[var(--accent-color)] text-black font-semibold shadow hover:brightness-110">save</button>
           </div>
         </div>
-  <div ref={canvasWrapperRef} className="flex-1 flex items-center justify-center p-6 select-none" onPointerDown={(e) => { if (e.target instanceof HTMLDivElement) e.stopPropagation(); }}>
+        <div ref={canvasWrapperRef} className="flex-1 flex items-center justify-center p-3 md:p-6 select-none" onPointerDown={(e) => { if (e.target instanceof HTMLDivElement) e.stopPropagation(); }}>
           <Draw
-            width={width}
-            height={height}
+            width={isMobile ? Math.min(window.innerWidth - 32, 600) : width}
+            height={isMobile ? Math.min(400, Math.floor(window.innerHeight * 0.45)) : height}
             backgroundColor={backgroundColor}
             activeTool={activeTool}
             activeColor={activeColor}
@@ -257,6 +265,12 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
           />
         </div>
       </div>
+      {isMobile && (
+        <div className="w-full bg-[#111111] text-[10px] text-center py-1 border-t border-white/5 flex items-center justify-center gap-4">
+          <button onClick={() => setIsMaximized(!isMaximized)} className="px-2 py-1 rounded bg-zinc-800 text-white/80 hover:bg-zinc-700 text-[10px]">{isMaximized ? 'shrink' : 'expand'}</button>
+          <button onClick={handleClose} className="px-2 py-1 rounded bg-zinc-800 text-white/80 hover:bg-zinc-700 text-[10px]">close</button>
+        </div>
+      )}
     </motion.div>
   );
 };

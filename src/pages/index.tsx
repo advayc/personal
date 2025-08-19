@@ -309,7 +309,7 @@ export default function Home() {
           {drawTerminalOpen && (
             <DrawTerminal
               onClose={handleCloseDraw}
-              headerText="draw.exe"
+              headerText="advaychandorkar@personalsite: ~/games/draw.exe"
             />
           )}
         </motion.div>

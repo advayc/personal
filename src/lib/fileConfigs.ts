@@ -82,13 +82,12 @@ export const fileConfigs = [
           description: "Turn your resume into a full personal website",
           // projectLink is an optional live / demo URL for the project (add or edit freely)
           projectLink: "https://sitemaker-beta.vercel.app/",
-          repoUrl: "https://sitemaker-beta.vercel.app/",
+          repoUrl: "https://github.com/advayc/sitemaker",
           technologies: "NextJS, Typescript, Gemeni"
         },
         {
           title: "nums",
           description: "Custom Go HTTP API to count website visits",
-          projectLink: "https://sitemaker-beta.vercel.app/",
           repoUrl: "https://github.com/advayc/nums",
           technologies: "Golang (Go), cURL, Vercel"
         },
@@ -109,7 +108,6 @@ export const fileConfigs = [
         {
           title: "Graph Visualizer",
           description: "Python functions to visualize weighted and unweighted graphs and paths using Matplotlib and Networkx libraries.",
-          projectLink: "https://github.com/advayc/graph-visualizer",
           repoUrl: "https://github.com/advayc/graph-visualizer",
           technologies: "Python, Matplotlib, Networkx"
         },
@@ -123,21 +121,18 @@ export const fileConfigs = [
         {
           title: "LCD Calculator",
           description: "ATMEGA 324PA microcontroller-based calculator with LCD display and ADC input.",
-          projectLink: "https://github.com/advayc/calculator",
           repoUrl: "https://github.com/advayc/calculator",
           technologies: "Arduino, C++, electronics"
         },
         {
           title: "Rhymebot",
           description: "Elevate your writing with the ultimate rhyming, synonym, and antonym companion. Craft masterpieces anytime, anywhere with ease.",
-          projectLink: "https://github.com/advayc/rhymebot",
           repoUrl: "https://github.com/advayc/rhymebot",
           technologies: "Javascript, HTML, CSS"
         },
         {
           title: "Humanoid Robot",
           description: "Walking and dancing humanoid robot using 7 servo motors and custom Arduino nano board.",
-          projectLink: "https://github.com/advayc/Biped",
           repoUrl: "https://github.com/advayc/Biped",
           technologies: "Arduino, C++, electronics"
         }

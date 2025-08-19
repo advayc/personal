@@ -64,6 +64,17 @@ const Terminal: React.FC<TerminalProps> = ({
   const inputRef = useRef<HTMLDivElement>(null);
   const { isTerminalOpen } = useTerminal();
   const [pongInstanceExists, setPongInstanceExists] = useState(false);
+  // Track window-centered starting position (adjusted per terminal type)
+  const [position, setPosition] = useState({ x: 64, y: 64 });
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile (simple viewport width check + resize listener)
+  useEffect(() => {
+    const evalMobile = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 700);
+    evalMobile();
+    window.addEventListener('resize', evalMobile);
+    return () => window.removeEventListener('resize', evalMobile);
+  }, []);
 
   useEffect(() => {
     if (isPong) {
@@ -219,12 +230,34 @@ const Terminal: React.FC<TerminalProps> = ({
         right: window.innerWidth - terminalWidth,
         bottom: window.innerHeight - terminalHeight - 32 // Reduced bottom constraint
       });
+      // Recenter logic when maximizing/minimizing or on resize
+      // Always center all terminals
+      if (typeof window !== 'undefined') {
+        const baseX = Math.max(0, (window.innerWidth - terminalWidth) / 2);
+        const baseY = Math.max(24, (window.innerHeight - terminalHeight) / 3);
+        setPosition(prev => {
+          // Only auto-adjust if user hasn't dragged far (heuristic: still near previous auto center)
+          const movedFar = Math.hypot(prev.x - baseX, prev.y - baseY) > 200;
+          return movedFar ? prev : { x: baseX, y: baseY };
+        });
+      }
     };
 
     updateConstraints();
     window.addEventListener('resize', updateConstraints);
     return () => window.removeEventListener('resize', updateConstraints);
   }, [isMaximized]);
+
+  // Initial center on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const terminalWidth = isMaximized ? 862 : 600;
+    const terminalHeight = isMaximized ? 700 : 400;
+    const baseX = Math.max(0, (window.innerWidth - terminalWidth) / 2);
+    const baseY = Math.max(24, (window.innerHeight - terminalHeight) / 3);
+    setPosition({ x: baseX, y: baseY });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const selectedLineStyle = {
     backgroundColor: 'rgba(0, 255, 247, 0.175)',
@@ -242,23 +275,17 @@ const Terminal: React.FC<TerminalProps> = ({
               style={selectedLine === index + 2 ? selectedLineStyle : {}}
             >
               <span className="text-gprimary mr-2">$</span>
-              <Link href={project.repoUrl}>{project.title}</Link>
-              {project.projectLink && (
-                <div className="inline-flex">
-                  <span className="ml-2 text-xs text-white/40 mr-4">[
-                    <a
-                      href={project.projectLink}
-                      target="_blank"
-                      className="text-[var(--accent-color)] hover:underline"
-                    >live</a>]</span>
-                  <span className="ml-2 text-xs text-white/40 mr-4">[
-                    <a
-                      href={project.repoUrl}
-                      target="_blank"
-                      className="text-[var(--accent-color)] hover:underline"
-                    >repository</a>]</span>
-                </div>
-              )}
+              <Link href={project.projectLink || project.repoUrl}>{project.title}</Link>
+              <span className="ml-4 text-xs text-white/40">[
+                <a
+                  href={project.repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--accent-color)] hover:underline"
+                >
+                  repository
+                </a>
+              ]</span>
               {cursorPosition.y === index + 2 && cursorPosition.x === 0 && <span className="cursor"></span>}
             </div>
             <div className="text-gray-300 mt-1 ml-8">{project.description}</div>
@@ -297,6 +324,10 @@ const Terminal: React.FC<TerminalProps> = ({
 
   const handleKeyPress = (e: KeyboardEvent) => {
     if (isPong) {
+      if (e.key === 'Escape') {
+        handleClose();
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
     }
@@ -307,7 +338,7 @@ const Terminal: React.FC<TerminalProps> = ({
       window.addEventListener('keydown', handleKeyPress, true);
       return () => window.removeEventListener('keydown', handleKeyPress, true);
     }
-  }, [isPong]);
+  }, [isPong, handleClose]);
 
   const handleTerminalInput = (e: React.KeyboardEvent) => {
     if (!isPong || showPong) return;
@@ -422,35 +453,32 @@ const Terminal: React.FC<TerminalProps> = ({
   return (
     <motion.div
       className={`terminal-container ${inter.className} transition-all duration-300 ease-out ${
-        isMinimized
-          ? "hidden"
-          : isMaximized
-          ? "w-[862px] h-[700px]"
-          : "w-[600px] h-[400px]"
-      } rounded-lg fixed z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90 overflow-hidden`}
-      initial={{ opacity: 0, scale: 0.95, top: 64, left: 64 }}
+        isMinimized ? 'hidden' : isMobile ? 'w-screen h-[70vh]' : (isMaximized ? 'w-[862px] h-[700px]' : 'w-[600px] h-[400px]')
+      } ${isMobile ? 'rounded-none border-x-0' : 'rounded-lg'} fixed z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90 overflow-hidden`}
+      style={{ top: isMobile ? 0 : position.y, left: isMobile ? 0 : position.x }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
-      drag
+      drag={!isMobile}
       dragMomentum={false}
       dragElastic={0}
-      dragConstraints={{ left: 0, top: 0, right: window.innerWidth - 600, bottom: window.innerHeight - 400 }}
+      dragConstraints={isMobile ? undefined : { left: 0, top: 0, right: window.innerWidth - 600, bottom: window.innerHeight - 400 }}
       whileDrag={{ cursor: "grabbing" }}
     >
       <div 
-        className="handle flex items-center justify-between bg-zinc-200 text-white px-4 py-1 rounded-t-lg cursor-move"
+        className={`handle flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move`}
       >
         <div className="flex space-x-2">
           <div
-            className="w-3 h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 transition-colors duration-200 cursor-pointer no-drag"
+            className="w-3 h-3 md:w-3 md:h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 transition-colors duration-200 cursor-pointer no-drag"
             onClick={handleClose}
           ></div>
           <div
-            className="w-3 h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 transition-colors duration-200 cursor-pointer no-drag"
+            className="w-3 h-3 md:w-3 md:h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 transition-colors duration-200 cursor-pointer no-drag"
             onClick={handleMinimize}
           ></div>
           <div
-            className="relative w-3 h-3 bg-gprimary rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer no-drag"
+            className="relative w-3 h-3 md:w-3 md:h-3 bg-gprimary rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer no-drag"
             onClick={handleMaximize}
           ></div>
         </div>
@@ -460,6 +488,18 @@ const Terminal: React.FC<TerminalProps> = ({
         </div>
       </div>
       {renderContent()}
+      {isMobile && (
+        <div className="w-full bg-[#111111] text-[10px] text-center py-1 border-t border-white/5 flex items-center justify-center gap-4">
+          <button
+            onClick={handleMaximize}
+            className="px-2 py-1 rounded bg-zinc-800 text-white/80 hover:bg-zinc-700 text-[10px]"
+          >{isMaximized ? 'shrink' : 'expand'}</button>
+          <button
+            onClick={handleClose}
+            className="px-2 py-1 rounded bg-zinc-800 text-white/80 hover:bg-zinc-700 text-[10px]"
+          >close</button>
+        </div>
+      )}
     </motion.div>
   );
 };
