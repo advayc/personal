@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Inter } from "next/font/google";
 import { useTerminal } from './TerminalContext';
 import Link from '@/components/Link';
 import { motion } from "framer-motion";
 import Pong from '@/components/Pong';
+
+// Use system fonts instead of Google Fonts due to network restrictions
+const inter = { className: "font-mono" };
 
 interface Project {
   title: string;
@@ -32,8 +34,6 @@ interface TerminalProps {
   workExperience?: WorkExperience[];
   isPong?: boolean;
 }
-
-const inter = Inter({ subsets: ["latin"] });
 
 const Terminal: React.FC<TerminalProps> = ({
   onClose,

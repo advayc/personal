@@ -166,11 +166,17 @@ export default function Home() {
 
     const fileConfig = fileConfigs.find(config => config.id === fileId);
     if (fileConfig && fileConfig.terminalConfig) {
+      // Calculate center position for the terminal
+      const terminalWidth = 600; // Default terminal width
+      const terminalHeight = 400; // Default terminal height
+      const centerX = (window.innerWidth - terminalWidth) / 2;
+      const centerY = (window.innerHeight - terminalHeight) / 2;
+      
       const newTerminal: TerminalState = {
         id: terminals.length,
         position: { 
-          x: -185,
-          y: -130 + (terminals.length * 80) 
+          x: centerX + (terminals.length * 30), // Slight offset for multiple terminals
+          y: centerY + (terminals.length * 30) 
         },
         headerText: fileConfig.terminalConfig.headerText,
         pathText: fileConfig.terminalConfig.pathText,
@@ -241,7 +247,7 @@ export default function Home() {
             className="text-4xl sm:text-5xl font-bold text-center text-white mb-6 tracking-tight"
             variants={fadeIn}
           >
-            Hi, I'm Advay!
+            Hi, I&apos;m Advay!
           </motion.h1>
           <motion.div 
             className="flex flex-col items-center justify-center space-y-2"
@@ -249,12 +255,12 @@ export default function Home() {
           >
             <div className="flex flex-col leading-relaxed text-primary text-center text-[15px] sm:text-base" style={{fontFamily}}>
               <p>
-                I'm a {AGE}-year-old developer from <Link href={"https://www.google.com/maps/place/Mississauga,+ON,+Canada/@43.5774568,-79.6591567,11z/data=!3m1!4b1!4m6!3m5!1s0x882b469fe76b05b7:0x3146cbed75966db!8m2!3d43.5852972!4d-79.6449838!16zL20vMDE1NGd4?entry=ttu&g_ep=EgoyMDI0MDgyMC4xIKXMDSoASAFQAw%3D%3D"}>
+                I&apos;m a {AGE}-year-old developer from <Link href={"https://www.google.com/maps/place/Mississauga,+ON,+Canada/@43.5774568,-79.6591567,11z/data=!3m1!4b1!4m6!3m5!1s0x882b469fe76b05b7:0x3146cbed75966db!8m2!3d43.5852972!4d-79.6449838!16zL20vMDE1NGd4?entry=ttu&g_ep=EgoyMDI0MDgyMC4xIKXMDSoASAFQAw%3D%3D"}>
                   Mississauga, ON</Link> with a passion for engineering and problem solving.
               </p>
               <p className="mt-1">
-                Currently, I'm a grade 11 IB student and
-                at the moment, I'm working on <Link href="https://futuremd.net/">FutureMD</Link>.
+                Currently, I&apos;m a grade 11 IB student and
+                at the moment, I&apos;m working on <Link href="https://futuremd.net/">FutureMD</Link>.
               </p>
               <p className="mt-1">
                 To learn more about me, click the files! - or view my resume <Link href="/resume.pdf">here</Link>.

@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Inter } from "next/font/google";
 import Pong from '@/components/Pong';
 import { useTerminal } from './TerminalContext';
 
-const inter = Inter({ subsets: ["latin"] });
+// Use system fonts instead of Google Fonts due to network restrictions
+const inter = { className: "font-mono" };
 
 interface PongTerminalProps {
   onClose: () => void;
@@ -147,7 +147,10 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
           ? "w-[862px] h-[700px]"
           : "w-[560px] h-[360px]"
       } rounded-lg fixed z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90 overflow-hidden focus:outline-none`}
-      initial={{ opacity: 0, scale: 0.95, top: 32, left: 64 }}
+      initial={{ opacity: 0, scale: 0.95, 
+        left: (typeof window !== 'undefined' ? (window.innerWidth - (isMaximized ? 862 : 560)) / 2 : 300),
+        top: (typeof window !== 'undefined' ? (window.innerHeight - (isMaximized ? 700 : 360)) / 2 : 150)
+      }}
       animate={
         isClosing 
           ? { 
@@ -211,7 +214,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
               <span className="text-gprimary mr-2 font-mono">$</span>
               <span className="text-yellow-400 font-mono">echo</span>
               <span className="text-primary ml-2 font-mono leading-tight tracking-tight">
-                don't type play;
+                don&apos;t type play;
               </span>
             </div>
 
@@ -268,7 +271,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
               </span>
             )}
             <span className="text-gray-400 mt-2">
-              Type 'play;' to play again
+              Type &apos;play;&apos; to play again
             </span>
           </motion.div>
         )}

@@ -3,9 +3,10 @@ import { motion } from "framer-motion";
 import clsx from "clsx";
 import { useSelectionBox, isElementInSelectionBox } from './SelectionContext';
 import Image from 'next/image';
-import { Inter } from "next/font/google";
 import PongTerminal from './PongTerminal';
-const inter = Inter({ subsets: ["latin"] });
+
+// Use system fonts instead of Google Fonts due to network restrictions
+const inter = { className: "font-mono" };
 
 interface FileProps {
   setWindowOpen: (arg: boolean) => void;

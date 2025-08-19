@@ -24,7 +24,10 @@ const SnakeTerminal: React.FC<SnakeTerminalProps> = ({ onClose, headerText }) =>
   return (
     <motion.div
       className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': isMaximized? 'w-[862px] h-[700px]':'w-[560px] h-[360px]'} rounded-lg fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/90 overflow-hidden`}
-      initial={{ opacity: 0, scale: 0.95, top: 32, left: 64 }}
+      initial={{ opacity: 0, scale: 0.95, 
+        left: typeof window !== 'undefined' ? (window.innerWidth - (isMaximized ? 862 : 560)) / 2 : 300,
+        top: typeof window !== 'undefined' ? (window.innerHeight - (isMaximized ? 700 : 360)) / 2 : 150
+      }}
       animate={{ opacity: 1, scale: 1 }}
       drag dragMomentum={false} dragElastic={0}
       dragConstraints={{ left: 0, top: 0, right: window.innerWidth - 560, bottom: window.innerHeight - 360 }}

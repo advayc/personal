@@ -146,7 +146,13 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
   return (
     <motion.div
       className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': ''} fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/95 rounded-lg shadow-lg shadow-black/40`}
-      style={{ width: width + 40, height: height + 140, top: 40, left: 96, touchAction: 'none' }}
+      style={{ 
+        width: width + 40, 
+        height: height + 140, 
+        left: typeof window !== 'undefined' ? (window.innerWidth - (width + 40)) / 2 : 300,
+        top: typeof window !== 'undefined' ? (window.innerHeight - (height + 140)) / 2 : 150,
+        touchAction: 'none' 
+      }}
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       data-draw-instance
