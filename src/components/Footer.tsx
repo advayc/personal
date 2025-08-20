@@ -30,11 +30,13 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
 
     const linkedInRef = useRef<HTMLAnchorElement>(null);
     const githubRef = useRef<HTMLAnchorElement>(null);
+    const resumeRef = useRef<HTMLAnchorElement>(null);
     const mailRef = useRef<HTMLAnchorElement>(null);
     const colorPickerRef = useRef<HTMLButtonElement>(null);
 
     const [isLinkedInSelected, setIsLinkedInSelected] = useState(false);
     const [isGithubSelected, setIsGithubSelected] = useState(false);
+    const [isResumeSelected, setIsResumeSelected] = useState(false);
     const [isMailSelected, setIsMailSelected] = useState(false);
     const [isColorPickerSelected, setIsColorPickerSelected] = useState(false);
 
@@ -79,6 +81,9 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
       }
       if (githubRef.current) {
         setIsGithubSelected(isElementInSelectionBox(githubRef.current, selectionBox));
+      }
+      if (resumeRef.current) {
+        setIsResumeSelected(isElementInSelectionBox(resumeRef.current, selectionBox));
       }
       if (mailRef.current) {
         setIsMailSelected(isElementInSelectionBox(mailRef.current, selectionBox));
@@ -140,7 +145,10 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                         <FaGithub size={28} />
                     </Link>
                     <Link
-                        className={`transition-all duration-300 rounded-md p-[15px] hover:bg-[var(--accent-color-hover)] text-white/70 hover:text-[var(--accent-color)]`}
+                        ref={resumeRef}
+                        className={`transition-all duration-300 rounded-md p-[15px] hover:bg-[var(--accent-color-hover)] ${
+                            isResumeSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
+                        }`}
                         href="/resume.pdf"
                         target="_blank"
                         rel="noopener noreferrer"
