@@ -80,7 +80,6 @@ export const fileConfigs = [
         {
           title: "Sitemaker",
           description: "Turn your resume into a full personal website",
-          // projectLink is an optional live / demo URL for the project (add or edit freely)
           projectLink: "https://sitemaker-beta.vercel.app/",
           repoUrl: "https://github.com/advayc/sitemaker",
           technologies: "NextJS, Typescript, Gemeni"

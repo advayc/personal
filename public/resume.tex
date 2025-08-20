@@ -1,0 +1,133 @@
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+
+% Font and margin settings
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-0.5in}
+\addtolength{\textheight}{1.0in}
+\setlength{\tabcolsep}{0in}
+\urlstyle{same}
+
+% Section formatting
+\titleformat{\section}{
+  \scshape\large
+}{}{0em}{}[\titlerule]
+
+\raggedbottom
+\raggedright
+
+% Custom commands
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-1pt}\item
+  \begin{tabular*}{1\textwidth}{l@{\extracolsep{\fill}}r}
+    \textbf{#1} & \textit{#2} \\
+    \textit{\small#3} & \textit{\small#4}
+  \end{tabular*}
+}
+
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+
+% Use "-" instead of "*" for resume item lists
+\newcommand{\resumeItemListStart}{\begin{itemize}[label=-]}
+\newcommand{\resumeItemListEnd}{\end{itemize}}
+
+%-------------------------
+% DOCUMENT CONTENT
+%-------------------------
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+    \textbf{\Huge \scshape Advay Chandorkar} \\ \vspace{2pt}
+    \small \href{mailto:advay.chandorkar@gmail.com}{\underline{advay.chandorkar@gmail.com}} $|$ 
+    \href{https://linkedin.com/in/advay}{\underline{linkedin.com/in/advay}} $|$
+    \href{https://github.com/advayc}{\underline{github.com/advayc}} $|$
+    \href{https://advayc.vercel.app/}{\underline{advay.ca}}
+\end{center}
+
+% Education
+\section{Education}
+\resumeSubHeadingListStart
+    \resumeSubheading
+        {Glenforest Secondary School}{Mississauga, ON}
+        {International Baccalaureate (IB), Expected Graduation: 2026}{2022 -- Present}
+\resumeSubHeadingListEnd
+
+% Experience
+\section{Experience}
+\resumeSubHeadingListStart
+    \resumeSubheading
+        {Software Developer}{\href{https://neurotechuoft.ca/}{NeurotechUoft}}
+        {Jun 2025 -- Present}{}
+    \resumeItemListStart
+        \resumeItem{Contributed in a team of three to create frontend and backend for the website.}
+        \resumeItem{Wrote a custom GitHub Actions workflow to ship the Next.js site, managing WHC hosting to connect deployment to the domain.}
+    \resumeItemListEnd
+    \textbf{Skills:} Next.js, TypeScript, Tailwind CSS, Git, React, GitHub Actions
+
+
+    \resumeSubheading
+        {Lead Web Developer}{\href{https://futuremd.net}{FutureMD}}
+        {Jun 2024 -- Present}{}
+    \resumeItemListStart
+        \resumeItem{Developed and maintained the official website for a nonprofit organization using Next.js, TypeScript, and Tailwind CSS.}
+        \resumeItem{Wrote a newsletter system enabling executives to send emails to subscribers efficiently.}
+        \resumeItem{Utilized Next.js dynamic routing to create an updatable blog page through JSON.}
+    \resumeItemListEnd
+    \textbf{Skills:} Next.js, TypeScript, Tailwind CSS, Git, Figma, SEO
+
+    \resumeSubheading
+        {Team Lead}{VEX Robotics (Team 31331B)}
+        {May 2024 -- Present}{}
+    \resumeItemListStart
+        \resumeItem{Led the robotics team to the Ontario Provincial Championship, mentoring members on strategies and technical skills.}
+        \resumeItem{Designed, built, programmed and documented mechanical subsystems for competitions across the province.}
+        \resumeItem{Wrote a PID control algorithm for autonomous robot subsystem control.}
+    \resumeItemListEnd
+    \textbf{Skills:} Python, Leadership, Teamwork, Fusion 360, Git, Communication
+
+% Projects
+\section{Projects}
+\resumeSubHeadingListStart
+    \resumeSubheading
+        {Nums}{\href{https://github.com/advayc/nums}{github.com/advayc/nums}}
+        {Golang, Next.js, Redis}{Aug 2025}
+    \resumeItemListStart
+        \resumeItem{Built a hit counter service with a Go backend and a Next.js API proxy to track and display website page views.}
+        \resumeItem{Implemented endpoints for incrementing counts, retrieving JSON, returning plain numbers, and generating dynamic SVG badges for readmes files.}
+        \resumeItem{Integrated persistent storage through Upstash Redis with fallback to in-memory storage.}
+    \resumeItemListEnd
+    \textbf{Skills:} Golang, REST APIs, Redis, Web Deployment, Git
+
+    \resumeSubheading
+        {Sitemaker}{\href{https://sitemaker-beta.vercel.app/}{sitemaker-beta.vercel.app}}
+        {Next.js, TypeScript, Tailwind CSS}{July 2025}
+    \resumeItemListStart
+        \resumeItem{Created a platform to generate personal websites instantly by uploading resumes or CVs in multiple formats.}
+        \resumeItem{Built a secure pipeline ensuring uploaded data is processed safely and never stored permanently.}
+        \resumeItem{Designed modern, responsive templates to showcase user skills and experience professionally.}
+    \resumeItemListEnd
+    \textbf{Skills:} Next.js, TypeScript, Tailwind CSS, Gemini, Figma
+    \resumeSubHeadingListEnd
+
+\end{document}
