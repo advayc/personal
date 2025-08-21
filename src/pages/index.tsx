@@ -79,7 +79,7 @@ export default function Home() {
   // persisted settings
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
   const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
-  const [bgStyle, setBgStyle] = useState<'grid' | 'dots'>('grid');
+  const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('grid');
 
   // load settings from localStorage
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function Home() {
       const storedBg = localStorage.getItem('siteBgStyle');
       if (storedAccent) setAccentColor(storedAccent);
       if (storedFont) setFontFamily(storedFont);
-      if (storedBg === 'grid' || storedBg === 'dots') setBgStyle(storedBg);
+  if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
     } catch {}
   }, []);
 
@@ -235,7 +235,9 @@ export default function Home() {
       </Head>
       
   <div className="h-screen w-full bg-neutral-950 relative flex items-center justify-center px-4 sm:px-0"
-        style={bgStyle === 'grid' ? { backgroundImage: `linear-gradient(rgba(34,211,238,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.05) 1px, transparent 1px)`, backgroundSize: '40px 40px', fontFamily } : { backgroundImage: `radial-gradient(circle at 1px 1px, rgba(34,211,238,0.14) 1px, transparent 0)`, backgroundSize: '26px 26px', fontFamily }}>
+        style={bgStyle === 'grid' ? { backgroundImage: `linear-gradient(rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px)`, backgroundSize: '40px 40px', fontFamily }
+          : bgStyle === 'dots' ? { backgroundImage: `radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.16) 1px, transparent 0)`, backgroundSize: '26px 26px', fontFamily }
+          : { backgroundImage: 'none', fontFamily }}>
         <motion.div variants={fadeIn} className="relative">
           <motion.h1 
             className="text-4xl sm:text-5xl font-bold text-center text-white mb-6 tracking-tight"

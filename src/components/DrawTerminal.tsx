@@ -16,6 +16,8 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
   const [customColor, setCustomColor] = useState('#ffffff');
   const [customBg, setCustomBg] = useState('#151515');
   const [brushSize, setBrushSize] = useState(2); // default smaller brush per request
+  const [textEntries, setTextEntries] = useState<Array<{x:number;y:number;value:string;id:string}>>([]);
+  const [activeTextId, setActiveTextId] = useState<string | null>(null);
   const [history, setHistory] = useState<ImageData[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
@@ -251,7 +253,20 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
             <button onClick={saveImage} className="px-3 py-1 text-xs rounded bg-[var(--accent-color)] text-black font-semibold shadow hover:brightness-110">save</button>
           </div>
         </div>
-        <div ref={canvasWrapperRef} className="flex-1 flex items-center justify-center p-3 md:p-6 select-none" onPointerDown={(e) => { if (e.target instanceof HTMLDivElement) e.stopPropagation(); }}>
+        <div ref={canvasWrapperRef} className="flex-1 flex items-center justify-center p-3 md:p-6 select-none relative" onPointerDown={(e) => { if (e.target instanceof HTMLDivElement) e.stopPropagation(); }}
+          onDoubleClick={(e) => {
+            if (activeTool !== 'text') return;
+            const wrapper = canvasWrapperRef.current;
+            const canvas = wrapper?.querySelector('canvas');
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const id = crypto.randomUUID();
+            setTextEntries(prev => [...prev, { x, y, value: '', id }]);
+            setActiveTextId(id);
+          }}
+        >
           <Draw
             width={isMobile ? Math.min(window.innerWidth - 32, 600) : width}
             height={isMobile ? Math.min(400, Math.floor(window.innerHeight * 0.45)) : height}
@@ -263,6 +278,53 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
             pushHistory={pushHistory}
             canDraw={!isMinimized}
           />
+      {textEntries.map(t => (
+            <input
+              key={t.id}
+              value={t.value}
+              autoFocus={t.id===activeTextId}
+        aria-label="Drawing text entry"
+        title="Type text and press Enter to place"
+              onChange={e => setTextEntries(prev => prev.map(p => p.id===t.id?{...p,value:e.target.value}:p))}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const canvas = canvasWrapperRef.current?.querySelector('canvas');
+                  if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    if (ctx && t.value.trim()) {
+                      pushHistory();
+                      ctx.save();
+                      ctx.font = `${Math.max(12, brushSize * 4)}px ${'monospace'}`;
+                      ctx.fillStyle = activeColor;
+                      ctx.textBaseline = 'top';
+                      ctx.fillText(t.value, t.x, t.y);
+                      ctx.restore();
+                    }
+                  }
+                  setTextEntries(prev => prev.filter(p => p.id !== t.id));
+                  setActiveTextId(null);
+                } else if (e.key === 'Escape') {
+                  setTextEntries(prev => prev.filter(p => p.id !== t.id));
+                  setActiveTextId(null);
+                }
+              }}
+              style={{
+                position:'absolute',
+                left: t.x,
+                top: t.y,
+                minWidth: 40,
+                background:'rgba(0,0,0,0.6)',
+                color: activeColor,
+                fontFamily:'monospace',
+                fontSize: Math.max(12, brushSize * 4),
+                border:'1px solid rgba(255,255,255,0.2)',
+                padding:'2px 4px',
+                outline:'none',
+                borderRadius:4
+              }}
+            />
+          ))}
         </div>
       </div>
       {isMobile && (

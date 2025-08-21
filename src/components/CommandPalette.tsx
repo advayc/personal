@@ -6,10 +6,10 @@ interface CommandPaletteProps {
   onClose: () => void;
   setAccentColor?: (c: string) => void;
   setFontFamily?: (f: string) => void;
-  setBgStyle?: (s: 'grid' | 'dots') => void;
+  setBgStyle?: (s: 'grid' | 'dots' | 'none') => void;
   accentColor?: string;
   fontFamily?: string;
-  bgStyle?: 'grid' | 'dots';
+  bgStyle?: 'grid' | 'dots' | 'none';
 }
 
 interface ActionItem {
@@ -189,7 +189,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
             <section>
               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Background Style</h4>
               <div className="flex flex-wrap gap-3">
-                {(['grid','dots'] as const).map(s => (
+                {(['grid','dots','none'] as const).map(s => (
                   <button
                     key={s}
                     onClick={() => setBgStyle && setBgStyle(s)}
