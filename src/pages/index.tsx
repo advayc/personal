@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// import { Inter } from "next/font/google";
 import { motion } from "framer-motion";
 import Terminal from "@/components/Terminal";
 import File from "@/components/File";
@@ -17,7 +16,6 @@ import CommandPalette from "@/components/CommandPalette";
 import ShortcutHint from "@/components/ShortcutHint";
 import HitCounter from '@/components/HitCounter';
 
-// const inter = Inter({ subsets: ["latin"] });
 type ToggleOptionsType = 'dark' | 'light';
 
 interface TerminalState {

@@ -26,13 +26,13 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
   const [activeTab, setActiveTab] = useState<'nav' | 'settings'>('nav');
 
   const actions: ActionItem[] = [
-    { id: 'home', label: 'Go to Home', description: 'About me and what I\'m up to', shortcut: 'H', onSelect: () => { window.location.href = '/'; } },
-    { id: 'x', label: 'X Profile', shortcut: 'X', onSelect: () => window.open('https://x.com/advay_0', '_blank') },
-    { id: 'linkedin', label: 'LinkedIn Profile', shortcut: 'L', onSelect: () => window.open('https://www.linkedin.com/in/advay/', '_blank') },
-    { id: 'github', label: 'GitHub Profile', shortcut: 'G', onSelect: () => window.open('https://github.com/advayc', '_blank') },
-    { id: 'resume', label: 'Resume', shortcut: 'R', onSelect: () => window.open('/resume.pdf', '_blank') },
-    { id: 'email', label: 'Email', shortcut: 'E', onSelect: () => window.open('mailto:advay.chandorkar@gmail.com', '_self') },
-    { id: 'repo', label: 'Website Repository', shortcut: 'C', onSelect: () => window.open('https://github.com/advayc/personal', '_blank') }
+    { id: 'home', label: 'Go to Home', description: 'About me and what I\'m up to', shortcut: 'Shift+H', onSelect: () => { window.location.href = '/'; } },
+    { id: 'x', label: 'X Profile', shortcut: 'Shift+X', onSelect: () => window.open('https://x.com/advay_0', '_blank') },
+    { id: 'linkedin', label: 'LinkedIn Profile', shortcut: 'Shift+L', onSelect: () => window.open('https://www.linkedin.com/in/advay/', '_blank') },
+    { id: 'github', label: 'GitHub Profile', shortcut: 'Shift+G', onSelect: () => window.open('https://github.com/advayc', '_blank') },
+    { id: 'resume', label: 'Resume', shortcut: 'Shift+R', onSelect: () => window.open('/resume.pdf', '_blank') },
+    { id: 'email', label: 'Email', shortcut: 'Shift+E', onSelect: () => window.open('mailto:advay.chandorkar@gmail.com', '_self') },
+    { id: 'repo', label: 'Website Repository', shortcut: 'Shift+C', onSelect: () => window.open('https://github.com/advayc/personal', '_blank') }
   ];
 
   const filtered = actions.filter(a => a.label.toLowerCase().includes(query.toLowerCase()));
@@ -55,8 +55,8 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
     if (!isOpen) return;
 
     const handleShortcut = (e: KeyboardEvent) => {
-      const action = actions.find(a => a.shortcut?.toLowerCase() === e.key.toLowerCase());
-      if (action) {
+      const action = actions.find(a => a.shortcut?.toLowerCase() === `shift+${e.key.toLowerCase()}`);
+      if (action && e.shiftKey) {
         e.preventDefault();
         action.onSelect();
       }
@@ -121,7 +121,9 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
                   {a.description && <span className="text-white/45 text-[11px] mt-0.5 leading-snug pl-6">{a.description}</span>}
                 </div>
                 {a.shortcut && (
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-white/60 border border-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">{a.shortcut}</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-white/60 border border-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+                    {a.shortcut.replace('Shift+', '⇧ ')}
+                  </span>
                 )}
               </button>
             ))}
