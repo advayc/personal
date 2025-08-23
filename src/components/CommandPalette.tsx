@@ -24,6 +24,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
   const [query, setQuery] = useState('');
   const [highlighted, setHighlighted] = useState(0);
   const [activeTab, setActiveTab] = useState<'nav' | 'settings'>('nav');
+  const [shiftHeld, setShiftHeld] = useState(false);
 
   const actions: ActionItem[] = [
     { id: 'home', label: 'Go to Home', description: 'About me and what I\'m up to', shortcut: 'Shift+H', onSelect: () => { window.location.href = '/'; } },
@@ -66,11 +67,27 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
     return () => window.removeEventListener('keydown', handleShortcut);
   }, [isOpen, actions]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setShiftHeld(true);
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setShiftHeld(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md p-4" onClick={onClose}>
-  <div className="w-full max-w-[560px] bg-[#121212]/95 border border-white/10 rounded-xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.65)] overflow-hidden ring-1 ring-white/5" onClick={e => e.stopPropagation()} style={{ fontFamily }}>
+  <div className="w-full max-w-[500px] bg-[#121212]/95 border border-white/10 rounded-xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.65)] overflow-hidden ring-1 ring-white/5" onClick={e => e.stopPropagation()} style={{ fontFamily }}>
         <div className="px-5 pt-4 pb-0 border-b border-white/10">
           <div className="flex items-center justify-between">
             <div className="text-white font-medium text-lg flex items-center gap-2">
@@ -121,9 +138,28 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
                   {a.description && <span className="text-white/45 text-[11px] mt-0.5 leading-snug pl-6">{a.description}</span>}
                 </div>
                 {a.shortcut && (
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-white/60 border border-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
-                    {a.shortcut.replace('Shift+', '⇧ ')}
-                  </span>
+                  <div className="flex items-center gap-1 select-none">
+                    {a.shortcut
+                      .toLowerCase()
+                      .split('+')
+                      .filter(part => !(part.trim() === 'shift' && shiftHeld))
+                      .map((part, idx, arr) => {
+                        const isModifier = part.trim() === 'shift';
+                        const capClasses = isModifier
+                          ? 'px-2 py-1 rounded-lg'
+                          : 'min-w-[28px] h-7 rounded-md flex items-center justify-center';
+                        return (
+                          <React.Fragment key={idx}>
+                            <span className={`flex gap-1 text-[11px] font-mono bg-white/5 rounded-md p-1 ${capClasses}`}>
+                              {isModifier ? part.trim() : part.trim().toUpperCase()}
+                            </span>
+                            {idx < arr.length - 1 && (
+                              <span className="text-white/50 text-xs">+</span>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                  </div>
                 )}
               </button>
             ))}

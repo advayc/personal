@@ -1,4 +1,6 @@
 import "@/styles/globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import type { AppProps } from "next/app";
 import { TerminalProvider } from '@/components/TerminalContext';
 import { SelectionBoxProvider } from '@/components/SelectionContext';
@@ -27,7 +29,7 @@ const BIRTH_DATE = new Date('2008-12-16T00:00:00-05:00'); // EST timezone
 const AGE = calculateAge(BIRTH_DATE);
 const SITE_URL = 'https://advayc.vercel.app/';
 const DEFAULT_TITLE = 'Advay Chandorkar | Full Stack Developer';
-const DEFAULT_DESCRIPTION = `${AGE}yo Stack Developer specializing in TypeScript, React, and Next.js. Building innovative web solutions with modern technologies.`;
+const DEFAULT_DESCRIPTION = `${AGE}yo Stack Developer specializing in TypeScript, React, and Next.js.`;
 const DEFAULT_KEYWORDS = 'Advay Chandorkar, Full Stack Developer, Web Development, React, TypeScript, Next.js';
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -91,6 +93,8 @@ export default function App({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </SelectionBoxProvider>
       </TerminalProvider>
+      <SpeedInsights />
+      <Analytics />
     </>
   );
 }
