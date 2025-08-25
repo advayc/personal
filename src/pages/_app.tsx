@@ -27,10 +27,10 @@ function calculateAge(birthDate: Date): number {
 // SEO constants
 const BIRTH_DATE = new Date('2008-12-16T00:00:00-05:00'); // EST timezone
 const AGE = calculateAge(BIRTH_DATE);
-const SITE_URL = 'https://advayc.vercel.app/';
+const SITE_URL = 'https://advayc.ca/';
 const DEFAULT_TITLE = 'Advay Chandorkar | Full Stack Developer';
-const DEFAULT_DESCRIPTION = `${AGE}yo Stack Developer specializing in TypeScript, React, and Next.js.`;
-const DEFAULT_KEYWORDS = 'Advay Chandorkar, Full Stack Developer, Web Development, React, TypeScript, Next.js';
+const DEFAULT_DESCRIPTION = `I'm a ${AGE}yo full stack developer, building things to solve problems`;
+const DEFAULT_KEYWORDS = 'Advay Chandorkar, Full Stack Developer, Web Development, React, TypeScript, Next.js, Golang';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
