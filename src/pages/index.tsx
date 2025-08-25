@@ -50,8 +50,8 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "Person",
   "name": "Advay Chandorkar",
-  "url": "http://advayc.vercel.app/",
-  "image": "http://advayc.vercel.app/meta.png",
+  "url": "https://advay.ca/",
+  "image": "https://advay.ca/meta.png",
   "sameAs": [
     "https://github.com/advayc",
     "https://linkedin.com/in/advay"
@@ -253,8 +253,8 @@ export default function Home() {
                   Mississauga, ON</Link> with a passion for engineering and problem solving.
               </p>
               <p className="mt-1">
-                Currently, I'm a grade 11 IB student and
-                at the moment, I'm working on <Link href="https://futuremd.net/">FutureMD</Link>.
+                Currently, I'm a grade 12 ib student and
+                at the moment, I'm working on <Link href="https://futuremd.net/">sitemaker (website generator)</Link>.
               </p>
               <p className="mt-1">
                 To learn more about me, click the files! - or view my resume <Link href="/resume.pdf">here</Link>.
