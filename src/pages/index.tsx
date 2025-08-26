@@ -256,7 +256,7 @@ export default function Home() {
             className="text-3xl sm:text-5xl font-bold text-center text-white mb-4 sm:mb-6 tracking-tight"
             variants={fadeIn}
           >
-            Hi, I'm Advay!
+            Hi, I'm Advay
           </motion.h1>
           <motion.div 
             className="flex flex-col items-center justify-center space-y-2"
@@ -264,15 +264,15 @@ export default function Home() {
           >
             <div className="flex flex-col leading-relaxed text-primary text-center text-[14px] sm:text-base px-1" style={{fontFamily}}>
               <p>
-                i'm a {AGE}-year-old developer from <Link href={"https://www.google.com/maps/place/Mississauga,+ON,+Canada/@43.5774568,-79.6591567,11z/data=!3m1!4b1!4m6!3m5!1s0x882b469fe76b05b7:0x3146cbed75966db!8m2!3d43.5852972!4d-79.6449838!16zL20vMDE1NGd4?entry=ttu&g_ep=EgoyMDI0MDgyMC4xIKXMDSoASAFQAw%3D%3D"}>
-                  Mississauga, ON</Link> with a passion for engineering and problem solving.
+                i'm a {AGE} year old full-stack developer from <Link href={"https://www.google.com/maps/place/Mississauga,+ON,+Canada/@43.5774568,-79.6591567,11z/data=!3m1!4b1!4m6!3m5!1s0x882b469fe76b05b7:0x3146cbed75966db!8m2!3d43.5852972!4d-79.6449838!16zL20vMDE1NGd4?entry=ttu&g_ep=EgoyMDI0MDgyMC4xIKXMDSoASAFQAw%3D%3D"}>
+                  Mississauga, ON</Link> and i like building things and solving problems
               </p>
               <p className="mt-1">
-                Currently, i'm a grade 12 ib student and
-                I'm working on <Link href="https://sitemaker.advay.ca/">sitemaker</Link>.
+                right now, i'm a grade 12 ib student and
+                i'm working on <Link href="https://sitemaker.advay.ca/">sitemaker</Link>. and <Link href="https://docs.advay.ca/">nums</Link>
               </p>
               <p className="mt-1">
-                To learn more about me, click the files! - or view my resume <Link href="/resume.pdf">here</Link>.
+                to learn more about me, click the files - or view my resume <Link href="/resume.pdf">here</Link>.
               </p>
               <div className="mt-2">
                 <HitCounter id="home" variant="hero" fontFamily={fontFamily} />
