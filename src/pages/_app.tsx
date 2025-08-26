@@ -72,6 +72,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="twitter:url" content={SITE_URL} />
         <meta property="twitter:title" content={DEFAULT_TITLE} />
         <meta property="twitter:description" content={DEFAULT_DESCRIPTION} />
+        <meta property="twitter:image" content="/meta.png" />
         
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />

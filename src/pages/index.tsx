@@ -269,7 +269,7 @@ export default function Home() {
               </p>
               <p className="mt-1">
                 right now, i'm a grade 12 ib student and
-                i'm working on <Link href="https://sitemaker.advay.ca/">sitemaker</Link>. and <Link href="https://docs.advay.ca/">nums</Link>
+                i'm working on <Link href="https://sitemaker.advay.ca/">sitemaker</Link> & <Link href="https://docs.advay.ca/">nums</Link>
               </p>
               <p className="mt-1">
                 to learn more about me, click the files - or view my resume <Link href="/resume.pdf">here</Link>.
