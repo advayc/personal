@@ -87,6 +87,7 @@ export const fileConfigs = [
         {
           title: "nums",
           description: "Custom Go HTTP API to count website visits",
+          projectLink: "https://docs.advay.ca/",
           repoUrl: "https://github.com/advayc/nums",
           technologies: "Golang (Go), cURL, Vercel"
         },
