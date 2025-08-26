@@ -268,6 +268,23 @@ const Pong: React.FC<PongProps> = ({ width, height, onGameEnd }) => {
           setGameStarted(true);
           canvasRef.current?.focus();
         }}
+        onTouchStart={(e) => {
+          setIsFocused(true);
+          setPaused(false);
+          setGameStarted(true);
+          const touch = e.touches[0];
+          if (!touch) return;
+          const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+          const y = touch.clientY - rect.top;
+          gameState.current.playerY = Math.max(0, Math.min(height - paddleHeight, y - paddleHeight / 2));
+        }}
+        onTouchMove={(e) => {
+          const touch = e.touches[0];
+          if (!touch) return;
+          const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+          const y = touch.clientY - rect.top;
+          gameState.current.playerY = Math.max(0, Math.min(height - paddleHeight, y - paddleHeight / 2));
+        }}
         onBlur={() => setIsFocused(false)}
         tabIndex={-1}
       />

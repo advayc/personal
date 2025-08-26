@@ -74,6 +74,7 @@ export default function Home() {
   const [snakeTerminalOpen, setSnakeTerminalOpen] = useState(false);
   const [drawTerminalOpen, setDrawTerminalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   // persisted settings
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
   const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
@@ -100,6 +101,14 @@ export default function Home() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // track mobile viewport
+  useEffect(() => {
+    const check = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 700);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
   // apply accent color + font globally
@@ -137,6 +146,12 @@ export default function Home() {
   };
 
   const openTerminal = (fileId: string) => {
+  // Optional manual override via URL, e.g., ?tx=120&ty=200
+  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const overrideX = params.get('tx');
+  const overrideY = params.get('ty');
+  const manualX = overrideX !== null ? Number(overrideX) : undefined;
+  const manualY = overrideY !== null ? Number(overrideY) : undefined;
     if (fileId === 'pong') {
       const existingPong = document.querySelector('[data-pong-instance]');
       if (!existingPong) {
@@ -164,11 +179,11 @@ export default function Home() {
 
     const fileConfig = fileConfigs.find(config => config.id === fileId);
     if (fileConfig && fileConfig.terminalConfig) {
-      const newTerminal: TerminalState = {
+    const newTerminal: TerminalState = {
         id: terminals.length,
         position: { 
-          x: -185,
-          y: -130 + (terminals.length * 80) 
+      x: typeof manualX === 'number' && !Number.isNaN(manualX) ? manualX : -185,
+      y: typeof manualY === 'number' && !Number.isNaN(manualY) ? manualY : -130 + (terminals.length * 80) 
         },
         headerText: fileConfig.terminalConfig.headerText,
         pathText: fileConfig.terminalConfig.pathText,
@@ -232,13 +247,13 @@ export default function Home() {
         />
       </Head>
       
-  <div className="h-screen w-full bg-neutral-950 relative flex items-center justify-center px-4 sm:px-0"
+  <div className="h-screen w-full bg-neutral-950 relative flex items-center justify-center px-3 sm:px-0"
         style={bgStyle === 'grid' ? { backgroundImage: `linear-gradient(rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px)`, backgroundSize: '40px 40px', fontFamily }
           : bgStyle === 'dots' ? { backgroundImage: `radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.16) 1px, transparent 0)`, backgroundSize: '26px 26px', fontFamily }
           : { backgroundImage: 'none', fontFamily }}>
-        <motion.div variants={fadeIn} className="relative">
+        <motion.div variants={fadeIn} className="relative w-full max-w-[1100px]">
           <motion.h1 
-            className="text-4xl sm:text-5xl font-bold text-center text-white mb-6 tracking-tight"
+            className="text-3xl sm:text-5xl font-bold text-center text-white mb-4 sm:mb-6 tracking-tight"
             variants={fadeIn}
           >
             Hi, I'm Advay!
@@ -247,7 +262,7 @@ export default function Home() {
             className="flex flex-col items-center justify-center space-y-2"
             variants={fadeIn}
           >
-            <div className="flex flex-col leading-relaxed text-primary text-center text-[15px] sm:text-base" style={{fontFamily}}>
+            <div className="flex flex-col leading-relaxed text-primary text-center text-[14px] sm:text-base px-1" style={{fontFamily}}>
               <p>
                 i'm a {AGE}-year-old developer from <Link href={"https://www.google.com/maps/place/Mississauga,+ON,+Canada/@43.5774568,-79.6591567,11z/data=!3m1!4b1!4m6!3m5!1s0x882b469fe76b05b7:0x3146cbed75966db!8m2!3d43.5852972!4d-79.6449838!16zL20vMDE1NGd4?entry=ttu&g_ep=EgoyMDI0MDgyMC4xIKXMDSoASAFQAw%3D%3D"}>
                   Mississauga, ON</Link> with a passion for engineering and problem solving.
@@ -264,12 +279,12 @@ export default function Home() {
               </div>
             </div>
           </motion.div>
-          <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-4 flex-wrap justify-center max-w-[90vw]">
+          <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-3 sm:gap-4 flex-wrap justify-center max-w-[92vw] px-2">
             {fileConfigs.map((fileConfig) => (
               <File
                 key={fileConfig.id}
                 setWindowOpen={() => openTerminal(fileConfig.id)}
-                className="px-2"
+                className="px-1 sm:px-2"
                 filename={fileConfig.filename}
                 imageSrc={fileConfig.imageSrc}
               />
@@ -278,10 +293,9 @@ export default function Home() {
           {terminals.map((terminal) => (
             <motion.div
               key={terminal.id}
-              initial={{ opacity: 0, x: terminal.position.x, y: terminal.position.y }}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              style={{ position: 'absolute', left: terminal.position.x, top: terminal.position.y }}
             >
               <Terminal 
                 onClose={() => setTerminals(terminals.filter(t => t.id !== terminal.id))}
@@ -291,6 +305,8 @@ export default function Home() {
                 infoText={terminal.infoText}
                 projects={terminal.projects}
                 workExperience={terminal.workExperience}
+                initialX={isMobile ? undefined : terminal.position.x}
+                initialY={isMobile ? undefined : terminal.position.y}
               />
             </motion.div>
           ))}
@@ -327,6 +343,7 @@ export default function Home() {
         fontFamily={fontFamily}
         bgStyle={bgStyle}
       />
+      
     </motion.main>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, useDragControls } from "framer-motion";
 import { Inter } from "next/font/google";
 import Pong from '@/components/Pong';
 import { useTerminal } from './TerminalContext';
@@ -29,6 +29,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
   const [gameResult, setGameResult] = useState<string | null>(null);
   const [accentColor, setAccentColor] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const dragControls = useDragControls();
 
   useEffect(() => {
     const evalMobile = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 700);
@@ -44,14 +45,14 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
   const [dragConstraints, setDragConstraints] = useState({
     left: 0,
     top: 0,
-    right: window.innerWidth - 560,
-    bottom: window.innerHeight - 392
+  right: typeof window !== 'undefined' ? window.innerWidth - 560 : 0,
+  bottom: typeof window !== 'undefined' ? window.innerHeight - 392 : 0
   });
 
   useEffect(() => {
     const updateConstraints = () => {
-  const terminalWidth = isMaximized ? 862 : 560;
-  const terminalHeight = isMaximized ? 700 : 360;
+  const terminalWidth = isMobile ? Math.min(window.innerWidth, 640) : (isMaximized ? 862 : 560);
+  const terminalHeight = isMobile ? Math.min(window.innerHeight * 0.75, 700) : (isMaximized ? 700 : 360);
       setDragConstraints({
         left: 0,
         top: 0,
@@ -63,7 +64,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
     updateConstraints();
     window.addEventListener('resize', updateConstraints);
     return () => window.removeEventListener('resize', updateConstraints);
-  }, [isMaximized]);
+  }, [isMaximized, isMobile]);
 
   useEffect(() => {
     const color = getComputedStyle(document.documentElement)
@@ -149,9 +150,10 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
   return (
     <motion.div
       className={`terminal-container ${inter.className} transition-all duration-300 ease-out ${
-        isMinimized ? 'hidden' : isMobile ? 'w-screen h-[70vh]' : (isMaximized ? 'w-[862px] h-[700px]' : 'w-[560px] h-[360px]')
+        isMinimized ? 'hidden' : isMobile ? 'w-screen h-[calc(100dvh-64px)]' : (isMaximized ? 'w-[862px] h-[700px]' : 'w-[560px] h-[360px]')
       } ${isMobile ? 'rounded-none border-x-0' : 'rounded-lg'} fixed z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90 overflow-hidden focus:outline-none`}
-      initial={{ opacity: 0, scale: 0.95, top: isMobile ? 0 : 32, left: isMobile ? 0 : 64 }}
+  style={{ touchAction: 'none' }}
+  initial={{ opacity: 0, scale: 0.95, top: isMobile ? Math.max(24, (typeof window!=='undefined'?window.innerHeight:700) * 0.23) : 32, left: isMobile ? Math.max(0, (typeof window!=='undefined'?window.innerWidth:900) * 0.06) : 64 }}
       animate={
         isClosing 
           ? { 
@@ -169,27 +171,33 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
             }
       }
       transition={{ duration: 0.2 }}
-  drag={!isMobile}
+  drag
+    dragControls={dragControls}
+    dragListener={false}
       dragMomentum={false}
       dragElastic={0}
-  dragConstraints={isMobile ? undefined : dragConstraints}
+  dragConstraints={dragConstraints}
       whileDrag={{ cursor: "grabbing" }}
       data-pong-instance
     >
-  <div className={`handle flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move`}>
+  <div className={`handle flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move`} onPointerDown={(e) => dragControls.start(e)}>
         <div className="flex space-x-2">
           <div
             className="w-3 h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 transition-colors duration-200 cursor-pointer no-drag"
             onClick={handleClose}
           />
-          <div
-            className="w-3 h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 transition-colors duration-200 cursor-pointer no-drag"
-            onClick={handleMinimize}
-          />
-          <div
-            className="relative w-3 h-3 bg-gprimary rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer no-drag"
-            onClick={handleMaximize}
-          />
+          {!isMobile && (
+            <>
+              <div
+                className="w-3 h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 transition-colors duration-200 cursor-pointer no-drag"
+                onClick={handleMinimize}
+              />
+              <div
+                className="relative w-3 h-3 bg-gprimary rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer no-drag"
+                onClick={handleMaximize}
+              />
+            </>
+          )}
         </div>
         <div className="flex-grow text-center text-black flex items-center justify-center">
           <img src="/icons/directory_closed.png" className="mr-2" alt="Directory" />
@@ -199,7 +207,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
   <div 
         ref={inputRef}
         className="p-4 bg-[#151515] text-primary select-text overflow-y-auto rounded-b-lg custom-scrollbar focus:outline-none" 
-        style={{ maxHeight: isMaximized ? "calc(100% - 32px)" : "368px" }}
+        style={{ maxHeight: isMaximized ? "calc(100% - 32px)" : (isMobile ? Math.floor(window.innerHeight * 0.6) : "368px") }}
         onKeyDown={handleKeyDown}
         tabIndex={-1}
       >
@@ -242,8 +250,8 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
             className="mt-4 overflow-hidden bg-transparent"
           >
             <Pong 
-              width={isMaximized ? 800 : 520} 
-              height={isMaximized ? 600 : 280}
+              width={isMobile ? Math.max(280, Math.min(window.innerWidth - 40, 520)) : (isMaximized ? 800 : 520)} 
+              height={isMobile ? Math.max(180, Math.min(Math.floor(window.innerHeight * 0.45), 300)) : (isMaximized ? 600 : 280)}
               onGameEnd={handleGameEnd}
             />
           </motion.div>
@@ -283,12 +291,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
           </div>
         )}
       </div>
-      {isMobile && (
-        <div className="w-full bg-[#111111] text-[10px] text-center py-1 border-t border-white/5 flex items-center justify-center gap-4">
-          <button onClick={handleMaximize} className="px-2 py-1 rounded bg-zinc-800 text-white/80 hover:bg-zinc-700 text-[10px]">{isMaximized ? 'shrink' : 'expand'}</button>
-          <button onClick={handleClose} className="px-2 py-1 rounded bg-zinc-800 text-white/80 hover:bg-zinc-700 text-[10px]">close</button>
-        </div>
-      )}
+  {/* No extra mobile footer controls */}
     </motion.div>
   );
 };

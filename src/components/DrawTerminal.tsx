@@ -24,6 +24,8 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
   const { setIsTerminalOpen } = useTerminal();
   const dragControls = useDragControls();
   const [isMobile, setIsMobile] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [dragConstraints, setDragConstraints] = useState({ left: 0, top: 0, right: 0, bottom: 0 });
 
   useEffect(() => {
     const evalMobile = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 700);
@@ -36,6 +38,59 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
   // Reduced expanded (maximized) size per request; slightly smaller default as well
   const width = isMaximized ? 900 : 760;
   const height = isMaximized ? 480 : 360;
+
+  // Update constraints and center on mobile
+  useEffect(() => {
+    const updateConstraints = () => {
+      // Match CSS sizes on mobile (w-[78vw] h-[36dvh]) exactly
+      const mobileW = window.innerWidth * 0.78;
+      const mobileH = window.innerHeight * 0.36;
+      const desktopW = width + 40; // header + padding
+      const desktopH = height + 140; // header + toolbar + padding
+
+      const tW = isMobile ? mobileW : desktopW;
+      const tH = isMobile ? mobileH : desktopH;
+
+      setDragConstraints({
+        left: 0,
+        top: 0,
+        right: Math.max(0, window.innerWidth - tW),
+        bottom: Math.max(0, window.innerHeight - tH)
+      });
+
+      if (isMobile) {
+        const offsetX = 150; // bias to the right on mobile
+        const maxX = Math.max(0, window.innerWidth - tW);
+        const baseX = Math.min(maxX, Math.max(0, (window.innerWidth - tW) / 2 + offsetX));
+        const baseY = Math.max(24, (window.innerHeight - tH) / 2);
+        setPosition(prev => {
+          const movedFar = Math.hypot(prev.x - baseX, prev.y - baseY) > 200;
+          return movedFar ? prev : { x: baseX, y: baseY };
+        });
+      }
+    };
+
+    updateConstraints();
+    window.addEventListener('resize', updateConstraints);
+    return () => window.removeEventListener('resize', updateConstraints);
+  }, [isMobile, width, height]);
+
+  // Initial position: center on mobile; keep desktop offset similar to before
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (isMobile) {
+      const mobileW = window.innerWidth * 0.78;
+      const mobileH = window.innerHeight * 0.36;
+      const offsetX = 150;
+      const maxX = Math.max(0, window.innerWidth - mobileW);
+      const baseX = Math.min(maxX, Math.max(0, (window.innerWidth - mobileW) / 2 + offsetX));
+      const baseY = Math.max(24, (window.innerHeight - mobileH) / 2);
+      setPosition({ x: baseX, y: baseY });
+    } else {
+      setPosition({ x: 96, y: 40 });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const pushHistory = useCallback(() => {
     const canvas = canvasWrapperRef.current?.querySelector('canvas');
@@ -155,14 +210,17 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
 
   return (
     <motion.div
-      className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': ''} fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/95 ${isMobile ? 'w-screen h-[75vh] rounded-none border-x-0' : 'rounded-lg'} shadow-lg shadow-black/40`}
-      style={{ width: isMobile ? undefined : width + 40, height: isMobile ? undefined : height + 140, top: isMobile ? 0 : 40, left: isMobile ? 0 : 96, touchAction: 'none' }}
+  className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': ''} fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/95 ${isMobile ? 'w-[78vw] h-[36dvh] rounded-lg' : 'rounded-lg'} shadow-lg shadow-black/40`}
+      style={{ width: isMobile ? undefined : width + 40, height: isMobile ? undefined : height + 140, top: position.y, left: position.x, touchAction: 'none' }}
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       data-draw-instance
-      drag={!isMobile}
+      drag
       dragControls={dragControls}
       dragListener={false}
+      dragMomentum={false}
+      dragElastic={0}
+      dragConstraints={dragConstraints}
     >
       <div
         className={`draw-header flex items-center justify-between bg-white text-black px-4 py-2 cursor-move select-none ${isMobile ? '' : 'rounded-t'}`}
@@ -170,8 +228,12 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
       >
         <div className="flex space-x-2">
           <div className="w-3 h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 cursor-pointer" onClick={handleClose} />
-          <div className="w-3 h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)} />
-          <div className="w-3 h-3 bg-gprimary rounded-full hover:bg-green-600 cursor-pointer" onClick={() => setIsMaximized(!isMaximized)} />
+          {!isMobile && (
+            <>
+              <div className="w-3 h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)} />
+              <div className="w-3 h-3 bg-gprimary rounded-full hover:bg-green-600 cursor-pointer" onClick={() => setIsMaximized(!isMaximized)} />
+            </>
+          )}
         </div>
         <div className="flex-grow text-center flex items-center justify-center text-xs tracking-wide text-black ">
           <span className="font-medium">advaychandorkar@personalsite: ~/personal/{mode === 'whiteboard' ? 'whiteboard' : 'draw'} mode</span>
@@ -268,8 +330,8 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
           }}
         >
           <Draw
-            width={isMobile ? Math.min(window.innerWidth - 32, 600) : width}
-            height={isMobile ? Math.min(400, Math.floor(window.innerHeight * 0.45)) : height}
+            width={isMobile ? Math.floor(Math.min(window.innerWidth * 0.72, 500)) : width}
+            height={isMobile ? Math.floor(Math.min(window.innerHeight * 0.22, 240)) : height}
             backgroundColor={backgroundColor}
             activeTool={activeTool}
             activeColor={activeColor}
@@ -327,12 +389,7 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
           ))}
         </div>
       </div>
-      {isMobile && (
-        <div className="w-full bg-[#111111] text-[10px] text-center py-1 border-t border-white/5 flex items-center justify-center gap-4">
-          <button onClick={() => setIsMaximized(!isMaximized)} className="px-2 py-1 rounded bg-zinc-800 text-white/80 hover:bg-zinc-700 text-[10px]">{isMaximized ? 'shrink' : 'expand'}</button>
-          <button onClick={handleClose} className="px-2 py-1 rounded bg-zinc-800 text-white/80 hover:bg-zinc-700 text-[10px]">close</button>
-        </div>
-      )}
+  {/* No extra mobile footer controls */}
     </motion.div>
   );
 };

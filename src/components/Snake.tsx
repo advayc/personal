@@ -136,7 +136,30 @@ const Snake: React.FC<SnakeProps> = ({ width, height, onGameEnd }) => {
 
   return (
     <div className="relative" style={{ width, height }}>
-      <canvas ref={canvasRef} width={width} height={height} />
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        onTouchStart={(e) => {
+          (canvasRef.current as any)._touchStart = e.touches[0];
+        }}
+        onTouchMove={(e) => {
+          const start = (canvasRef.current as any)._touchStart as Touch | undefined;
+          const cur = e.touches[0];
+          if (!start || !cur) return;
+          const dx = cur.clientX - start.clientX;
+          const dy = cur.clientY - start.clientY;
+          if (Math.abs(dx) + Math.abs(dy) < 12) return; // deadzone
+          if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 0 && dir.x !== -1) setDir({ x: 1, y: 0 });
+            if (dx < 0 && dir.x !== 1) setDir({ x: -1, y: 0 });
+          } else {
+            if (dy > 0 && dir.y !== -1) setDir({ x: 0, y: 1 });
+            if (dy < 0 && dir.y !== 1) setDir({ x: 0, y: -1 });
+          }
+          (canvasRef.current as any)._touchStart = cur;
+        }}
+      />
       {!running && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white space-y-3 font-mono">
           <div className="text-2xl tracking-tight">Game Over</div>

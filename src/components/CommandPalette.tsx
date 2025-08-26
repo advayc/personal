@@ -86,8 +86,8 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md p-4" onClick={onClose}>
-  <div className="w-full max-w-[500px] bg-[#121212]/95 border border-white/10 rounded-xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.65)] overflow-hidden ring-1 ring-white/5" onClick={e => e.stopPropagation()} style={{ fontFamily }}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md p-3 sm:p-4" onClick={onClose}>
+  <div className="w-full max-w-[520px] max-h-[80vh] sm:max-h-[86vh] bg-[#121212]/95 border border-white/10 rounded-xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.65)] overflow-hidden ring-1 ring-white/5 flex flex-col" onClick={e => e.stopPropagation()} style={{ fontFamily }}>
         <div className="px-5 pt-4 pb-0 border-b border-white/10">
           <div className="flex items-center justify-between">
             <div className="text-white font-medium text-lg flex items-center gap-2">
@@ -111,7 +111,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
           </div>
         </div>
         {activeTab==='nav' && (
-          <div className="max-h-[380px] overflow-y-auto py-2">
+          <div className="flex-1 overflow-y-auto py-2">
             <div className="px-4 py-1 text-[10px] uppercase tracking-wider font-semibold text-white/40 flex items-center gap-2">
               <span className="h-px flex-1 bg-white/10" />
               <span>Navigation</span>
@@ -169,7 +169,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
           </div>
         )}
         {activeTab==='settings' && (
-          <div className="max-h-[360px] overflow-y-auto py-4 space-y-6 px-5 text-xs text-white/80">
+          <div className="flex-1 overflow-y-auto py-4 space-y-6 px-5 text-xs text-white/80">
             <section>
               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Accent Color</h4>
               <div className="flex flex-wrap gap-2 items-center">
@@ -241,7 +241,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
             </section>
           </div>
         )}
-        <div className="px-4 py-2 text-[9px] text-white/30 flex items-center justify-between border-t border-white/10 bg-[#101010]">
+  <div className="px-4 py-2 text-[9px] text-white/30 flex items-center justify-between border-t border-white/10 bg-[#101010]">
           <div className="space-x-1 hidden sm:block"><span>Enter ↵</span><span>↑↓</span></div>
           <div className="flex items-center gap-2 text-white/40"><span className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-[8px]">ESC</span><span>close</span></div>
         </div>
