@@ -28,7 +28,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
 
   const actions: ActionItem[] = [
     { id: 'home', label: 'Go to Home', description: 'About me and what I\'m up to', shortcut: 'Shift+H', onSelect: () => { window.location.href = '/'; } },
-    { id: 'x', label: 'X Profile', shortcut: 'Shift+X', onSelect: () => window.open('https://x.com/advay_0', '_blank') },
+    { id: 'x', label: 'X Profile', shortcut: 'Shift+X', onSelect: () => window.open('https://x.com/advay_c', '_blank') },
     { id: 'linkedin', label: 'LinkedIn Profile', shortcut: 'Shift+L', onSelect: () => window.open('https://www.linkedin.com/in/advay/', '_blank') },
     { id: 'github', label: 'GitHub Profile', shortcut: 'Shift+G', onSelect: () => window.open('https://github.com/advayc', '_blank') },
     { id: 'resume', label: 'Resume', shortcut: 'Shift+R', onSelect: () => window.open('/resume.pdf', '_blank') },
