@@ -25,7 +25,7 @@ function calculateAge(birthDate: Date): number {
 }
 
 // SEO constants
-const BIRTH_DATE = new Date('2008-12-16T00:00:00-05:00'); // EST timezone
+const BIRTH_DATE = new Date('2008-12-16T00:00:00-05:00');
 const AGE = calculateAge(BIRTH_DATE);
 const SITE_URL = 'https://advayc.ca/';
 const DEFAULT_TITLE = 'Advay Chandorkar | Full Stack Developer';
