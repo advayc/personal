@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Terminal from "@/components/Terminal";
 import File from "@/components/File";
+import FileManager from "@/components/FileManager";
 import Footer from "@/components/Footer";
 import SelectionBox from "@/components/SelectionBox";
 import { useTerminal } from "@/components/TerminalContext";
@@ -294,6 +295,14 @@ export default function Home() {
               />
             ))}
           </div>
+          
+          {/* Alternative FileManager for desktop - uncomment to enable drag-and-drop */}
+          {/* <div className="absolute inset-0 pointer-events-none">
+            <FileManager 
+              onFileOpen={openTerminal}
+              className="pointer-events-auto"
+            />
+          </div> */}
           {terminals.map((terminal) => (
             <motion.div
               key={terminal.id}

@@ -70,6 +70,8 @@ const Terminal: React.FC<TerminalProps> = ({
   const [pongInstanceExists, setPongInstanceExists] = useState(false);
   const [position, setPosition] = useState({ x: 64, y: 64 });
   const [isMobile, setIsMobile] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartPosition, setDragStartPosition] = useState({ x: 0, y: 0 });
   const dragControls = useDragControls();
 
   useEffect(() => {
@@ -100,6 +102,15 @@ const Terminal: React.FC<TerminalProps> = ({
 
   const handleMinimize = () => setIsMinimized(!isMinimized);
   const handleMaximize = () => setIsMaximized(!isMaximized);
+
+  const handleDragStart = (e: any) => {
+    setIsDragging(true);
+    setDragStartPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
 
   const calculateTotalLines = () => {
     const baseLines = 2;
@@ -181,10 +192,10 @@ const Terminal: React.FC<TerminalProps> = ({
       const terminalHeight = isMobile ? window.innerHeight * 0.4 : (isMaximized ? 700 : 400);
 
       setDragConstraints({
-        left: 0,
-        top: 0,
-        right: Math.max(0, window.innerWidth - terminalWidth),
-        bottom: Math.max(0, window.innerHeight - terminalHeight)
+        left: -20, // Allow slight overflow for better UX
+        top: -20,
+        right: Math.max(0, window.innerWidth - terminalWidth + 20),
+        bottom: Math.max(0, window.innerHeight - terminalHeight + 20)
       });
 
       if (typeof window !== 'undefined') {
@@ -427,21 +438,27 @@ const Terminal: React.FC<TerminalProps> = ({
     <motion.div
       className={`terminal-container ${inter.className} transition-all duration-300 ease-out ${
         isMinimized ? 'hidden' : isMobile ? 'w-[75vw] h-[40dvh]' : (isMaximized ? 'w-[862px] h-[700px]' : 'w-[600px] h-[400px]')
-      } ${isMobile ? 'rounded-lg' : 'rounded-lg'} fixed z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90 overflow-hidden`}
+      } ${isMobile ? 'rounded-lg' : 'rounded-lg'} fixed z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90 overflow-hidden shadow-2xl`}
       style={{ top: position.y, left: position.x, touchAction: 'none' }}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.2 }}
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       drag
       dragControls={dragControls}
       dragListener={false}
-  dragMomentum={false}
-  dragElastic={0}
+      dragMomentum={false}
+      dragElastic={0.05}
       dragConstraints={dragConstraints}
-      whileDrag={{ cursor: "grabbing" }}
+      whileDrag={{ 
+        cursor: "grabbing",
+        scale: 1.02,
+        transition: { duration: 0.1 }
+      }}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       <div 
-        className={`handle flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move`}
+        className={`handle flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move transition-colors duration-200 hover:bg-zinc-300`}
         onPointerDown={(e) => {
           const target = e.target as HTMLElement;
           // Avoid starting drag on buttons/links inside header
