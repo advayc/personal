@@ -260,7 +260,7 @@ export default function Home() {
             className="text-3xl sm:text-5xl font-bold text-center text-white mb-4 sm:mb-6 tracking-tight"
             variants={fadeIn}
           >
-            Hi, I'm Advay
+            advay chandorkar
           </motion.h1>
           <motion.div 
             className="flex flex-col items-center justify-center space-y-2"
