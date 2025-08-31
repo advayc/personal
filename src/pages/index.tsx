@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Terminal from "@/components/Terminal";
 import File from "@/components/File";
-import Footer from "@/components/Footer";
+import MacOSTaskbar from "@/components/MacOSTaskbar";
 import SelectionBox from "@/components/SelectionBox";
 import { useTerminal } from "@/components/TerminalContext";
 import Link from '@/components/Link';
@@ -334,7 +334,7 @@ export default function Home() {
           )}
         </motion.div>
       </div>
-      <Footer selected={selected} setSelected={setSelected} accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
+      <MacOSTaskbar selected={selected} setSelected={setSelected} accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
       <SelectionBox />
       <ShortcutHint onOpen={() => setIsPaletteOpen(true)} />
       <CommandPalette 

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Inter } from "next/font/google";
 import { useTerminal } from './TerminalContext';
 import Link from '@/components/Link';
-import { motion, useDragControls } from "framer-motion";
+import { motion } from "framer-motion";
 import Pong from '@/components/Pong';
 
 interface Project {
@@ -56,12 +56,6 @@ const Terminal: React.FC<TerminalProps> = ({
   const terminalRef = useRef<HTMLDivElement>(null);
   const { setIsTerminalOpen } = useTerminal();
   const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
-  const [dragConstraints, setDragConstraints] = useState({
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0
-  });
   const [showPong, setShowPong] = useState(false);
   const [input, setInput] = useState('');
   const pongRef = useRef<HTMLDivElement>(null);
@@ -70,7 +64,63 @@ const Terminal: React.FC<TerminalProps> = ({
   const [pongInstanceExists, setPongInstanceExists] = useState(false);
   const [position, setPosition] = useState({ x: 64, y: 64 });
   const [isMobile, setIsMobile] = useState(false);
-  const dragControls = useDragControls();
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  // Drag handling
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (isMobile) return;
+    
+    const target = e.target as HTMLElement;
+    // Only allow dragging from the header bar, not from buttons or links
+    if (!target.closest('.terminal-header') || target.closest('button, a')) {
+      return;
+    }
+
+    e.preventDefault();
+    setIsDragging(true);
+    
+    const rect = terminalRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+    }
+  }, [isMobile]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || isMobile) return;
+
+    const newX = e.clientX - dragOffset.x;
+    const newY = e.clientY - dragOffset.y;
+
+    // Calculate constraints
+    const terminalWidth = isMaximized ? 862 : 600;
+    const terminalHeight = isMaximized ? 700 : 400;
+    const maxX = window.innerWidth - terminalWidth;
+    const maxY = window.innerHeight - terminalHeight;
+
+    setPosition({
+      x: Math.max(0, Math.min(newX, maxX)),
+      y: Math.max(0, Math.min(newY, maxY))
+    });
+  }, [isDragging, isMobile, dragOffset, isMaximized]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   useEffect(() => {
     const evalMobile = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 700);
@@ -175,41 +225,6 @@ const Terminal: React.FC<TerminalProps> = ({
   }, [cursorPosition, lastKeyPressed, isPong]);
 
   useEffect(() => {
-    const updateConstraints = () => {
-      // For mobile: make smaller, exactly 75vw width
-      const terminalWidth = isMobile ? window.innerWidth * 0.75 : (isMaximized ? 862 : 600);
-      const terminalHeight = isMobile ? window.innerHeight * 0.4 : (isMaximized ? 700 : 400);
-
-      setDragConstraints({
-        left: 0,
-        top: 0,
-        right: Math.max(0, window.innerWidth - terminalWidth),
-        bottom: Math.max(0, window.innerHeight - terminalHeight)
-      });
-
-      if (typeof window !== 'undefined') {
-        const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
-        if (!hasManual) {
-          const baseX = Math.max(0, (window.innerWidth - terminalWidth) / 2);
-          const baseY = Math.max(24, (window.innerHeight - terminalHeight) / 2);
-          if (isMobile) {
-            setPosition({ x: baseX, y: baseY });
-          } else {
-            setPosition(prev => {
-              const movedFar = Math.hypot(prev.x - baseX, prev.y - baseY) > 200;
-              return movedFar ? prev : { x: baseX, y: baseY };
-            });
-          }
-        }
-      }
-    };
-
-    updateConstraints();
-    window.addEventListener('resize', updateConstraints);
-    return () => window.removeEventListener('resize', updateConstraints);
-  }, [isMaximized, isMobile]);
-
-  useEffect(() => {
     if (typeof window === 'undefined') return;
     const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
     if (hasManual) {
@@ -227,13 +242,12 @@ const Terminal: React.FC<TerminalProps> = ({
   useEffect(() => {
     if (!isMobile) return;
     const recenter = () => {
-  // Match mobile terminal dimensions used elsewhere (75vw x 40vh)
-  const w = window.innerWidth * 0.9;
-  const h = window.innerHeight * 0.5;
+      const w = window.innerWidth * 0.9;
+      const h = window.innerHeight * 0.5;
       const baseX = Math.max(0, (window.innerWidth - w) / 2);
       const baseY = Math.max(24, (window.innerHeight - h) / 2);
-  const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
-  if (!hasManual) setPosition({ x: baseX, y: baseY });
+      const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
+      if (!hasManual) setPosition({ x: baseX, y: baseY });
     };
     window.addEventListener('resize', recenter);
     return () => window.removeEventListener('resize', recenter);
@@ -425,43 +439,38 @@ const Terminal: React.FC<TerminalProps> = ({
 
   return (
     <motion.div
+      ref={terminalRef}
       className={`terminal-container ${inter.className} transition-all duration-300 ease-out ${
         isMinimized ? 'hidden' : isMobile ? 'w-[75vw] h-[40dvh]' : (isMaximized ? 'w-[862px] h-[700px]' : 'w-[600px] h-[400px]')
       } ${isMobile ? 'rounded-lg' : 'rounded-lg'} fixed z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90 overflow-hidden`}
-      style={{ top: position.y, left: position.x, touchAction: 'none' }}
+      style={{ 
+        top: position.y, 
+        left: position.x, 
+        cursor: isDragging ? 'grabbing' : 'default',
+        userSelect: isDragging ? 'none' : 'auto'
+      }}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
-      drag
-      dragControls={dragControls}
-      dragListener={false}
-  dragMomentum={false}
-  dragElastic={0}
-      dragConstraints={dragConstraints}
-      whileDrag={{ cursor: "grabbing" }}
     >
       <div 
-        className={`handle flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move`}
-        onPointerDown={(e) => {
-          const target = e.target as HTMLElement;
-          // Avoid starting drag on buttons/links inside header
-          if (target.closest('button,a')) return;
-          dragControls.start(e);
-        }}
+        className={`terminal-header flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move`}
+        onMouseDown={handleMouseDown}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
       >
         <div className="flex space-x-2">
           <div
-            className="w-3 h-3 md:w-3 md:h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 transition-colors duration-200 cursor-pointer no-drag"
+            className="w-3 h-3 md:w-3 md:h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 transition-colors duration-200 cursor-pointer"
             onClick={handleClose}
           ></div>
           {!isMobile && (
             <>
               <div
-                className="w-3 h-3 md:w-3 md:h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 transition-colors duration-200 cursor-pointer no-drag"
+                className="w-3 h-3 md:w-3 md:h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 transition-colors duration-200 cursor-pointer"
                 onClick={handleMinimize}
               ></div>
               <div
-                className="relative w-3 h-3 md:w-3 md:h-3 bg-gprimary rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer no-drag"
+                className="relative w-3 h-3 md:w-3 md:h-3 bg-gprimary rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer"
                 onClick={handleMaximize}
               ></div>
             </>
