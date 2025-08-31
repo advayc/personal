@@ -7,9 +7,11 @@ interface CommandPaletteProps {
   setAccentColor?: (c: string) => void;
   setFontFamily?: (f: string) => void;
   setBgStyle?: (s: 'grid' | 'dots' | 'none') => void;
+  setBgColor?: (c: string) => void;
   accentColor?: string;
   fontFamily?: string;
   bgStyle?: 'grid' | 'dots' | 'none';
+  bgColor?: string;
 }
 
 interface ActionItem {
@@ -20,7 +22,7 @@ interface ActionItem {
   onSelect: () => void;
 }
 
-const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAccentColor, setFontFamily, setBgStyle, accentColor, fontFamily, bgStyle }) => {
+const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAccentColor, setFontFamily, setBgStyle, setBgColor, accentColor, fontFamily, bgStyle, bgColor }) => {
   const [query, setQuery] = useState('');
   const [highlighted, setHighlighted] = useState(0);
   const [activeTab, setActiveTab] = useState<'nav' | 'settings'>('nav');
@@ -192,6 +194,36 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
                     aria-label="Pick custom accent color"
                     onChange={e => setAccentColor && setAccentColor(e.target.value)}
                     value={accentColor}
+                  />
+                  <div className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-[10px] font-mono bg-[#1c1c1c] hover:bg-[#222] cursor-pointer">
+                    +
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section>
+              <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Background Color</h4>
+              <div className="flex flex-wrap gap-2 items-center">
+                {['#0a0a0a','#1b1917','#201c1c','#101010','#111827','#0f172a','#0b1020','#000000'].map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setBgColor && setBgColor(c)}
+                    className={`w-7 h-7 rounded-lg border border-white/10 hover:scale-110 transition relative ${bgColor===c?'ring-2 ring-offset-1 ring-offset-[#121212] ring-white/70':''}`}
+                    style={{ background: c }}
+                    aria-label={`Set background ${c}`}
+                    title={c}
+                  >
+                    {bgColor===c && <FaCheck className="absolute inset-0 m-auto text-white drop-shadow" />}
+                  </button>
+                ))}
+                {/* Custom picker */}
+                <div className="relative group">
+                  <input
+                    type="color"
+                    className="opacity-0 absolute inset-0 cursor-pointer"
+                    aria-label="Pick custom background color"
+                    onChange={e => setBgColor && setBgColor(e.target.value)}
+                    value={bgColor}
                   />
                   <div className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-[10px] font-mono bg-[#1c1c1c] hover:bg-[#222] cursor-pointer">
                     +

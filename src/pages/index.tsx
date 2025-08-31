@@ -79,6 +79,7 @@ export default function Home() {
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
   const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
   const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('grid');
+  const [bgColor, setBgColor] = useState<string>('#0a0a0a');
 
   // load settings from localStorage
   useEffect(() => {
@@ -86,9 +87,11 @@ export default function Home() {
       const storedAccent = localStorage.getItem('siteAccentColor');
       const storedFont = localStorage.getItem('siteFontFamily');
       const storedBg = localStorage.getItem('siteBgStyle');
+    const storedBgColor = localStorage.getItem('siteBgColor');
       if (storedAccent) setAccentColor(storedAccent);
       if (storedFont) setFontFamily(storedFont);
   if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
+    if (storedBgColor) setBgColor(storedBgColor);
     } catch {}
   }, []);
 
@@ -124,6 +127,7 @@ export default function Home() {
 
   useEffect(() => { try { localStorage.setItem('siteFontFamily', fontFamily); } catch {} }, [fontFamily]);
   useEffect(() => { try { localStorage.setItem('siteBgStyle', bgStyle); } catch {} }, [bgStyle]);
+  useEffect(() => { try { localStorage.setItem('siteBgColor', bgColor); } catch {} }, [bgColor]);
 
   useEffect(() => {
     if (selected === 'light') {
@@ -247,10 +251,10 @@ export default function Home() {
         />
       </Head>
       
-  <div className="h-screen w-full bg-neutral-950 relative flex items-center justify-center px-3 sm:px-0"
-        style={bgStyle === 'grid' ? { backgroundImage: `linear-gradient(rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px)`, backgroundSize: '40px 40px', fontFamily }
-          : bgStyle === 'dots' ? { backgroundImage: `radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.16) 1px, transparent 0)`, backgroundSize: '26px 26px', fontFamily }
-          : { backgroundImage: 'none', fontFamily }}>
+  <div className="h-screen w-full relative flex items-center justify-center px-3 sm:px-0"
+        style={bgStyle === 'grid' ? { backgroundColor: bgColor, backgroundImage: `linear-gradient(rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px)`, backgroundSize: '40px 40px', fontFamily }
+          : bgStyle === 'dots' ? { backgroundColor: bgColor, backgroundImage: `radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.16) 1px, transparent 0)`, backgroundSize: '26px 26px', fontFamily }
+          : { backgroundColor: bgColor, backgroundImage: 'none', fontFamily }}>
         <motion.div variants={fadeIn} className="relative w-full max-w-[1100px]">
           <motion.h1 
             className="text-3xl sm:text-5xl font-bold text-center text-white mb-4 sm:mb-6 tracking-tight"
@@ -339,9 +343,11 @@ export default function Home() {
         setAccentColor={setAccentColor}
         setFontFamily={setFontFamily}
         setBgStyle={setBgStyle}
+  setBgColor={setBgColor}
         accentColor={accentColor}
         fontFamily={fontFamily}
         bgStyle={bgStyle}
+  bgColor={bgColor}
       />
       
     </motion.main>
