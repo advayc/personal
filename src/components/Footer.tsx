@@ -110,43 +110,50 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
     };
 
     return (
-        <div 
-            className="fixed bottom-0 left-0 right-0 border-t border-white/5 py-2 sm:py-[9px]"
-            style={{
-                backgroundColor: ``,
-                backdropFilter: 'blur(2px)'
-            }}
-        >
-            
-                        <div className="flex items-center justify-between h-12 px-2 sm:px-0">
-                            <div className="w-[120px] sm:w-[200px]" />
-                
-                <div className="flex items-center gap-1 sm:gap-1">
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center items-end pb-4 pointer-events-none">
+            {/* macOS-style dock */}
+            <div 
+                className="flex items-center justify-center px-6 py-3 rounded-2xl pointer-events-auto glass-effect"
+                style={{
+                    minWidth: 'fit-content'
+                }}
+            >
+                <div className="flex items-center gap-2 sm:gap-3">
                     <Link
                         ref={linkedInRef}
-                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
+                        className={`transition-all duration-300 rounded-xl p-3 sm:p-4 hover:bg-[var(--accent-color-hover)] group relative ${
                             isLinkedInSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
                         }`}
                         href="https://www.linkedin.com/in/advay/"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        <FaLinkedin className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <FaLinkedin className="w-6 h-6 sm:w-7 sm:h-7 dock-icon" />
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                            LinkedIn
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                        </div>
                     </Link>
                     <Link
                         ref={githubRef}
-                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
+                        className={`transition-all duration-300 rounded-xl p-3 sm:p-4 hover:bg-[var(--accent-color-hover)] group relative ${
                             isGithubSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
                         }`}
                         href="https://www.github.com/advayc/"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        <FaGithub className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <FaGithub className="w-6 h-6 sm:w-7 sm:h-7 dock-icon" />
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                            GitHub
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                        </div>
                     </Link>
                     <Link
                         ref={resumeRef}
-                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
+                        className={`transition-all duration-300 rounded-xl p-3 sm:p-4 hover:bg-[var(--accent-color-hover)] group relative ${
                             isResumeSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
                         }`}
                         href="/resume.pdf"
@@ -154,29 +161,44 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                         rel="noopener noreferrer"
                         aria-label="Resume PDF"
                     >
-                        <FaFileAlt className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <FaFileAlt className="w-6 h-6 sm:w-7 sm:h-7 dock-icon" />
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                            Resume
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                        </div>
                     </Link>
                     <Link
                         ref={mailRef}
-                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
+                        className={`transition-all duration-300 rounded-xl p-3 sm:p-4 hover:bg-[var(--accent-color-hover)] group relative ${
                             isMailSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
                         }`}
                         href="mailto:advay.chandorkar@gmail.com"
                     >
-                        <MdMail className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <MdMail className="w-6 h-6 sm:w-7 sm:h-7 dock-icon" />
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                            Email
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                        </div>
                     </Link>
                     <div className="relative">
                         <button
                             ref={colorPickerRef}
                             onClick={() => setShowColorPicker(!showColorPicker)}
-                            className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] outline-none ${
+                            className={`transition-all duration-300 rounded-xl p-3 sm:p-4 hover:bg-[var(--accent-color-hover)] outline-none group relative ${
                                 isColorPickerSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
                             }`}
                         >
-                            <IoColorPaletteOutline className="w-6 h-6 sm:w-7 sm:h-7" />
+                            <IoColorPaletteOutline className="w-6 h-6 sm:w-7 sm:h-7 dock-icon" />
+                            {/* Tooltip */}
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                                Settings
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                            </div>
                         </button>
                         {showColorPicker && (
-                            <div className="absolute bottom-full right-0 mb-2 p-3 sm:p-4 bg-[#1E1E1E] rounded-lg border border-[#383838] shadow-2xl">
+                            <div className="absolute bottom-full right-0 mb-4 p-4 bg-[#1E1E1E] rounded-xl border border-[#383838] shadow-2xl">
                                 <div className="flex flex-col gap-3">
                                     <div className="text-white/90 text-sm font-medium">Color</div>
                                     <div className="relative">
@@ -218,12 +240,13 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                         )}
                     </div>
                 </div>
-                
-                <div className="w-[120px] sm:w-[200px] flex justify-end pr-2 sm:pr-3">
-                    <div className="flex flex-col items-end gap-0.5 sm:gap-1">
-                        <span className="font-medium text-xs sm:text-sm text-white/80">{currentTime}</span>
-                        <span className="text-[10px] sm:text-xs text-white/60">{currentDate}</span>
-                    </div>
+            </div>
+            
+            {/* Time display - positioned to the right */}
+            <div className="absolute bottom-4 right-4 pointer-events-auto">
+                <div className="flex flex-col items-end gap-1">
+                    <span className="font-medium text-sm text-white/80">{currentTime}</span>
+                    <span className="text-xs text-white/60">{currentDate}</span>
                 </div>
             </div>
         </div>

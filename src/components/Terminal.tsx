@@ -71,6 +71,7 @@ const Terminal: React.FC<TerminalProps> = ({
   const [position, setPosition] = useState({ x: 64, y: 64 });
   const [isMobile, setIsMobile] = useState(false);
   const dragControls = useDragControls();
+  const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const evalMobile = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 700);
@@ -176,7 +177,6 @@ const Terminal: React.FC<TerminalProps> = ({
 
   useEffect(() => {
     const updateConstraints = () => {
-      // For mobile: make smaller, exactly 75vw width
       const terminalWidth = isMobile ? window.innerWidth * 0.75 : (isMaximized ? 862 : 600);
       const terminalHeight = isMobile ? window.innerHeight * 0.4 : (isMaximized ? 700 : 400);
 
@@ -227,13 +227,12 @@ const Terminal: React.FC<TerminalProps> = ({
   useEffect(() => {
     if (!isMobile) return;
     const recenter = () => {
-  // Match mobile terminal dimensions used elsewhere (75vw x 40vh)
-  const w = window.innerWidth * 0.9;
-  const h = window.innerHeight * 0.5;
+      const w = window.innerWidth * 0.9;
+      const h = window.innerHeight * 0.5;
       const baseX = Math.max(0, (window.innerWidth - w) / 2);
       const baseY = Math.max(24, (window.innerHeight - h) / 2);
-  const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
-  if (!hasManual) setPosition({ x: baseX, y: baseY });
+      const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
+      if (!hasManual) setPosition({ x: baseX, y: baseY });
     };
     window.addEventListener('resize', recenter);
     return () => window.removeEventListener('resize', recenter);
@@ -423,6 +422,18 @@ const Terminal: React.FC<TerminalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // macOS-style header drag handler
+  const handleHeaderMouseDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Only start drag if clicking on the header itself, not buttons
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) return;
+    
+    dragControls.start(e);
+  };
+
   return (
     <motion.div
       className={`terminal-container ${inter.className} transition-all duration-300 ease-out ${
@@ -435,19 +446,15 @@ const Terminal: React.FC<TerminalProps> = ({
       drag
       dragControls={dragControls}
       dragListener={false}
-  dragMomentum={false}
-  dragElastic={0}
+      dragMomentum={false}
+      dragElastic={0}
       dragConstraints={dragConstraints}
       whileDrag={{ cursor: "grabbing" }}
     >
       <div 
-        className={`handle flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move`}
-        onPointerDown={(e) => {
-          const target = e.target as HTMLElement;
-          // Avoid starting drag on buttons/links inside header
-          if (target.closest('button,a')) return;
-          dragControls.start(e);
-        }}
+        ref={headerRef}
+        className={`handle flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move select-none`}
+        onPointerDown={handleHeaderMouseDown}
       >
         <div className="flex space-x-2">
           <div
