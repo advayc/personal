@@ -22,20 +22,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).end();
     return;
   }
+  
   let target = (req.query.url as string) || '';
   if (!target || !/^https?:\/\//i.test(target)) {
+    setCorsHeaders(); // Ensure CORS headers on error response
     res.status(400).send('Missing or invalid url param');
     return;
   }
+  
+  // Decode HTML entities that might be present in URLs
+  target = target.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
 
   // Unwrap already-proxied URLs to avoid double-encoding
+  let unwrapped = false;
   try {
     const parsed = new URL(target, `http://${req.headers.host}`);
     if (parsed.pathname === '/api/proxy' && parsed.searchParams.get('url')) {
       target = parsed.searchParams.get('url') as string;
+      unwrapped = true;
     }
   } catch {
-    // ignore
+    // If target is a relative URL, check if it's already been wrapped
+    if (target.startsWith('/api/proxy?url=')) {
+      try {
+        const urlParam = target.substring('/api/proxy?url='.length);
+        target = decodeURIComponent(urlParam);
+        unwrapped = true;
+      } catch {
+        // ignore decode errors
+      }
+    }
   }
 
   // Normalize target for better iframe compatibility (e.g., Google)
@@ -120,12 +136,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
     
+    // Check if this is a font file or other asset that needs special CORS handling
+    const isFontFile = contentType.includes('font/') || 
+                      /\.(woff2?|ttf|otf|eot)$/i.test(new URL(normalizedTarget).pathname) ||
+                      contentType.includes('application/font-') ||
+                      contentType.includes('application/x-font-') ||
+                      contentType.includes('application/octet-stream') && /\.(woff2?|ttf|otf|eot)$/i.test(new URL(normalizedTarget).pathname);
+    
+    const isImageFile = contentType.includes('image/') || 
+                       /\.(jpg|jpeg|png|gif|webp|svg|ico|bmp)$/i.test(new URL(normalizedTarget).pathname);
+                       
+    const isCSSFile = contentType.includes('text/css') ||
+                     /\.css$/i.test(new URL(normalizedTarget).pathname);
+    
     // Set response headers for better compatibility and embedding
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     res.setHeader('Surrogate-Control', 'no-store');
+    
+    // For font files, add specific CORS headers to ensure they load properly
+    if (isFontFile) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Cache-Control');
+      res.setHeader('Access-Control-Max-Age', '86400');
+    }
+    
+    // For images and CSS, ensure proper CORS headers
+    if (isImageFile || isCSSFile) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
+    }
     
     // Remove frame-busting and restrictive security headers
     res.removeHeader('X-Frame-Options');
@@ -151,7 +195,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       "frame-ancestors *; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; connect-src * data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; font-src * data:; object-src *; frame-src *;"
     );
 
-  if (contentType.includes('text/html')) {
+    if (contentType.includes('text/html')) {
       let html = await upstream.text();
 
       // Handle empty or malformed HTML
@@ -602,14 +646,70 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       res.status(upstream.status).send(html);
       return;
+    } else if (isCSSFile) {
+      // Handle CSS files to rewrite relative font URLs
+      try {
+        let css = await upstream.text();
+        const urlObj = new URL(normalizedTarget);
+        const baseHref = urlObj.origin + (urlObj.pathname.endsWith('/') ? urlObj.pathname : urlObj.pathname.replace(/[^/]*$/, ''));
+        
+        // Rewrite url() references in CSS to go through the proxy
+        css = css.replace(/url\(\s*['"]?([^'")]+)['"]?\s*\)/gi, (match, url) => {
+          try {
+            if (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('http')) {
+              return match; // Leave absolute URLs and data URLs as-is
+            }
+            // Make relative URL absolute and proxy it
+            const absoluteUrl = new URL(url, baseHref).toString();
+            const proxiedUrl = `/api/proxy?url=${encodeURIComponent(absoluteUrl)}`;
+            return `url("${proxiedUrl}")`;
+          } catch {
+            return match; // If URL parsing fails, leave as-is
+          }
+        });
+        
+        res.status(upstream.status).send(css);
+        return;
+      } catch (cssError) {
+        console.error('CSS processing error:', cssError);
+        // Fall through to normal content handling
+      }
     }
 
     // Non-HTML: pass through bytes with better error handling
     try {
       const arrBuf = await upstream.arrayBuffer();
+      
+      // Ensure CORS headers are maintained for non-HTML content
+      setCorsHeaders();
+      
+      // Apply specific CORS headers for assets (same logic as above)
+      if (isFontFile) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Cache-Control');
+        res.setHeader('Access-Control-Max-Age', '86400');
+      }
+      
+      if (isImageFile || isCSSFile) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
+      }
+      
+      // Copy important headers from upstream response
+      const headersToProxy = ['content-length', 'content-range', 'last-modified', 'etag', 'accept-ranges'];
+      headersToProxy.forEach(headerName => {
+        const headerValue = upstream.headers.get(headerName);
+        if (headerValue) {
+          res.setHeader(headerName, headerValue);
+        }
+      });
+      
       res.status(upstream.status).send(Buffer.from(arrBuf));
     } catch (bufferError) {
       console.error('Buffer processing error:', bufferError);
+      setCorsHeaders(); // Ensure CORS headers on error
       res.status(500).send('Failed to process non-HTML content');
     }
   } catch (err: any) {
