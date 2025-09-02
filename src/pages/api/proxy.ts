@@ -1,9 +1,25 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { Readable } from 'stream';
+
+// Disable Next.js body parsing so we can forward POST bodies (including form-data) verbatim
+export const config = {
+  api: {
+    bodyParser: false
+  }
+};
 
 // Enhanced proxy that fetches external content and serves it without frame-busting headers.
 // Includes fallback mechanisms and better error handling.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const target = (req.query.url as string) || '';
+  let target = (req.query.url as string) || '';
+  // Unwrap if a proxied URL was accidentally passed in as the target
+  try {
+    const own = new URL(target, `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers['x-forwarded-host'] || req.headers.host}`);
+    if (own.pathname === '/api/proxy' && own.searchParams.get('url')) {
+      target = own.searchParams.get('url') as string;
+    }
+  } catch {}
+
   if (!target || !/^https?:\/\//i.test(target)) {
     res.status(400).send('Missing or invalid url param');
     return;
@@ -31,40 +47,89 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
 
+  // CORS preflight support for embedded usage
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || '*');
+    res.status(204).end();
+    return;
+  }
+
+  // Helper: read raw request body for forwarding
+  async function readRawBody(r: NextApiRequest): Promise<Buffer | undefined> {
+    if (r.method === 'GET' || r.method === 'HEAD') return undefined;
+    const chunks: Buffer[] = [];
+    for await (const chunk of r as any) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    if (chunks.length === 0) return undefined;
+    return Buffer.concat(chunks);
+  }
+
+  // Prepare upstream request options
+  const method = (req.method || 'GET').toUpperCase();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+
+  // Filter and forward a subset of headers
+  const incomingHeaders = req.headers;
+  const forwardHeaders: Record<string, string> = {
+    'user-agent': randomUserAgent,
+    'accept': incomingHeaders['accept']?.toString() || 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'accept-language': incomingHeaders['accept-language']?.toString() || 'en-US,en;q=0.9',
+    // Let the node-fetch implementation negotiate encoding
+    'cache-control': 'no-cache',
+    'pragma': 'no-cache',
+    'upgrade-insecure-requests': '1'
+  };
+
+  // For non-GET, forward content-type if present
+  const contentType = incomingHeaders['content-type'];
+  if (contentType) {
+    forwardHeaders['content-type'] = Array.isArray(contentType) ? contentType[0] : contentType;
+  }
+
+  // Forward cookies when present (helps some sites like Google/GitHub auth-less content)
+  if (incomingHeaders['cookie']) {
+    forwardHeaders['cookie'] = Array.isArray(incomingHeaders['cookie']) ? incomingHeaders['cookie'].join('; ') : incomingHeaders['cookie'];
+  }
+
+  let body: Buffer | undefined = undefined;
   try {
-    // First attempt with standard headers
+    body = await readRawBody(req);
+  } catch (e) {
+    // ignore body read errors
+  }
+
+  try {
+    // Upstream fetch with method + body forwarding
     let upstream;
     try {
       upstream = await fetch(normalizedTarget, {
-        headers: {
-          'User-Agent': randomUserAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Upgrade-Insecure-Requests': '1'
-        },
+        method,
+        headers: forwardHeaders as any,
+        body: method === 'GET' || method === 'HEAD' ? undefined : (body as any),
         redirect: 'follow',
-        signal: AbortSignal.timeout(30000) // 30 second timeout
-      });
+        signal: controller.signal as any
+      } as any);
     } catch (firstError) {
-      // Fallback attempt with minimal headers
+      // Fallback attempt with minimal headers (GET only)
       console.warn('First fetch failed, trying fallback:', firstError);
-  upstream = await fetch(normalizedTarget, {
+      upstream = await fetch(normalizedTarget, {
+        method: 'GET',
         headers: {
           'User-Agent': randomUserAgent,
           'Accept': '*/*'
         },
         redirect: 'follow',
-        signal: AbortSignal.timeout(30000)
-      });
+        signal: controller.signal as any
+      } as any);
+    } finally {
+      clearTimeout(timeout);
     }
 
-  const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
+    const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
     
     // Set response headers for better compatibility
     res.setHeader('Content-Type', contentType);
@@ -72,19 +137,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     
-    // Remove frame-busting and security headers
+    // Remove any conflicting security headers set globally and replace with permissive ones
     res.removeHeader('X-Frame-Options');
     res.removeHeader('Content-Security-Policy');
     res.removeHeader('X-Content-Type-Options');
     res.removeHeader('Referrer-Policy');
-    
-    // Add permissive headers for iframe embedding
+    res.removeHeader('Cross-Origin-Resource-Policy');
+    res.removeHeader('Cross-Origin-Opener-Policy');
+
+    // Add permissive headers for iframe embedding and client fetching
     res.setHeader('X-Frame-Options', 'ALLOWALL');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    // Force extremely permissive CSP and sandbox to prevent frame-busting top navigation
+    res.setHeader('Content-Security-Policy', [
+      "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:",
+      "img-src * data: blob:",
+      "media-src * data: blob:",
+      "frame-ancestors *",
+      "connect-src * data: blob:",
+      "style-src * 'unsafe-inline'",
+      "script-src * 'unsafe-inline' 'unsafe-eval' data: blob:",
+      // Do NOT include allow-top-navigation to block framebusting
+      'sandbox allow-forms allow-scripts allow-same-origin allow-popups allow-modals allow-pointer-lock allow-downloads-without-user-activation'
+    ].join('; '));
 
-  if (contentType.includes('text/html')) {
+    if (contentType.includes('text/html')) {
       let html = await upstream.text();
 
       // Handle empty or malformed HTML
@@ -198,11 +280,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
 
       // Replace anchor hrefs (more comprehensive)
-    html = html.replace(/<a\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
+      html = html.replace(/<a\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
         if (/^\s*javascript:|^mailto:|^tel:|^#/i.test(href)) return m;
         try {
-      const abs = withGoogleIgu(new URL(href, baseHref).toString());
-      return `<a ${pre}href="${safe(abs)}"${post}>`;
+          const abs = withGoogleIgu(new URL(href, baseHref).toString());
+          return `<a ${pre}href="${safe(abs)}"${post}>`;
         } catch {
           return m;
         }
@@ -228,6 +310,58 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return m;
         }
       });
+
+      // Rewrite scripts, styles, images, media and srcset attributes
+      html = html.replace(/<script\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        try {
+          const abs = new URL(src, baseHref).toString();
+          return `<script ${pre}src="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      html = html.replace(/<link\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
+        try {
+          const abs = new URL(href, baseHref).toString();
+          return `<link ${pre}href="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      html = html.replace(/<img\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        try {
+          const abs = new URL(src, baseHref).toString();
+          return `<img ${pre}src="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      html = html.replace(/<source\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        try {
+          const abs = new URL(src, baseHref).toString();
+          return `<source ${pre}src="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      html = html.replace(/<(video|audio)\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, tag, pre, src, post) => {
+        try {
+          const abs = new URL(src, baseHref).toString();
+          return `<${tag} ${pre}src="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      // srcset handling (img and source)
+      const rewriteSrcset = (value: string) => value.replace(/\s*([^\s,]+)(\s+\d+[wx])?(\s*,|$)/g, (mm, url, descriptor, comma) => {
+        try {
+          const abs = new URL(url, baseHref).toString();
+          return ` ${safe(abs)}${descriptor || ''}${comma || ''}`;
+        } catch { return mm; }
+      });
+      html = html.replace(/<img([^>]*?)\s+srcset=["']([^"']+)["']([^>]*)>/gi, (m, pre, srcset, post) => `<img${pre} srcset="${rewriteSrcset(srcset)}"${post}>`);
+      html = html.replace(/<source([^>]*?)\s+srcset=["']([^"']+)["']([^>]*)>/gi, (m, pre, srcset, post) => `<source${pre} srcset="${rewriteSrcset(srcset)}"${post}>`);
+
+      // Inline CSS url() rewriting for style attributes and style tags
+      const rewriteCssUrls = (css: string) => css.replace(/url\(([^)]+)\)/gi, (mm, raw) => {
+        const trimmed = raw.trim().replace(/^['"]|['"]$/g, '');
+        try {
+          const abs = new URL(trimmed, baseHref).toString();
+          return `url(${safe(abs)})`;
+        } catch { return mm; }
+      });
+      html = html.replace(/style=["']([^"']*)["']/gi, (m, styleValue) => `style="${rewriteCssUrls(styleValue)}"`);
+      html = html.replace(/<style(\b[^>]*)>([\s\S]*?)<\/style>/gi, (m, attrs, css) => `<style${attrs}>${rewriteCssUrls(css)}</style>`);
 
       // Rewrite object/embed data/src attributes
       html = html.replace(/<object\s+([^>]*?)data=["']([^"']+)["']([^>]*)>/gi, (m, pre, data, post) => {
@@ -397,6 +531,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               console.error('Location API patching error:', err);
             }
 
+            // Intercept fetch to route external requests through the proxy
+            try {
+              var origFetch = window.fetch;
+              window.fetch = function(input, init){
+                try {
+                  var url = typeof input === 'string' ? input : (input && input.url) ? input.url : '';
+                  if (url && !url.startsWith(PROXY_PATH)) {
+                    var proxied = toProxy(url);
+                    if (typeof input === 'string') input = proxied;
+                    else input = new Request(proxied, input);
+                  }
+                } catch(err) { console.error('fetch intercept error:', err); }
+                return origFetch.apply(this, arguments);
+              };
+            } catch(err) { console.error('fetch override setup error:', err); }
+
+            // Intercept XHR open
+            try {
+              var XHR = window.XMLHttpRequest;
+              if (XHR && XHR.prototype && XHR.prototype.open) {
+                var origOpen = XHR.prototype.open;
+                XHR.prototype.open = function(method, url){
+                  try {
+                    if (url && typeof url === 'string' && !url.startsWith(PROXY_PATH)) {
+                      arguments[1] = toProxy(url);
+                    }
+                  } catch(err) { console.error('XHR intercept error:', err); }
+                  return origOpen.apply(this, arguments);
+                };
+              }
+            } catch(err) { console.error('XHR override setup error:', err); }
+
             console.log('Enhanced proxy handlers successfully initialized for:', TARGET_URL);
           } catch(err) {
             console.error('Global proxy initialization error:', err);
@@ -416,10 +582,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    // Non-HTML: just pass through bytes with better error handling
+    // CSS: rewrite url() and @import to go through proxy so relative assets load
+    if (contentType.includes('text/css')) {
+      const cssBaseUrl = new URL(normalizedTarget);
+      let css = await upstream.text();
+      const proxyPath = '/api/proxy?url=';
+      const toAbs = (u: string) => {
+        try { return new URL(u, cssBaseUrl).toString(); } catch { return u; }
+      };
+      css = css.replace(/url\(\s*(["\']?)([^)"']+)\1\s*\)/gi, (m, q, url) => {
+        if (/^data:/.test(url) || /^blob:/.test(url)) return m;
+        const abs = toAbs(url);
+        return `url(${proxyPath}${encodeURIComponent(abs)})`;
+      });
+      css = css.replace(/@import\s+(url\()?(["\'])([^"']+)\2\)?/gi, (m, _u, q, url) => {
+        const abs = toAbs(url);
+        return `@import url(${proxyPath}${encodeURIComponent(abs)})`;
+      });
+      res.status(upstream.status).send(css);
+      return;
+    }
+
+    // Non-HTML: stream pass-through when possible for performance
     try {
-      const buf = Buffer.from(await upstream.arrayBuffer());
-      res.status(upstream.status).send(buf);
+      res.status(upstream.status);
+      if ((upstream as any).body && typeof (Readable as any).fromWeb === 'function') {
+        const nodeStream = (Readable as any).fromWeb((upstream as any).body);
+        nodeStream.on('error', (e: any) => {
+          console.error('Stream error:', e);
+          if (!res.headersSent) res.status(500);
+          try { res.end(); } catch {}
+        });
+        nodeStream.pipe(res);
+      } else {
+        const buf = Buffer.from(await upstream.arrayBuffer());
+        res.send(buf);
+      }
     } catch (bufferError) {
       console.error('Buffer processing error:', bufferError);
       res.status(500).send('Failed to process non-HTML content');
