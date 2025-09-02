@@ -1,27 +1,48 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 // Enhanced proxy that fetches external content and serves it without frame-busting headers.
-// Includes fallback mechanisms and better error handling.
+// Includes comprehensive URL rewriting, header removal, and fallback mechanisms.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const target = (req.query.url as string) || '';
+  console.log('Proxy request for:', target);
+  
   if (!target || !/^https?:\/\//i.test(target)) {
+    console.error('Invalid URL:', target);
     res.status(400).send('Missing or invalid url param');
     return;
   }
 
-  // Normalize target for better iframe compatibility (e.g., Google)
+  // Normalize target for better iframe compatibility
   let normalizedTarget = target;
   try {
     const u = new URL(target);
-    if (/(^|\.)google\.(com|ca|co\.[a-z]{2}|[a-z]{2})$/i.test(u.hostname) && !u.searchParams.has('igu')) {
-      u.searchParams.set('igu', '1');
+    
+    // Add Google-specific parameters for better iframe compatibility
+    if (/(^|\.)google\.(com|ca|co\.[a-z]{2}|[a-z]{2})$/i.test(u.hostname)) {
+      if (!u.searchParams.has('igu')) {
+        u.searchParams.set('igu', '1');
+      }
+      if (!u.searchParams.has('hl')) {
+        u.searchParams.set('hl', 'en');
+      }
+      // Use webhp for better iframe compatibility
+      if (u.pathname === '/' || u.pathname === '') {
+        u.pathname = '/webhp';
+      }
       normalizedTarget = u.toString();
     }
+    
+    // Add GitHub-specific parameters for better compatibility
+    if (u.hostname === 'github.com' || u.hostname.endsWith('.github.com')) {
+      if (!u.searchParams.has('embed')) {
+        u.searchParams.set('embed', '1');
+      }
+    }
   } catch {
-    // ignore
+    // ignore URL parsing errors
   }
 
-  // List of fallback user agents for better compatibility
+  // List of user agents for better compatibility
   const userAgents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -31,72 +52,113 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
 
-  try {
-    // First attempt with standard headers
-    let upstream;
+  // Retry mechanism with different approaches
+  let upstream;
+  let lastError;
+  
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      upstream = await fetch(normalizedTarget, {
-        headers: {
-          'User-Agent': randomUserAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
+      console.log(`Proxy attempt ${attempt + 1} for:`, normalizedTarget);
+      
+      // Try different approaches for each attempt
+      let headers: any = {
+        'User-Agent': userAgents[attempt % userAgents.length],
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      };
+      
+      // Add more headers for first attempt, fewer for fallbacks
+      if (attempt === 0) {
+        headers = {
+          ...headers,
           'Accept-Encoding': 'gzip, deflate, br',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
           'Sec-Fetch-Dest': 'document',
           'Sec-Fetch-Mode': 'navigate',
           'Sec-Fetch-Site': 'none',
-          'Upgrade-Insecure-Requests': '1'
-        },
+          'Upgrade-Insecure-Requests': '1',
+          'DNT': '1'
+        };
+      } else if (attempt === 1) {
+        // Minimal headers for second attempt
+        headers = {
+          'User-Agent': headers['User-Agent'],
+          'Accept': '*/*'
+        };
+      }
+      
+      upstream = await fetch(normalizedTarget, {
+        headers,
         redirect: 'follow',
         signal: AbortSignal.timeout(30000) // 30 second timeout
       });
-    } catch (firstError) {
-      // Fallback attempt with minimal headers
-      console.warn('First fetch failed, trying fallback:', firstError);
-  upstream = await fetch(normalizedTarget, {
-        headers: {
-          'User-Agent': randomUserAgent,
-          'Accept': '*/*'
-        },
-        redirect: 'follow',
-        signal: AbortSignal.timeout(30000)
-      });
-    }
 
-  const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
+      if (upstream.ok) {
+        console.log(`Proxy attempt ${attempt + 1} successful`);
+        break;
+      } else {
+        throw new Error(`HTTP ${upstream.status}: ${upstream.statusText}`);
+      }
+    } catch (error) {
+      lastError = error;
+      console.warn(`Proxy attempt ${attempt + 1} failed:`, error);
+      
+      if (attempt < 2) {
+        // Wait before retry with exponential backoff
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+      }
+    }
+  }
+  
+  if (!upstream || !upstream.ok) {
+    throw lastError || new Error('All proxy attempts failed');
+  }
+
+    const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
     
-    // Set response headers for better compatibility
+    // Set response headers for iframe compatibility
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     
-    // Remove frame-busting and security headers
+    // Remove all restrictive headers that prevent iframe embedding
     res.removeHeader('X-Frame-Options');
     res.removeHeader('Content-Security-Policy');
     res.removeHeader('X-Content-Type-Options');
     res.removeHeader('Referrer-Policy');
     
-    // Add permissive headers for iframe embedding
+    // Set permissive headers for iframe embedding
     res.setHeader('X-Frame-Options', 'ALLOWALL');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
+    
+    console.log('Proxy response headers set for iframe compatibility');
 
-  if (contentType.includes('text/html')) {
+    if (contentType.includes('text/html')) {
       let html = await upstream.text();
 
       // Handle empty or malformed HTML
       if (!html || html.trim().length === 0) {
         html = `<html><head><title>Empty Response</title></head><body><h1>Empty Response</h1><p>The server returned an empty response.</p></body></html>`;
       }
+      
+      // Basic security: remove potentially dangerous scripts
+      html = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+      html = html.replace(/<script[^>]*\/?>/gi, '');
+      
+      // Remove any existing CSP or frame-busting meta tags
+      html = html.replace(/<meta[^>]+http-equiv=["']?content-security-policy["']?[^>]*>/gi, '');
+      html = html.replace(/<meta[^>]+http-equiv=["']?x-frame-options["']?[^>]*>/gi, '');
+      html = html.replace(/<meta[^>]+http-equiv=["']?referrer-policy["']?[^>]*>/gi, '');
 
-      // Best-effort: ensure relative URLs work via <base>, and keep navigation inside proxy
-  const urlObj = new URL(normalizedTarget);
+      // Get base URL for relative URL resolution
+      const urlObj = new URL(normalizedTarget);
       const baseHref = urlObj.origin + (urlObj.pathname.endsWith('/') ? urlObj.pathname : urlObj.pathname.replace(/[^/]*$/, ''));
 
-      // Enhanced injection script for better compatibility
+      // Enhanced injection script for comprehensive URL rewriting
       const headNavScript = `
         <script>
         (function(){
@@ -148,7 +210,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               } catch(_){}
             });
             
-            // Log successful proxy injection
             console.log('Proxy navigation handlers injected for:', TARGET_URL);
           } catch(e){ 
             console.error('Proxy injection failed:', e);
@@ -197,12 +258,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return absUrl;
       };
 
-      // Replace anchor hrefs (more comprehensive)
-    html = html.replace(/<a\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
+      // Replace anchor hrefs (comprehensive)
+      html = html.replace(/<a\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
         if (/^\s*javascript:|^mailto:|^tel:|^#/i.test(href)) return m;
         try {
-      const abs = withGoogleIgu(new URL(href, baseHref).toString());
-      return `<a ${pre}href="${safe(abs)}"${post}>`;
+          const abs = withGoogleIgu(new URL(href, baseHref).toString());
+          return `<a ${pre}href="${safe(abs)}"${post}>`;
         } catch {
           return m;
         }
@@ -219,7 +280,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       });
 
-      // Rewrite iframe and frame sources to go through proxy to avoid X-Frame-Options blocks
+      // Rewrite iframe and frame sources
       html = html.replace(/<(iframe|frame)\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, tag, pre, src, post) => {
         try {
           const abs = withGoogleIgu(new URL(src, baseHref).toString());
@@ -270,7 +331,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               }
             }
 
-            // Enhanced click handler with better error handling
+            // Enhanced click handler
             document.addEventListener('click', function(e){
               try {
                 var a = e.target.closest && e.target.closest('a[href]');
@@ -397,6 +458,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               console.error('Location API patching error:', err);
             }
 
+            // Handle frame-busting attempts
+            try {
+              var originalTop = window.top;
+              var originalParent = window.parent;
+              var originalFrameElement = window.frameElement;
+              
+              Object.defineProperty(window, 'top', {
+                get: function() { return window; },
+                configurable: true
+              });
+              
+              Object.defineProperty(window, 'parent', {
+                get: function() { return window; },
+                configurable: true
+              });
+              
+              Object.defineProperty(window, 'frameElement', {
+                get: function() { return null; },
+                configurable: true
+              });
+              
+              console.log('Frame-busting protection enabled');
+            } catch(err) {
+              console.error('Frame-busting protection error:', err);
+            }
+
             console.log('Enhanced proxy handlers successfully initialized for:', TARGET_URL);
           } catch(err) {
             console.error('Global proxy initialization error:', err);
@@ -416,10 +503,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    // Non-HTML: just pass through bytes with better error handling
+    // Non-HTML: just pass through bytes
     try {
       const buf = Buffer.from(await upstream.arrayBuffer());
+      
+      // Set appropriate headers for different content types
+      if (contentType.includes('image/')) {
+        res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache images
+      } else if (contentType.includes('text/css') || contentType.includes('application/javascript')) {
+        res.setHeader('Cache-Control', 'public, max-age=1800'); // Cache CSS/JS
+      }
+      
       res.status(upstream.status).send(buf);
+      console.log(`Successfully proxied ${contentType} content`);
     } catch (bufferError) {
       console.error('Buffer processing error:', bufferError);
       res.status(500).send('Failed to process non-HTML content');

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #005a87;
+        }
+        .iframe-container {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            height: 400px;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Proxy Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Test External Websites</h2>
+        <p>Click the buttons below to test if the proxy can load external websites:</p>
+        
+        <button class="test-button" onclick="testWebsite('https://www.google.com')">Test Google</button>
+        <button class="test-button" onclick="testWebsite('https://github.com')">Test GitHub</button>
+        <button class="test-button" onclick="testWebsite('https://example.com')">Test Example.com</button>
+        <button class="test-button" onclick="testWebsite('https://httpbin.org/headers')">Test HTTPBin</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="status"></div>
+        <div class="iframe-container">
+            <iframe id="test-iframe" src="about:blank"></iframe>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Manual URL Test</h2>
+        <input type="text" id="url-input" placeholder="Enter URL to test" style="width: 300px; padding: 8px; margin-right: 10px;">
+        <button class="test-button" onclick="testCustomUrl()">Test URL</button>
+    </div>
+
+    <script>
+        function testWebsite(url) {
+            const statusDiv = document.getElementById('status');
+            const iframe = document.getElementById('test-iframe');
+            
+            statusDiv.innerHTML = `<div class="status">Testing ${url}...</div>`;
+            
+            try {
+                const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
+                console.log('Loading via proxy:', proxyUrl);
+                
+                iframe.src = proxyUrl;
+                
+                iframe.onload = function() {
+                    statusDiv.innerHTML = `<div class="status success">Successfully loaded ${url} via proxy</div>`;
+                };
+                
+                iframe.onerror = function() {
+                    statusDiv.innerHTML = `<div class="status error">Failed to load ${url} via proxy</div>`;
+                };
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">Error testing ${url}: ${error.message}</div>`;
+            }
+        }
+        
+        function testCustomUrl() {
+            const urlInput = document.getElementById('url-input');
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+            
+            // Add protocol if missing
+            let fullUrl = url;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                fullUrl = 'https://' + url;
+            }
+            
+            testWebsite(fullUrl);
+        }
+        
+        // Test a simple website on page load
+        window.onload = function() {
+            setTimeout(() => {
+                testWebsite('https://example.com');
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
