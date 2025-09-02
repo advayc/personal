@@ -470,15 +470,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(500).send('Failed to process non-HTML content');
       }
       
-    } catch (fetchError) {
+    } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
-      if (fetchError.name === 'AbortError') {
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         throw new Error('Request timeout - the website took too long to respond');
       }
       throw fetchError;
     }
     
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Proxy error for URL:', target, 'Error:', err);
     
     // Enhanced error response with fallback content
@@ -501,7 +501,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           <h2 class="error-title">Connection Failed</h2>
           <div class="error-message">
             <p>Unable to load: <strong>${target}</strong></p>
-            <p>Error: ${err?.message || String(err)}</p>
+            <p>Error: ${err instanceof Error ? err.message : String(err)}</p>
             <p>This might be due to:</p>
             <ul>
               <li>The website blocking requests</li>
