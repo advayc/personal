@@ -809,7 +809,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               onLoad={handleIframeLoad}
               onError={handleIframeError}
               sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-pointer-lock"
-              allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
+              allow="geolocation; microphone; camera; midi; xr-spatial-tracking; accelerometer; gyroscope; payment; encrypted-media; usb"
             />
             {isLoading && (
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A90E2] animate-pulse"></div>

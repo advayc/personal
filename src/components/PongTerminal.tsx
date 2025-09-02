@@ -223,7 +223,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
               <span className="text-gprimary mr-2 font-mono">$</span>
               <span className="text-yellow-400 font-mono">echo</span>
               <span className="text-primary ml-2 font-mono leading-tight tracking-tight">
-                don't type play;
+                don&apos;t type play;
               </span>
             </div>
 
@@ -280,7 +280,7 @@ const PongTerminal: React.FC<PongTerminalProps> = ({
               </span>
             )}
             <span className="text-gray-400 mt-2">
-              Type 'play;' to play again
+              Type &apos;play;&apos; to play again
             </span>
           </motion.div>
         )}
