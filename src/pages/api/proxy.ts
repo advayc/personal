@@ -1,13 +1,33 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { Readable } from 'stream';
+
+export const config = {
+  api: {
+    bodyParser: false
+  }
+};
 
 // Enhanced proxy that fetches external content and serves it without frame-busting headers.
 // Includes fallback mechanisms and better error handling.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const target = (req.query.url as string) || '';
+  let target = (req.query.url as string) || '';
   if (!target || !/^https?:\/\//i.test(target)) {
     res.status(400).send('Missing or invalid url param');
     return;
   }
+
+  // Unwrap already-proxied URLs (defensive)
+  try {
+    while (true) {
+      const decoded = decodeURIComponent(target);
+      if (/\/api\/proxy\?url=/i.test(decoded)) {
+        const u = new URL(decoded, `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers['x-forwarded-host'] || req.headers.host}`);
+        const inner = u.searchParams.get('url');
+        if (inner) { target = inner; continue; }
+      }
+      break;
+    }
+  } catch {}
 
   // Normalize target for better iframe compatibility (e.g., Google)
   let normalizedTarget = target;
@@ -21,6 +41,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // ignore
   }
 
+  const method = (req.method || 'GET').toUpperCase();
+  const readRawBody = async (r: NextApiRequest): Promise<Buffer | undefined> => {
+    if (method === 'GET' || method === 'HEAD') return undefined;
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      (r as any).on('data', (c: Buffer) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
+      (r as any).on('end', () => resolve(Buffer.concat(chunks)));
+      (r as any).on('error', reject);
+    });
+  };
+
   // List of fallback user agents for better compatibility
   const userAgents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -32,59 +63,69 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
 
   try {
-    // First attempt with standard headers
-    let upstream;
-    try {
-      upstream = await fetch(normalizedTarget, {
-        headers: {
-          'User-Agent': randomUserAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Upgrade-Insecure-Requests': '1'
-        },
-        redirect: 'follow',
-        signal: AbortSignal.timeout(30000) // 30 second timeout
-      });
-    } catch (firstError) {
-      // Fallback attempt with minimal headers
-      console.warn('First fetch failed, trying fallback:', firstError);
-  upstream = await fetch(normalizedTarget, {
-        headers: {
-          'User-Agent': randomUserAgent,
-          'Accept': '*/*'
-        },
-        redirect: 'follow',
-        signal: AbortSignal.timeout(30000)
-      });
+    // Prepare method, body and safe headers
+    const targetUrl = new URL(normalizedTarget);
+    const incomingHeaders = req.headers;
+    const forwardHeaders: Record<string, string> = {
+      'user-agent': randomUserAgent,
+      'accept': incomingHeaders['accept'] as string || 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+      'accept-language': (incomingHeaders['accept-language'] as string) || 'en-US,en;q=0.9',
+      'cache-control': 'no-cache',
+      'pragma': 'no-cache',
+      'upgrade-insecure-requests': '1'
+    };
+    if (incomingHeaders['content-type']) forwardHeaders['content-type'] = String(incomingHeaders['content-type']);
+    if (incomingHeaders['cookie']) forwardHeaders['cookie'] = String(incomingHeaders['cookie']);
+    // Spoof a target-origin Referer/Origin when applicable (helps with CSRF checks)
+    forwardHeaders['referer'] = targetUrl.origin + '/';
+    if (method !== 'GET' && method !== 'HEAD') {
+      forwardHeaders['origin'] = targetUrl.origin;
     }
 
-  const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
+    const rawBody = await readRawBody(req);
+
+    // First attempt
+    let upstream: Response;
+    try {
+      upstream = await fetch(normalizedTarget, {
+        method,
+        headers: forwardHeaders,
+        body: rawBody as any,
+        redirect: 'follow',
+        signal: AbortSignal.timeout(30000)
+      } as RequestInit);
+    } catch (firstError) {
+      console.warn('First fetch failed, trying fallback:', firstError);
+      const fallbackHeaders: Record<string, string> = { 'user-agent': randomUserAgent, 'accept': '*/*' };
+      if (incomingHeaders['content-type']) fallbackHeaders['content-type'] = String(incomingHeaders['content-type']);
+      upstream = await fetch(normalizedTarget, {
+        method,
+        headers: fallbackHeaders,
+        body: rawBody as any,
+        redirect: 'follow',
+        signal: AbortSignal.timeout(30000)
+      } as RequestInit);
+    }
+
+    const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
+    const finalUrl = upstream.url || normalizedTarget;
     
     // Set response headers for better compatibility
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    
-    // Remove frame-busting and security headers
-    res.removeHeader('X-Frame-Options');
-    res.removeHeader('Content-Security-Policy');
-    res.removeHeader('X-Content-Type-Options');
-    res.removeHeader('Referrer-Policy');
-    
-    // Add permissive headers for iframe embedding
-    res.setHeader('X-Frame-Options', 'ALLOWALL');
+    // Do NOT set X-Frame-Options at all; leave it absent
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
 
-  if (contentType.includes('text/html')) {
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+
+    if (contentType.includes('text/html')) {
       let html = await upstream.text();
 
       // Handle empty or malformed HTML
@@ -93,7 +134,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Best-effort: ensure relative URLs work via <base>, and keep navigation inside proxy
-  const urlObj = new URL(normalizedTarget);
+      const urlObj = new URL(finalUrl);
       const baseHref = urlObj.origin + (urlObj.pathname.endsWith('/') ? urlObj.pathname : urlObj.pathname.replace(/[^/]*$/, ''));
 
       // Enhanced injection script for better compatibility
@@ -198,11 +239,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
 
       // Replace anchor hrefs (more comprehensive)
-    html = html.replace(/<a\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
+      html = html.replace(/<a\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
         if (/^\s*javascript:|^mailto:|^tel:|^#/i.test(href)) return m;
         try {
-      const abs = withGoogleIgu(new URL(href, baseHref).toString());
-      return `<a ${pre}href="${safe(abs)}"${post}>`;
+          const abs = withGoogleIgu(new URL(href, baseHref).toString());
+          return `<a ${pre}href="${safe(abs)}"${post}>`;
         } catch {
           return m;
         }
@@ -218,6 +259,55 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return m;
         }
       });
+
+      // Rewrite scripts and stylesheets
+      html = html.replace(/<script\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        try {
+          const abs = new URL(src, baseHref).toString();
+          // Strip SRI/crossorigin to avoid blocks when proxying
+          pre = pre.replace(/\sintegrity=["'][^"']+["']/gi, '').replace(/\scrossorigin=["'][^"']+["']/gi, '');
+          return `<script ${pre}src="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      html = html.replace(/<link\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
+        try {
+          const abs = new URL(href, baseHref).toString();
+          pre = pre.replace(/\sintegrity=["'][^"']+["']/gi, '').replace(/\scrossorigin=["'][^"']+["']/gi, '');
+          return `<link ${pre}href="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+
+      // Images and media
+      html = html.replace(/<(img|input)\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, tag, pre, src, post) => {
+        try { const abs = new URL(src, baseHref).toString(); return `<${tag} ${pre}src="${safe(abs)}"${post}>`; } catch { return m; }
+      });
+      html = html.replace(/<(video|audio)\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, tag, pre, src, post) => {
+        try { const abs = new URL(src, baseHref).toString(); return `<${tag} ${pre}src="${safe(abs)}"${post}>`; } catch { return m; }
+      });
+      html = html.replace(/<video\s+([^>]*?)poster=["']([^"']+)["']([^>]*)>/gi, (m, pre, poster, post) => {
+        try { const abs = new URL(poster, baseHref).toString(); return `<video ${pre}poster="${safe(abs)}"${post}>`; } catch { return m; }
+      });
+      html = html.replace(/<source\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        try { const abs = new URL(src, baseHref).toString(); return `<source ${pre}src="${safe(abs)}"${post}>`; } catch { return m; }
+      });
+
+      // srcset rewriting helper
+      const rewriteSrcset = (val: string) => {
+        try {
+          const parts = val.split(',');
+          const out = parts.map(p => {
+            const trimmed = p.trim();
+            const spaceIdx = trimmed.indexOf(' ');
+            const urlPart = spaceIdx === -1 ? trimmed : trimmed.slice(0, spaceIdx);
+            const desc = spaceIdx === -1 ? '' : trimmed.slice(spaceIdx);
+            if (/^data:|^blob:|^javascript:/i.test(urlPart)) return trimmed; 
+            const abs = withGoogleIgu(new URL(urlPart, baseHref).toString());
+            return `${safe(abs)}${desc}`;
+          });
+          return out.join(', ');
+        } catch { return val; }
+      };
+      html = html.replace(/\s(srcset)=["']([^"']+)["']/gi, (m, attr, val) => ` ${attr}="${rewriteSrcset(val)}"`);
 
       // Rewrite iframe and frame sources to go through proxy to avoid X-Frame-Options blocks
       html = html.replace(/<(iframe|frame)\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, tag, pre, src, post) => {
@@ -252,7 +342,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         } catch { return m; }
       });
 
-      // Enhanced client-side navigation interceptor
+      // Inline style url(...) and <style> blocks
+      const rewriteCssUrls = (css: string) => {
+        try {
+          return css
+            // @import "..."
+            .replace(/@import\s+["']([^"']+)["']/gi, (m, u) => {
+              try { const abs = new URL(u, baseHref).toString(); return `@import "${safe(abs)}"`; } catch { return m; }
+            })
+            // url(...) with or without quotes
+            .replace(/url\(([^)]+)\)/gi, (m, group) => {
+              const raw = group.trim().replace(/^['"]|['"]$/g, '');
+              if (/^data:|^blob:/i.test(raw)) return m;
+              try { const abs = new URL(raw, baseHref).toString(); return `url(${safe(abs)})`; } catch { return m; }
+            });
+        } catch { return css; }
+      };
+      html = html.replace(/<style(\b[^>]*)>([\s\S]*?)<\/style>/gi, (m, attrs, css) => `<style${attrs}>${rewriteCssUrls(css)}</style>`);
+      html = html.replace(/style=["']([\s\S]*?)["']/gi, (m, css) => `style="${rewriteCssUrls(css)}"`);
+
+      // Enhanced client-side navigation and network interceptor
       const clientSideScript = `
         <script>
         (function(){
@@ -269,6 +378,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return u; 
               }
             }
+
+            // fetch() override to route cross-origin requests through proxy
+            try {
+              var originalFetch = window.fetch;
+              window.fetch = function(input, init){
+                try {
+                  var url = (typeof input === 'string') ? input : (input && input.url ? input.url : '');
+                  if (url && !url.startsWith(PROXY_PATH)) {
+                    url = toProxy(url);
+                    if (typeof input === 'string') {
+                      input = url;
+                    } else if (input && input.url) {
+                      input = new Request(url, input);
+                    }
+                    if (init && init.mode) init.mode = 'same-origin';
+                  }
+                } catch(_) {}
+                return originalFetch.apply(this, arguments);
+              };
+            } catch(err) { console.error('fetch override error:', err); }
+
+            // XMLHttpRequest override
+            try {
+              var OrigOpen = XMLHttpRequest.prototype.open;
+              XMLHttpRequest.prototype.open = function(method, url){
+                try { if (url && !String(url).startsWith(PROXY_PATH)) { url = toProxy(String(url)); } } catch(_) {}
+                return OrigOpen.apply(this, [method, url].concat([].slice.call(arguments, 2)));
+              };
+            } catch(err) { console.error('XHR override error:', err); }
 
             // Enhanced click handler with better error handling
             document.addEventListener('click', function(e){
@@ -416,13 +554,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    // Non-HTML: just pass through bytes with better error handling
+    // CSS responses: rewrite url(...) references
+    if (contentType.includes('text/css') || /\.css(\?|$)/i.test(finalUrl)) {
+      try {
+        const cssText = await upstream.text();
+        const baseForCss = finalUrl.replace(/[^\/]*$/, '');
+        const rewritten = cssText
+          .replace(/@import\s+["']([^"']+)["']/gi, (m, u) => { try { const abs = new URL(u, baseForCss).toString(); return `@import "${'/api/proxy?url=' + encodeURIComponent(abs)}"`; } catch { return m; } })
+          .replace(/url\(([^)]+)\)/gi, (m, group) => { const raw = group.trim().replace(/^['"]|['"]$/g, ''); if (/^data:|^blob:/i.test(raw)) return m; try { const abs = new URL(raw, baseForCss).toString(); return `url(${('/api/proxy?url=' + encodeURIComponent(abs))})`; } catch { return m; } });
+        res.status(upstream.status).setHeader('Content-Type', 'text/css').send(rewritten);
+      } catch (e) {
+        console.error('CSS rewrite error:', e);
+        const buf = Buffer.from(await upstream.arrayBuffer());
+        res.status(upstream.status).send(buf);
+      }
+      return;
+    }
+
+    // Non-HTML/CSS: stream through with header sanitation
     try {
-      const buf = Buffer.from(await upstream.arrayBuffer());
-      res.status(upstream.status).send(buf);
+      // Forward a subset of safe headers
+      const hopByHop = new Set(['content-security-policy','x-frame-options','cross-origin-opener-policy','cross-origin-embedder-policy','cross-origin-resource-policy']);
+      const passHeaders: Record<string, string> = {};
+      ['content-type','content-disposition','cache-control','pragma','expires','accept-ranges','etag','last-modified'].forEach((h) => {
+        const v = upstream.headers.get(h);
+        if (v && !hopByHop.has(h)) res.setHeader(h, v);
+      });
+
+      if (upstream.body) {
+        res.status(upstream.status);
+        const nodeStream = Readable.fromWeb(upstream.body as any);
+        nodeStream.on('error', (e) => { try { res.destroy(e as any); } catch {} });
+        nodeStream.pipe(res);
+      } else {
+        const buf = Buffer.from(await upstream.arrayBuffer());
+        res.status(upstream.status).send(buf);
+      }
     } catch (bufferError) {
-      console.error('Buffer processing error:', bufferError);
-      res.status(500).send('Failed to process non-HTML content');
+      console.error('Buffer/stream processing error:', bufferError);
+      res.status(500).send('Failed to process content');
     }
   } catch (err: any) {
     console.error('Proxy error for URL:', target, 'Error:', err);
