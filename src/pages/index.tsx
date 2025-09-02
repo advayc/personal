@@ -12,6 +12,7 @@ import { calculateAge } from '@/utils/age';
 import PongTerminal from "@/components/PongTerminal";
 import SnakeTerminal from "@/components/SnakeTerminal";
 import DrawTerminal from "@/components/DrawTerminal";
+import InternetTerminal from "@/components/InternetTerminal";
 import CommandPalette from "@/components/CommandPalette";
 import ShortcutHint from "@/components/ShortcutHint";
 import HitCounter from '@/components/HitCounter';
@@ -73,6 +74,7 @@ export default function Home() {
   const [pongTerminalOpen, setPongTerminalOpen] = useState(false);
   const [snakeTerminalOpen, setSnakeTerminalOpen] = useState(false);
   const [drawTerminalOpen, setDrawTerminalOpen] = useState(false);
+  const [internetTerminalOpen, setInternetTerminalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   // Free-move mode and persisted icon positions
@@ -238,6 +240,14 @@ export default function Home() {
       }
       return;
     }
+    if (fileId === 'internet') {
+      const existingInternet = document.querySelector('[data-internet-instance]');
+      if (!existingInternet) {
+        setInternetTerminalOpen(true);
+        setIsTerminalOpen(true);
+      }
+      return;
+    }
 
     const fileConfig = fileConfigs.find(config => config.id === fileId);
     if (fileConfig && fileConfig.terminalConfig) {
@@ -264,6 +274,7 @@ export default function Home() {
   };
   const handleCloseSnake = () => { setSnakeTerminalOpen(false); };
   const handleCloseDraw = () => { setDrawTerminalOpen(false); };
+  const handleCloseInternet = () => { setInternetTerminalOpen(false); };
 
   return (
     <motion.main 
@@ -373,9 +384,15 @@ export default function Home() {
                 workExperience={terminal.workExperience}
                 initialX={isMobile ? undefined : terminal.position.x}
                 initialY={isMobile ? undefined : terminal.position.y}
-              />
+                />
             </motion.div>
           ))}
+          {internetTerminalOpen && (
+            <InternetTerminal
+              onClose={handleCloseInternet}
+              headerText="advaychandorkar@personalsite: ~/internet/browser"
+            />
+          )}
           {pongTerminalOpen && (
             <PongTerminal
             onClose={handleClosePong}

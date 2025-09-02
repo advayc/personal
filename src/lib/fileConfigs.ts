@@ -140,6 +140,17 @@ export const fileConfigs = [
     }
   },
   {
+    id: 'internet',
+    filename: 'internet.exe',
+    imageSrc: '/icons/internet.png',
+    terminalConfig: {
+      headerText: "advaychandorkar@personalsite: ~/personal/internet (goodie)",
+      pathText: "~/personal/internet",
+      branchText: "main ✔",
+      infoText: "browse the internet like it's 1999!"
+    }
+  },
+  {
     id: 'pong',
     filename: 'pong.exe',
     imageSrc: '/icons/globe.png'
@@ -148,8 +159,7 @@ export const fileConfigs = [
     id: 'snake',
     filename: 'snake.exe',
     imageSrc: '/icons/msn3.png'
-  }
-  ,
+  },
   {
     id: 'draw',
     filename: 'draw.exe',
