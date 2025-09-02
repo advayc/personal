@@ -686,8 +686,7 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
               title="Web Content"
               onLoad={handleIframeLoad}
               onError={handleIframeError}
-              // Disallow top navigation to prevent frame-busting redirects
-              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-pointer-lock allow-modals"
+              /* Removed sandbox attribute to allow sites that refuse to connect due to sandbox restrictions */
               allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
             />
             {isLoading && (
