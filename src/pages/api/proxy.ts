@@ -3,6 +3,25 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 // Enhanced proxy that fetches external content and serves it without frame-busting headers.
 // Includes fallback mechanisms and better error handling.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Set comprehensive CORS headers for all requests
+  const setCorsHeaders = () => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, User-Agent, Referer, Cookie, X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type, Date, Server, Transfer-Encoding, X-Frame-Options');
+    res.setHeader('Vary', 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  };
+
+  // Set CORS headers immediately
+  setCorsHeaders();
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
   let target = (req.query.url as string) || '';
   if (!target || !/^https?:\/\//i.test(target)) {
     res.status(400).send('Missing or invalid url param');
@@ -49,9 +68,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'User-Agent': randomUserAgent,
       'Accept': (req.headers['accept'] as string) || '*/*',
       'Accept-Language': (req.headers['accept-language'] as string) || 'en-US,en;q=0.9',
+      'Accept-Encoding': 'gzip, deflate, br',
       'Cache-Control': 'no-cache',
       'Pragma': 'no-cache',
-      'Upgrade-Insecure-Requests': '1'
+      'Upgrade-Insecure-Requests': '1',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'cross-site',
+      'DNT': '1'
     };
     // Forward common headers when present
     if (req.headers['cookie']) upstreamHeaders['Cookie'] = req.headers['cookie'] as string;
@@ -98,9 +122,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     // Set response headers for better compatibility and embedding
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
     
     // Remove frame-busting and restrictive security headers
     res.removeHeader('X-Frame-Options');
@@ -112,17 +137,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.removeHeader('Cross-Origin-Resource-Policy');
     res.removeHeader('Origin-Agent-Cluster');
     res.removeHeader('Permissions-Policy');
+    res.removeHeader('Strict-Transport-Security');
     
     // Add permissive headers for iframe embedding
     res.setHeader('X-Frame-Options', 'ALLOWALL');
+    
+    // Set comprehensive CORS headers again to ensure they're not overridden
+    setCorsHeaders();
+    
     // Also add an allow-all CSP header (with sandbox) to supersede upstream CSP (meta is also injected)
     res.setHeader(
       'Content-Security-Policy',
-      "frame-ancestors *; sandbox allow-scripts allow-forms allow-same-origin allow-popups allow-modals; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; connect-src * data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
+      "frame-ancestors *; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; connect-src * data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; font-src * data:; object-src *; frame-src *;"
     );
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', '*');
 
   if (contentType.includes('text/html')) {
       let html = await upstream.text();
@@ -201,7 +228,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         html = html.replace(/<head(\b[^>]*)>/i, (m, attrs) => `
           <head${attrs}>
           <base href="${baseHref}" />
-          <meta http-equiv="Content-Security-Policy" content="frame-ancestors *; sandbox allow-scripts allow-forms allow-same-origin allow-popups allow-modals; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; connect-src * data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+          <meta http-equiv="Content-Security-Policy" content="frame-ancestors *; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; connect-src * data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; font-src * data:; object-src *; frame-src *;">
+          <meta http-equiv="Access-Control-Allow-Origin" content="*">
+          <meta http-equiv="Access-Control-Allow-Methods" content="GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD">
+          <meta http-equiv="Access-Control-Allow-Headers" content="*">
           <style id="__proxy_base_css">html,body{opacity:1 !important;}</style>
           ${headNavScript}
         `);
@@ -378,6 +408,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             var BASE = '${baseHref}';
             var TARGET_URL = '${normalizedTarget}';
             
+            // Override XMLHttpRequest to proxy AJAX calls
+            var origXHR = window.XMLHttpRequest;
+            window.XMLHttpRequest = function() {
+              var xhr = new origXHR();
+              var origOpen = xhr.open;
+              xhr.open = function(method, url, async, user, password) {
+                try {
+                  if (url && !url.startsWith('data:') && !url.startsWith('blob:') && !url.startsWith(PROXY_PATH)) {
+                    var absoluteUrl = new URL(url, BASE).toString();
+                    url = PROXY_PATH + encodeURIComponent(absoluteUrl);
+                    console.log('XHR proxied:', arguments[1], '->', url);
+                  }
+                } catch(e) {
+                  console.warn('XHR proxy error:', e);
+                }
+                return origOpen.call(this, method, url, async, user, password);
+              };
+              return xhr;
+            };
+            
+            // Override fetch to proxy fetch calls
+            var origFetch = window.fetch;
+            window.fetch = function(input, init) {
+              try {
+                var url = typeof input === 'string' ? input : input.url;
+                if (url && !url.startsWith('data:') && !url.startsWith('blob:') && !url.startsWith(PROXY_PATH)) {
+                  var absoluteUrl = new URL(url, BASE).toString();
+                  var proxiedUrl = PROXY_PATH + encodeURIComponent(absoluteUrl);
+                  console.log('Fetch proxied:', url, '->', proxiedUrl);
+                  if (typeof input === 'string') {
+                    input = proxiedUrl;
+                  } else {
+                    input = new Request(proxiedUrl, input);
+                  }
+                }
+              } catch(e) {
+                console.warn('Fetch proxy error:', e);
+              }
+              return origFetch.call(window, input, init);
+            };
+            
             function toProxy(u){
               try { 
                 if (u.startsWith(PROXY_PATH)) return u;
@@ -543,13 +614,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } catch (err: any) {
     console.error('Proxy error for URL:', target, 'Error:', err);
-    
+
+    // Ensure CORS headers are set even for error responses
+    setCorsHeaders();
+
     // Enhanced error response with fallback content
     const errorHtml = `
       <!DOCTYPE html>
       <html>
       <head>
         <title>Proxy Error</title>
+        <meta http-equiv="Access-Control-Allow-Origin" content="*">
+        <meta http-equiv="Access-Control-Allow-Methods" content="GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD">
+        <meta http-equiv="Access-Control-Allow-Headers" content="*">
         <style>
           body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
           .error-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -571,6 +648,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               <li>Network connectivity issues</li>
               <li>Server timeout</li>
               <li>Invalid SSL certificate</li>
+              <li>CORS policy restrictions</li>
             </ul>
           </div>
           <button class="retry-button" onclick="window.location.reload()">Retry</button>

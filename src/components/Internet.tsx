@@ -49,6 +49,10 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [retryCount, setRetryCount] = useState(0);
   const [lastError, setLastError] = useState<string | null>(null);
+  // Suggestions/state for address bar
+  const [filteredSuggestions, setFilteredSuggestions] = useState<Array<{ title: string; url: string; type?: 'search' | 'history' | 'bookmark' }>>([]);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
+  const [isUrlDropdownOpen, setIsUrlDropdownOpen] = useState(false);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
@@ -69,6 +73,71 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       }
     } catch {}
     return u;
+  };
+
+  // URL helpers and search integration
+  const stripProtocol = (url: string) => url.replace(/^(https?:\/\/|ftp:\/\/)/i, "");
+  const normalizeUrlInline = (url: string) => url
+    .trim()
+    .toLowerCase()
+    .replace(/^(https?:\/\/|ftp:\/\/)/i, "")
+    .replace(/\/$/g, "")
+    .replace(/^www\./i, "");
+  const isValidUrl = (input: string) => {
+    const s = input.trim();
+    if (!s) return false;
+    if (/^localhost(:\d+)?(\/|$)/i.test(s)) return true;
+    if (/^\d{1,3}(\.\d{1,3}){3}(:\d+)?(\/|$)?$/.test(s)) return true; // IPv4
+    return /^[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?(\/|$)?$/i.test(s);
+  };
+
+  const handleSearch = (query: string) => {
+    const searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+    navigateToUrl(searchUrl);
+  };
+
+  const handleFilterSuggestions = (inputValue: string) => {
+    const normalizedInput = normalizeUrlInline(inputValue);
+    const matchesBookmark = bookmarks
+      .map(b => ({
+        title: b.title || b.url,
+        url: b.url,
+        type: 'bookmark' as const
+      }))
+      .filter(b =>
+        b.title.toLowerCase().includes(normalizedInput) ||
+        normalizeUrlInline(b.url).includes(normalizedInput)
+      );
+
+    const matchesHistory = history
+      .slice(0, 50)
+      .map(h => ({ title: h.title || h.url, url: h.url, type: 'history' as const }))
+      .filter(h =>
+        (h.title || '').toLowerCase().includes(normalizedInput) ||
+        normalizeUrlInline(h.url).includes(normalizedInput)
+      );
+
+    const suggestions: Array<{ title: string; url: string; type?: 'search' | 'history' | 'bookmark' }> = [
+      ...matchesBookmark,
+      ...matchesHistory
+    ];
+
+    if (!isValidUrl(inputValue) && inputValue.trim().length > 0) {
+      suggestions.push({ title: `Search "${inputValue}"`, url: `bing:${inputValue}`, type: 'search' });
+    }
+
+    setFilteredSuggestions(suggestions);
+    setSelectedSuggestionIndex(0);
+  };
+
+  const handleNavigateFromSuggestion = (s: { title: string; url: string; type?: 'search' | 'history' | 'bookmark' }) => {
+    if (s.type === 'search') {
+      const q = s.url.replace(/^bing:/i, '').trim();
+      handleSearch(q);
+    } else {
+      navigateToUrl(s.url);
+    }
+    setIsUrlDropdownOpen(false);
   };
 
   // Load data from localStorage on mount
@@ -240,19 +309,20 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       url = unwrapProxied(url);
     }
 
-    // Add protocol if missing
+    // Add protocol if missing and handle bing: query marker
     let fullUrl = url;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      // Check if it looks like a search query (contains spaces or no dots)
-      if (url.includes(' ') || (!url.includes('.') && !url.includes('localhost'))) {
-        // Default to Google Search; add igu=1 to improve iframe behavior
-        fullUrl = `https://www.google.com/search?q=${encodeURIComponent(url)}&igu=1`;
+    if (/^bing:/i.test(url)) {
+      const q = url.replace(/^bing:/i, '').trim();
+      fullUrl = `https://www.bing.com/search?q=${encodeURIComponent(q)}`;
+    } else if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      if (!isValidUrl(url)) {
+        fullUrl = `https://www.bing.com/search?q=${encodeURIComponent(url)}`;
       } else {
         fullUrl = `https://${url}`;
       }
     }
 
-    // If navigating to Google, ensure igu=1 param is present to reduce frame busting
+  // If navigating to Google, ensure igu=1 param is present to reduce frame busting
     try {
       const u = new URL(fullUrl);
       const host = u.hostname;
@@ -262,7 +332,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
           u.pathname = '/webhp';
         }
         if (!u.searchParams.has('igu')) {
-        u.searchParams.set('igu', '1');
+      u.searchParams.set('igu', '1');
         }
         fullUrl = u.toString();
       }
@@ -470,7 +540,13 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
 
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    navigateToUrl(urlInput);
+    if (filteredSuggestions.length > 0 && isUrlDropdownOpen) {
+      handleNavigateFromSuggestion(filteredSuggestions[selectedSuggestionIndex]);
+    } else if (isValidUrl(urlInput)) {
+      navigateToUrl(urlInput);
+    } else {
+      handleSearch(urlInput);
+    }
   };
 
   const addBookmark = () => {
@@ -608,7 +684,31 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               ref={urlInputRef}
               type="text"
               value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
+              onChange={(e) => {
+                const strippedValue = stripProtocol(e.target.value);
+                setUrlInput(strippedValue);
+                handleFilterSuggestions(strippedValue);
+                setIsUrlDropdownOpen(true);
+              }}
+              onKeyDown={(e) => {
+                if (!isUrlDropdownOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+                  setIsUrlDropdownOpen(true);
+                }
+                if (isUrlDropdownOpen && filteredSuggestions.length > 0) {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setSelectedSuggestionIndex((i) => (i + 1) % filteredSuggestions.length);
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setSelectedSuggestionIndex((i) => (i - 1 + filteredSuggestions.length) % filteredSuggestions.length);
+                  } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleNavigateFromSuggestion(filteredSuggestions[selectedSuggestionIndex]);
+                  } else if (e.key === 'Escape') {
+                    setIsUrlDropdownOpen(false);
+                  }
+                }
+              }}
               className="flex-1 px-3 py-[5px] border border-[#9c9c9c] rounded-[16px] bg-white text-[13px] font-mono text-black shadow-[inset_0_1px_0_0_#ffffff,inset_0_0_6px_rgba(0,0,0,0.05)]"
               placeholder="Enter URL"
               spellCheck={false}
@@ -620,6 +720,23 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               Go
             </button>
           </form>
+          {/* Suggestions dropdown */}
+          {isUrlDropdownOpen && filteredSuggestions.length > 0 && (
+            <div className="absolute left-2 right-2 mt-9 z-10 bg-white border border-[#bdbdbd] rounded shadow">
+              {filteredSuggestions.map((s, idx) => (
+                <button
+                  key={s.title + idx}
+                  className={`w-full text-left px-3 py-2 text-[12px] ${idx === selectedSuggestionIndex ? 'bg-[#e6f0ff]' : ''}`}
+                  onMouseEnter={() => setSelectedSuggestionIndex(idx)}
+                  onMouseDown={(e) => { e.preventDefault(); }}
+                  onClick={() => handleNavigateFromSuggestion(s)}
+                >
+                  <span className="text-[#333]">{s.title}</span>
+                  <span className="ml-2 text-[#777]">{s.type === 'search' ? s.url.replace(/^bing:/i, 'Search: ') : s.url}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -691,7 +808,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               title="Web Content"
               onLoad={handleIframeLoad}
               onError={handleIframeError}
-              /* Removed sandbox attribute to allow sites that refuse to connect due to sandbox restrictions */
+              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-pointer-lock"
               allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
             />
             {isLoading && (
