@@ -75,6 +75,55 @@ export default function Home() {
   const [drawTerminalOpen, setDrawTerminalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // Free-move mode and persisted icon positions
+  const [freeMoveMode, setFreeMoveMode] = useState<boolean>(false);
+  const [iconPositions, setIconPositions] = useState<Record<string, {x:number;y:number}>>({});
+  
+  // Capture grid positions when switching to free-move mode
+  const captureGridPositions = () => {
+    if (!freeMoveMode) return; // Only capture when switching TO free-move mode
+    
+    const newPositions: Record<string, {x:number;y:number}> = {};
+    fileConfigs.forEach((fileConfig) => {
+      const element = document.querySelector(`[data-file-id="${fileConfig.id}"]`);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        // Store absolute screen coordinates
+        newPositions[fileConfig.id] = {
+          x: rect.left,
+          y: rect.top
+        };
+      }
+    });
+    
+    // Only update if we found positions
+    if (Object.keys(newPositions).length > 0) {
+      setIconPositions(newPositions);
+    }
+  };
+
+  // Function to handle free-move mode toggle
+  const handleFreeMoveToggle = (enabled: boolean) => {
+    if (enabled && !freeMoveMode) {
+      // Capture positions before switching to free-move
+      const newPositions: Record<string, {x:number;y:number}> = {};
+      fileConfigs.forEach((fileConfig) => {
+        const element = document.querySelector(`[data-file-id="${fileConfig.id}"]`);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          newPositions[fileConfig.id] = {
+            x: rect.left,
+            y: rect.top
+          };
+        }
+      });
+      
+      if (Object.keys(newPositions).length > 0) {
+        setIconPositions(newPositions);
+      }
+    }
+    setFreeMoveMode(enabled);
+  };
   // persisted settings
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
   const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
@@ -88,10 +137,17 @@ export default function Home() {
       const storedFont = localStorage.getItem('siteFontFamily');
       const storedBg = localStorage.getItem('siteBgStyle');
     const storedBgColor = localStorage.getItem('siteBgColor');
+      const storedFree = localStorage.getItem('siteFreeMove') === 'true';
+      const storedPos = localStorage.getItem('siteIconPositions');
       if (storedAccent) setAccentColor(storedAccent);
       if (storedFont) setFontFamily(storedFont);
   if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
     if (storedBgColor) setBgColor(storedBgColor);
+      setFreeMoveMode(storedFree);
+      // Only load positions if free-move mode is enabled and positions exist
+      if (storedFree && storedPos) {
+        try { setIconPositions(JSON.parse(storedPos)); } catch {}
+      }
     } catch {}
   }, []);
 
@@ -128,6 +184,8 @@ export default function Home() {
   useEffect(() => { try { localStorage.setItem('siteFontFamily', fontFamily); } catch {} }, [fontFamily]);
   useEffect(() => { try { localStorage.setItem('siteBgStyle', bgStyle); } catch {} }, [bgStyle]);
   useEffect(() => { try { localStorage.setItem('siteBgColor', bgColor); } catch {} }, [bgColor]);
+  useEffect(() => { try { localStorage.setItem('siteFreeMove', String(freeMoveMode)); } catch {} }, [freeMoveMode]);
+  useEffect(() => { try { localStorage.setItem('siteIconPositions', JSON.stringify(iconPositions)); } catch {} }, [iconPositions]);
 
   useEffect(() => {
     if (selected === 'light') {
@@ -209,7 +267,7 @@ export default function Home() {
 
   return (
     <motion.main 
-  className={`flex items-center justify-center min-h-screen`}
+      className={`flex items-center justify-center min-h-screen`}
       initial="hidden"
       animate="visible"
       variants={fadeIn}
@@ -250,12 +308,12 @@ export default function Home() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </Head>
-      
+  
   <div className="h-screen w-full relative flex items-center justify-center px-3 sm:px-0"
         style={bgStyle === 'grid' ? { backgroundColor: bgColor, backgroundImage: `linear-gradient(rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px)`, backgroundSize: '40px 40px', fontFamily }
           : bgStyle === 'dots' ? { backgroundColor: bgColor, backgroundImage: `radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.16) 1px, transparent 0)`, backgroundSize: '26px 26px', fontFamily }
           : { backgroundColor: bgColor, backgroundImage: 'none', fontFamily }}>
-        <motion.div variants={fadeIn} className="relative w-full max-w-[1100px]">
+  <motion.div variants={fadeIn} className="relative w-full max-w-[1100px]">
           <motion.h1 
             className="text-3xl sm:text-5xl font-bold text-center text-white mb-4 sm:mb-6 tracking-tight"
             variants={fadeIn}
@@ -283,17 +341,21 @@ export default function Home() {
               </div>
             </div>
           </motion.div>
-          <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-3 sm:gap-4 flex-wrap justify-center max-w-[92vw] px-2">
-            {fileConfigs.map((fileConfig) => (
-              <File
-                key={fileConfig.id}
-                setWindowOpen={() => openTerminal(fileConfig.id)}
-                className="px-1 sm:px-2"
-                filename={fileConfig.filename}
-                imageSrc={fileConfig.imageSrc}
-              />
-            ))}
-          </div>
+          {/* Files grid when not in free-move mode */}
+          {!freeMoveMode && (
+            <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-3 sm:gap-4 flex-wrap justify-center max-w-[92vw] px-2">
+              {fileConfigs.map((fileConfig) => (
+                <File
+                  key={fileConfig.id}
+                  setWindowOpen={() => openTerminal(fileConfig.id)}
+                  className="px-1 sm:px-2"
+                  filename={fileConfig.filename}
+                  imageSrc={fileConfig.imageSrc}
+                  id={fileConfig.id}
+                />
+              ))}
+            </div>
+          )}
           {terminals.map((terminal) => (
             <motion.div
               key={terminal.id}
@@ -333,6 +395,31 @@ export default function Home() {
             />
           )}
         </motion.div>
+        {/* Free-move absolute layer over the whole screen */}
+        {freeMoveMode && (
+          <div className="absolute inset-0 z-10 pointer-events-auto select-none">
+            {fileConfigs.map((fileConfig, idx) => {
+              // Use saved position or fallback to a reasonable default if no position captured yet
+              const pos = iconPositions[fileConfig.id] ?? { 
+                x: 250, 
+                y: 300
+              };
+              return (
+                <File
+                  key={fileConfig.id}
+                  id={fileConfig.id}
+                  freeMoveEnabled
+                  position={pos}
+                  onPositionChange={(p) => setIconPositions(prev => ({ ...prev, [fileConfig.id]: p }))}
+                  setWindowOpen={() => openTerminal(fileConfig.id)}
+                  className="px-1 sm:px-2"
+                  filename={fileConfig.filename}
+                  imageSrc={fileConfig.imageSrc}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
       <Footer selected={selected} setSelected={setSelected} accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
       <SelectionBox />
@@ -343,11 +430,13 @@ export default function Home() {
         setAccentColor={setAccentColor}
         setFontFamily={setFontFamily}
         setBgStyle={setBgStyle}
-  setBgColor={setBgColor}
+        setBgColor={setBgColor}
+        setFreeMoveMode={handleFreeMoveToggle}
         accentColor={accentColor}
         fontFamily={fontFamily}
         bgStyle={bgStyle}
-  bgColor={bgColor}
+        bgColor={bgColor}
+        freeMoveMode={freeMoveMode}
       />
       
     </motion.main>

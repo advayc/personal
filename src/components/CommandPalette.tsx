@@ -8,10 +8,13 @@ interface CommandPaletteProps {
   setFontFamily?: (f: string) => void;
   setBgStyle?: (s: 'grid' | 'dots' | 'none') => void;
   setBgColor?: (c: string) => void;
+  // New: toggle free-move desktop files
+  setFreeMoveMode?: (enabled: boolean) => void;
   accentColor?: string;
   fontFamily?: string;
   bgStyle?: 'grid' | 'dots' | 'none';
   bgColor?: string;
+  freeMoveMode?: boolean;
 }
 
 interface ActionItem {
@@ -22,7 +25,7 @@ interface ActionItem {
   onSelect: () => void;
 }
 
-const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAccentColor, setFontFamily, setBgStyle, setBgColor, accentColor, fontFamily, bgStyle, bgColor }) => {
+const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAccentColor, setFontFamily, setBgStyle, setBgColor, setFreeMoveMode, accentColor, fontFamily, bgStyle, bgColor, freeMoveMode }) => {
   const [query, setQuery] = useState('');
   const [highlighted, setHighlighted] = useState(0);
   const [activeTab, setActiveTab] = useState<'nav' | 'settings'>('nav');
@@ -172,6 +175,26 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
         )}
         {activeTab==='settings' && (
           <div className="flex-1 overflow-y-auto py-4 space-y-6 px-5 text-xs text-white/80">
+            <section>
+              <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Desktop Mode</h4>
+              <div className="flex items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-md p-2.5">
+                <div className="flex flex-col">
+                  <span className="text-white text-[12px] font-medium">Free Move Files</span>
+                  <span className="text-white/50 text-[11px]">Drag icons anywhere. Double-click to open. Snaps to a soft grid.</span>
+                </div>
+                <label className="relative inline-flex h-6 w-11 items-center">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={!!freeMoveMode}
+                    onChange={() => setFreeMoveMode && setFreeMoveMode(!freeMoveMode)}
+                    aria-label="Toggle free move mode"
+                  />
+                  <span className={`absolute inset-0 rounded-full border border-white/10 transition-colors ${freeMoveMode ? 'bg-[var(--accent-color)]/70' : 'bg-white/10'}`} />
+                  <span className={`relative ml-1 inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${freeMoveMode ? 'translate-x-5' : 'translate-x-0'}`} />
+                </label>
+              </div>
+            </section>
             <section>
               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Accent Color</h4>
               <div className="flex flex-wrap gap-2 items-center">
