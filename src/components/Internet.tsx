@@ -679,7 +679,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
           </button>
 
           {/* Address bar */}
-          <form onSubmit={handleUrlSubmit} className="flex-1 flex items-center">
+          <form onSubmit={handleUrlSubmit} className="flex-1 flex items-center relative">
             <input
               ref={urlInputRef}
               type="text"
@@ -690,6 +690,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                 handleFilterSuggestions(strippedValue);
                 setIsUrlDropdownOpen(true);
               }}
+              onFocus={() => setIsUrlDropdownOpen(true)}
+              onBlur={() => setTimeout(() => setIsUrlDropdownOpen(false), 120)}
               onKeyDown={(e) => {
                 if (!isUrlDropdownOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
                   setIsUrlDropdownOpen(true);
@@ -709,9 +711,10 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                   }
                 }
               }}
-              className="flex-1 px-3 py-[5px] border border-[#9c9c9c] rounded-[16px] bg-white text-[13px] font-mono text-black shadow-[inset_0_1px_0_0_#ffffff,inset_0_0_6px_rgba(0,0,0,0.05)]"
+              className="flex-1 px-3 py-[5px] border border-[#9c9c9c] rounded-[6px] bg-white text-[13px] font-mono text-black shadow-[inset_0_1px_0_0_#ffffff,inset_0_0_6px_rgba(0,0,0,0.05)] focus:outline-none"
               placeholder="Enter URL"
               spellCheck={false}
+              autoComplete="off"
             />
             <button 
               type="submit"
@@ -719,24 +722,38 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
             >
               Go
             </button>
+            {/* Suggestions dropdown */}
+            {isUrlDropdownOpen && filteredSuggestions.length > 0 && (
+              <div
+                className="absolute left-0 right-0 mt-1 z-20 rounded-lg border border-[#d1d5db] shadow-lg overflow-hidden backdrop-blur-md bg-white/80"
+                style={{ minWidth: '100%', top: '110%' }}
+              >
+                {filteredSuggestions.map((s, idx) => (
+                  <button
+                    key={s.title + idx}
+                    className={`w-full flex items-center px-4 py-2 text-[14px] ${idx === selectedSuggestionIndex ? 'bg-[#f3f6fa]' : 'bg-transparent'} transition-colors`}
+                    onMouseEnter={() => setSelectedSuggestionIndex(idx)}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => handleNavigateFromSuggestion(s)}
+                  >
+                    <span className="flex items-center mr-3">
+                      <span className="inline-block align-middle w-4 h-4 mr-2">
+                        <span className={`inline-block w-4 h-4 rounded-full border-2 ${idx === selectedSuggestionIndex ? 'border-[#007aff]' : 'border-[#cfd8dc]'}`}
+                          style={{ background: idx === selectedSuggestionIndex ? '#007aff' : '#fff' }}
+                        >
+                          {idx === selectedSuggestionIndex && (
+                            <span className="block w-2 h-2 m-1 rounded-full bg-white" />
+                          )}
+                        </span>
+                      </span>
+                      <span className="text-[#222] font-medium truncate max-w-[180px]">{s.title}</span>
+                    </span>
+                    <span className="ml-auto text-[#888] text-xs font-mono truncate max-w-[120px]">{s.type === 'search' ? s.url.replace(/^bing:/i, 'Search: ') : s.url}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </form>
-          {/* Suggestions dropdown */}
-          {isUrlDropdownOpen && filteredSuggestions.length > 0 && (
-            <div className="absolute left-2 right-2 mt-9 z-10 bg-white border border-[#bdbdbd] rounded shadow">
-              {filteredSuggestions.map((s, idx) => (
-                <button
-                  key={s.title + idx}
-                  className={`w-full text-left px-3 py-2 text-[12px] ${idx === selectedSuggestionIndex ? 'bg-[#e6f0ff]' : ''}`}
-                  onMouseEnter={() => setSelectedSuggestionIndex(idx)}
-                  onMouseDown={(e) => { e.preventDefault(); }}
-                  onClick={() => handleNavigateFromSuggestion(s)}
-                >
-                  <span className="text-[#333]">{s.title}</span>
-                  <span className="ml-2 text-[#777]">{s.type === 'search' ? s.url.replace(/^bing:/i, 'Search: ') : s.url}</span>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -808,7 +825,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               title="Web Content"
               onLoad={handleIframeLoad}
               onError={handleIframeError}
-              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-pointer-lock"
+              sandbox="allow-scripts allow-forms allow-popups allow-pointer-lock allow-same-origin"
               allow="geolocation; microphone; camera; midi; xr-spatial-tracking; accelerometer; gyroscope; payment; encrypted-media; usb"
             />
             {isLoading && (
