@@ -58,8 +58,16 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const urlInputRef = useRef<HTMLInputElement>(null);
 
   // Helper to map a canonical external URL to our local proxy endpoint
-  const toProxy = (u: string) => `/api/proxy?url=${encodeURIComponent(u)}`;
+  const toProxy = (u: string) => {
+    // Prevent double-proxying
+    if (u.startsWith('/api/proxy?url=') || u.includes('/api/proxy?url=')) {
+      return u;
+    }
+    return `/api/proxy?url=${encodeURIComponent(u)}`;
+  };
+  
   const isProxied = (u: string) => typeof u === 'string' && (u.startsWith('/api/proxy?url=') || u.includes('/api/proxy?url='));
+  
   const unwrapProxied = (u: string) => {
     try {
       if (u.startsWith('/api/proxy?url=')) {
@@ -361,11 +369,10 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     );
 
     // Use proxy for external URLs
-    const proxiedUrl = alreadyProxied ? (typeof window !== 'undefined' ? toProxy(fullUrl) : toProxy(fullUrl)) : toProxy(fullUrl);
+    const proxiedUrl = toProxy(fullUrl);
     
     if (iframeRef.current) {
-      // If caller provided a proxied path, use that directly; else use constructed proxiedUrl
-      iframeRef.current.src = alreadyProxied ? `/api/proxy?url=${encodeURIComponent(fullUrl)}` : proxiedUrl;
+      iframeRef.current.src = proxiedUrl;
     }
 
     // Add to history
@@ -408,7 +415,25 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       }
     } catch (error) {
       console.error('Failed to access iframe content:', error);
+      // Still set loading to false even if we can't access the content
       setIsLoading(false);
+      
+      // Try to get title from URL as fallback
+      try {
+        const hostname = new URL(currentUrl).hostname;
+        const fallbackTitle = hostname;
+        const favicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+        
+        setTabs(prevTabs => 
+          prevTabs.map(tab => 
+            tab.isActive 
+              ? { ...tab, title: fallbackTitle, favicon }
+              : tab
+          )
+        );
+      } catch (urlError) {
+        console.error('Failed to parse URL for fallback title:', urlError);
+      }
     }
   };  const handleIframeError = () => {
     setIsLoading(false);
@@ -421,11 +446,12 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
         setIsLoading(true);
-        if (iframeRef.current) {
-          // Add cache busting parameter to force reload
-          const separator = currentUrl.includes('?') ? '&' : '?';
-          iframeRef.current.src = toProxy(currentUrl) + separator + '_retry=' + Date.now();
-        }
+              if (iframeRef.current) {
+        // Add cache busting parameter to force reload
+        const separator = currentUrl.includes('?') ? '&' : '?';
+        const retryUrl = currentUrl + separator + '_retry=' + Date.now();
+        iframeRef.current.src = toProxy(retryUrl);
+      }
       }, 1000 * (retryCount + 1)); // Exponential backoff
     } else {
       console.error('Max retries reached for:', currentUrl);
@@ -469,7 +495,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const refresh = () => {
     setIsLoading(true);
     if (iframeRef.current) {
-      iframeRef.current.src = toProxy(currentUrl) + '&_t=' + Date.now();
+      const refreshUrl = currentUrl + (currentUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+      iframeRef.current.src = toProxy(refreshUrl);
     }
   };
 
@@ -799,6 +826,34 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               </div>
             </div>
           </div>
+        ) : lastError ? (
+          <div className="w-full h-full flex items-center justify-center bg-white">
+            <div className="text-center max-w-md mx-auto p-6">
+              <div className="text-6xl mb-4">⚠️</div>
+              <h2 className="text-xl text-[#333] mb-4">Connection Failed</h2>
+              <p className="text-[#666] mb-6">{lastError}</p>
+              <div className="space-y-3">
+                <button
+                  onClick={refresh}
+                  className="w-full px-4 py-2 bg-[#4A90E2] text-white rounded hover:bg-[#357ABD] transition-colors"
+                >
+                  Retry
+                </button>
+                <button
+                  onClick={() => navigateToUrl('https://www.google.com/search?igu=1&q=' + encodeURIComponent(currentUrl))}
+                  className="w-full px-4 py-2 bg-[#f0f0f0] text-[#333] rounded hover:bg-[#e0e0e0] transition-colors"
+                >
+                  Search Instead
+                </button>
+                <button
+                  onClick={() => setLastError(null)}
+                  className="w-full px-4 py-2 bg-transparent text-[#666] rounded hover:bg-[#f8f8f8] transition-colors"
+                >
+                  Go Back
+                </button>
+              </div>
+            </div>
+          </div>
         ) : (
           <>
             <iframe
@@ -808,8 +863,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               title="Web Content"
               onLoad={handleIframeLoad}
               onError={handleIframeError}
-              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-pointer-lock"
-              allow="geolocation; microphone; camera; midi; xr-spatial-tracking; accelerometer; gyroscope; payment; encrypted-media; usb"
+              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-pointer-lock allow-downloads allow-modals allow-orientation-lock allow-presentation allow-top-navigation-by-user-activation"
+              allow="geolocation; microphone; camera; midi; xr-spatial-tracking; accelerometer; gyroscope; payment; encrypted-media; usb; autoplay; fullscreen; picture-in-picture"
             />
             {isLoading && (
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A90E2] animate-pulse"></div>

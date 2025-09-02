@@ -7,10 +7,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const setCorsHeaders = () => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, User-Agent, Referer, Cookie, X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, User-Agent, Referer, Cookie, X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host, Range, If-Modified-Since, If-None-Match');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type, Date, Server, Transfer-Encoding, X-Frame-Options');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type, Date, Server, Transfer-Encoding, X-Frame-Options, Accept-Ranges, Last-Modified, ETag');
     res.setHeader('Vary', 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
   };
 
@@ -54,6 +54,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
+  // Prevent infinite loops by checking if we're trying to proxy our own domain
+  try {
+    const targetUrl = new URL(target);
+    const hostUrl = new URL(`http://${req.headers.host}`);
+    if (targetUrl.hostname === hostUrl.hostname) {
+      console.warn('Preventing proxy loop for same domain:', target);
+      res.status(400).send('Cannot proxy same domain to prevent loops');
+      return;
+    }
+  } catch {
+    // If URL parsing fails, continue
+  }
+
   // Normalize target for better iframe compatibility (e.g., Google)
   let normalizedTarget = target;
   try {
@@ -75,6 +88,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   ];
 
   const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+
+  // Ensure HTTPS for better compatibility
+  if (!normalizedTarget.startsWith('https://') && !normalizedTarget.startsWith('http://')) {
+    normalizedTarget = 'https://' + normalizedTarget;
+  } else if (normalizedTarget.startsWith('http://')) {
+    // Try HTTPS first, fallback to HTTP if needed
+    try {
+      const httpsUrl = normalizedTarget.replace('http://', 'https://');
+      const testResponse = await fetch(httpsUrl, {
+        method: 'HEAD',
+        headers: { 'User-Agent': randomUserAgent },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (testResponse.ok) {
+        normalizedTarget = httpsUrl;
+      }
+    } catch {
+      // Keep original HTTP URL if HTTPS fails
+    }
+  }
 
   try {
     // First attempt with standard headers and forwarded method/body
@@ -141,13 +174,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                       /\.(woff2?|ttf|otf|eot)$/i.test(new URL(normalizedTarget).pathname) ||
                       contentType.includes('application/font-') ||
                       contentType.includes('application/x-font-') ||
-                      contentType.includes('application/octet-stream') && /\.(woff2?|ttf|otf|eot)$/i.test(new URL(normalizedTarget).pathname);
+                      (contentType.includes('application/octet-stream') && /\.(woff2?|ttf|otf|eot)$/i.test(new URL(normalizedTarget).pathname));
     
     const isImageFile = contentType.includes('image/') || 
                        /\.(jpg|jpeg|png|gif|webp|svg|ico|bmp)$/i.test(new URL(normalizedTarget).pathname);
                        
     const isCSSFile = contentType.includes('text/css') ||
                      /\.css$/i.test(new URL(normalizedTarget).pathname);
+    
+    const isJavaScriptFile = contentType.includes('application/javascript') ||
+                            contentType.includes('text/javascript') ||
+                            /\.js$/i.test(new URL(normalizedTarget).pathname);
     
     // Set response headers for better compatibility and embedding
     res.setHeader('Content-Type', contentType);
@@ -159,16 +196,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // For font files, add specific CORS headers to ensure they load properly
     if (isFontFile) {
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Cache-Control');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, HEAD');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Cache-Control, Range, If-Modified-Since, If-None-Match');
       res.setHeader('Access-Control-Max-Age', '86400');
+      res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type, Date, Server, Transfer-Encoding, Accept-Ranges, Last-Modified, ETag');
     }
     
     // For images and CSS, ensure proper CORS headers
     if (isImageFile || isCSSFile) {
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, HEAD');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Range, If-Modified-Since, If-None-Match');
+      res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type, Date, Server, Transfer-Encoding, Accept-Ranges, Last-Modified, ETag');
+    }
+    
+    // For JavaScript files, ensure proper CORS headers
+    if (isJavaScriptFile) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, HEAD');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Cache-Control');
     }
     
     // Remove frame-busting and restrictive security headers
@@ -370,12 +416,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Rewrite link/script/img/source/video/audio/track/poster/srcset to proxy
       const shouldSkip = (u: string) => /^(?:javascript:|mailto:|tel:|data:|blob:|#)/i.test(u);
 
-      // link href: DO NOT rewrite stylesheet links to keep CSS loading from original domain
+      // link href: Rewrite stylesheet links to go through proxy for proper CORS handling
       html = html.replace(/<link\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
         const preLower = pre.toLowerCase();
-        if (preLower.includes('rel="stylesheet"') || preLower.includes("rel='stylesheet'") || preLower.includes('rel=stylesheet') || preLower.includes('type="text/css"') || preLower.includes("type='text/css'")) {
-          return m; // leave CSS links untouched to preserve relative URLs inside CSS
-        }
         if (shouldSkip(href)) return m;
         try {
           const abs = new URL(href, baseHref).toString();
@@ -657,7 +700,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         css = css.replace(/url\(\s*['"]?([^'")]+)['"]?\s*\)/gi, (match, url) => {
           try {
             if (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('http')) {
-              return match; // Leave absolute URLs and data URLs as-is
+              // For absolute URLs, check if they need to be proxied
+              if (url.startsWith('http') && !url.includes('/api/proxy?url=')) {
+                const proxiedUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
+                return `url("${proxiedUrl}")`;
+              }
+              return match; // Leave data URLs and already proxied URLs as-is
             }
             // Make relative URL absolute and proxy it
             const absoluteUrl = new URL(url, baseHref).toString();
@@ -674,6 +722,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.error('CSS processing error:', cssError);
         // Fall through to normal content handling
       }
+    } else if (isJavaScriptFile) {
+      // Handle JavaScript files to rewrite relative URLs
+      try {
+        let js = await upstream.text();
+        const urlObj = new URL(normalizedTarget);
+        const baseHref = urlObj.origin + (urlObj.pathname.endsWith('/') ? urlObj.pathname : urlObj.pathname.replace(/[^/]*$/, ''));
+        
+        // Rewrite fetch/XMLHttpRequest URLs in JavaScript
+        js = js.replace(/fetch\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/gi, (match, url) => {
+          try {
+            if (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('http')) {
+              if (url.startsWith('http') && !url.includes('/api/proxy?url=')) {
+                const proxiedUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
+                return match.replace(url, proxiedUrl);
+              }
+              return match;
+            }
+            const absoluteUrl = new URL(url, baseHref).toString();
+            const proxiedUrl = `/api/proxy?url=${encodeURIComponent(absoluteUrl)}`;
+            return match.replace(url, proxiedUrl);
+          } catch {
+            return match;
+          }
+        });
+        
+        res.status(upstream.status).send(js);
+        return;
+      } catch (jsError) {
+        console.error('JavaScript processing error:', jsError);
+        // Fall through to normal content handling
+      }
     }
 
     // Non-HTML: pass through bytes with better error handling
@@ -686,25 +765,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Apply specific CORS headers for assets (same logic as above)
       if (isFontFile) {
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Cache-Control');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, HEAD');
+        res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Cache-Control, Range, If-Modified-Since, If-None-Match');
         res.setHeader('Access-Control-Max-Age', '86400');
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type, Date, Server, Transfer-Encoding, Accept-Ranges, Last-Modified, ETag');
       }
       
       if (isImageFile || isCSSFile) {
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, HEAD');
+        res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Range, If-Modified-Since, If-None-Match');
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type, Date, Server, Transfer-Encoding, Accept-Ranges, Last-Modified, ETag');
+      }
+      
+      if (isJavaScriptFile) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, HEAD');
+        res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Cache-Control');
       }
       
       // Copy important headers from upstream response
-      const headersToProxy = ['content-length', 'content-range', 'last-modified', 'etag', 'accept-ranges'];
+      const headersToProxy = ['content-length', 'content-range', 'last-modified', 'etag', 'accept-ranges', 'content-encoding'];
       headersToProxy.forEach(headerName => {
         const headerValue = upstream.headers.get(headerName);
         if (headerValue) {
           res.setHeader(headerName, headerValue);
         }
       });
+      
+      // Set proper content type if not already set
+      if (!res.getHeader('content-type')) {
+        res.setHeader('Content-Type', contentType);
+      }
       
       res.status(upstream.status).send(Buffer.from(arrBuf));
     } catch (bufferError) {
