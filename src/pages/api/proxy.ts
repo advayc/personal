@@ -3,10 +3,20 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 // Enhanced proxy that fetches external content and serves it without frame-busting headers.
 // Includes fallback mechanisms and better error handling.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const target = (req.query.url as string) || '';
+  let target = (req.query.url as string) || '';
   if (!target || !/^https?:\/\//i.test(target)) {
     res.status(400).send('Missing or invalid url param');
     return;
+  }
+
+  // Unwrap already-proxied URLs to avoid double-encoding
+  try {
+    const parsed = new URL(target, `http://${req.headers.host}`);
+    if (parsed.pathname === '/api/proxy' && parsed.searchParams.get('url')) {
+      target = parsed.searchParams.get('url') as string;
+    }
+  } catch {
+    // ignore
   }
 
   // Normalize target for better iframe compatibility (e.g., Google)
@@ -32,54 +42,84 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
 
   try {
-    // First attempt with standard headers
+    // First attempt with standard headers and forwarded method/body
     let upstream;
+    const method = req.method || 'GET';
+    const upstreamHeaders: Record<string, string> = {
+      'User-Agent': randomUserAgent,
+      'Accept': (req.headers['accept'] as string) || '*/*',
+      'Accept-Language': (req.headers['accept-language'] as string) || 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+      'Upgrade-Insecure-Requests': '1'
+    };
+    // Forward common headers when present
+    if (req.headers['cookie']) upstreamHeaders['Cookie'] = req.headers['cookie'] as string;
+    if (req.headers['referer']) upstreamHeaders['Referer'] = req.headers['referer'] as string;
+    if (req.headers['origin']) upstreamHeaders['Origin'] = req.headers['origin'] as string;
+    const contentTypeHeader = (req.headers['content-type'] as string) || '';
+    if (contentTypeHeader) upstreamHeaders['Content-Type'] = contentTypeHeader;
+    const buildBody = () => {
+      if (method === 'GET' || method === 'HEAD') return undefined;
+      const body = (req as any).body;
+      if (typeof body === 'string' || body instanceof Buffer) return body as any;
+      if (body && typeof body === 'object' && contentTypeHeader.includes('application/json')) {
+        return JSON.stringify(body);
+      }
+      return undefined;
+    };
     try {
       upstream = await fetch(normalizedTarget, {
-        headers: {
-          'User-Agent': randomUserAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Upgrade-Insecure-Requests': '1'
-        },
+        method,
+        headers: upstreamHeaders,
+        body: buildBody(),
         redirect: 'follow',
         signal: AbortSignal.timeout(30000) // 30 second timeout
       });
     } catch (firstError) {
       // Fallback attempt with minimal headers
       console.warn('First fetch failed, trying fallback:', firstError);
-  upstream = await fetch(normalizedTarget, {
+      upstream = await fetch(normalizedTarget, {
+        method,
         headers: {
           'User-Agent': randomUserAgent,
-          'Accept': '*/*'
+          'Accept': (req.headers['accept'] as string) || '*/*',
+          ...(req.headers['cookie'] ? { Cookie: req.headers['cookie'] as string } : {}),
+          ...(req.headers['referer'] ? { Referer: req.headers['referer'] as string } : {}),
+          ...(req.headers['origin'] ? { Origin: req.headers['origin'] as string } : {})
         },
+        body: buildBody(),
         redirect: 'follow',
         signal: AbortSignal.timeout(30000)
       });
     }
 
-  const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
+    const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
     
-    // Set response headers for better compatibility
+    // Set response headers for better compatibility and embedding
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     
-    // Remove frame-busting and security headers
+    // Remove frame-busting and restrictive security headers
     res.removeHeader('X-Frame-Options');
     res.removeHeader('Content-Security-Policy');
     res.removeHeader('X-Content-Type-Options');
     res.removeHeader('Referrer-Policy');
+    res.removeHeader('Cross-Origin-Opener-Policy');
+    res.removeHeader('Cross-Origin-Embedder-Policy');
+    res.removeHeader('Cross-Origin-Resource-Policy');
+    res.removeHeader('Origin-Agent-Cluster');
+    res.removeHeader('Permissions-Policy');
     
     // Add permissive headers for iframe embedding
     res.setHeader('X-Frame-Options', 'ALLOWALL');
+    // Also add an allow-all CSP header (with sandbox) to supersede upstream CSP (meta is also injected)
+    res.setHeader(
+      'Content-Security-Policy',
+      "frame-ancestors *; sandbox allow-scripts allow-forms allow-same-origin allow-popups allow-modals; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; connect-src * data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
+    );
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
@@ -161,7 +201,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         html = html.replace(/<head(\b[^>]*)>/i, (m, attrs) => `
           <head${attrs}>
           <base href="${baseHref}" />
-          <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; frame-ancestors *; connect-src * data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+          <meta http-equiv="Content-Security-Policy" content="frame-ancestors *; sandbox allow-scripts allow-forms allow-same-origin allow-popups allow-modals; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; connect-src * data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+          <style id="__proxy_base_css">html,body{opacity:1 !important;}</style>
           ${headNavScript}
         `);
       } else {
@@ -176,7 +217,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Enhanced link and form rewriting
       const proxyOrigin = `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers['x-forwarded-host'] || req.headers.host}`;
-      const proxyPath = '/api/proxy?url=';
+  const proxyPath = '/api/proxy?url=';
       const safe = (u: string) => {
         try {
           return proxyPath + encodeURIComponent(new URL(u, baseHref).toString());
@@ -250,6 +291,82 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const proxied = safe(abs);
           return m.replace(url, proxied);
         } catch { return m; }
+      });
+
+      // Rewrite link/script/img/source/video/audio/track/poster/srcset to proxy
+      const shouldSkip = (u: string) => /^(?:javascript:|mailto:|tel:|data:|blob:|#)/i.test(u);
+
+      // link href: DO NOT rewrite stylesheet links to keep CSS loading from original domain
+      html = html.replace(/<link\s+([^>]*?)href=["']([^"']+)["']([^>]*)>/gi, (m, pre, href, post) => {
+        const preLower = pre.toLowerCase();
+        if (preLower.includes('rel="stylesheet"') || preLower.includes("rel='stylesheet'") || preLower.includes('rel=stylesheet') || preLower.includes('type="text/css"') || preLower.includes("type='text/css'")) {
+          return m; // leave CSS links untouched to preserve relative URLs inside CSS
+        }
+        if (shouldSkip(href)) return m;
+        try {
+          const abs = new URL(href, baseHref).toString();
+          return `<link ${pre}href="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      // script src
+      html = html.replace(/<script\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        if (shouldSkip(src)) return m;
+        try {
+          const abs = new URL(src, baseHref).toString();
+          return `<script ${pre}src="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      // img src and srcset
+      html = html.replace(/<img\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        if (shouldSkip(src)) return m;
+        try {
+          const abs = new URL(src, baseHref).toString();
+          return `<img ${pre}src="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      const rewriteSrcset = (attrVal: string) => {
+        try {
+          const parts = attrVal.split(',').map(s => s.trim()).filter(Boolean);
+          const mapped = parts.map(p => {
+            const [u, w] = p.split(/\s+/);
+            try {
+              const abs = new URL(u, baseHref).toString();
+              return `${safe(abs)}${w ? ' ' + w : ''}`;
+            } catch { return p; }
+          });
+          return mapped.join(', ');
+        } catch { return attrVal; }
+      };
+      html = html.replace(/<img([^>]*?)srcset=["']([^"']+)["']([^>]*)>/gi, (m, pre, srcset, post) => {
+        return `<img${pre}srcset="${rewriteSrcset(srcset)}"${post}>`;
+      });
+      // source src / srcset
+      html = html.replace(/<source\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        if (shouldSkip(src)) return m;
+        try {
+          const abs = new URL(src, baseHref).toString();
+          return `<source ${pre}src="${safe(abs)}"${post}>`;
+        } catch { return m; }
+      });
+      html = html.replace(/<source([^>]*?)srcset=["']([^"']+)["']([^>]*)>/gi, (m, pre, srcset, post) => {
+        return `<source${pre}srcset="${rewriteSrcset(srcset)}"${post}>`;
+      });
+      // video/audio/track/poster
+      html = html.replace(/<video\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        if (shouldSkip(src)) return m;
+        try { const abs = new URL(src, baseHref).toString(); return `<video ${pre}src="${safe(abs)}"${post}>`; } catch { return m; }
+      });
+      html = html.replace(/<video\s+([^>]*?)poster=["']([^"']+)["']([^>]*)>/gi, (m, pre, poster, post) => {
+        if (shouldSkip(poster)) return m;
+        try { const abs = new URL(poster, baseHref).toString(); return `<video ${pre}poster="${safe(abs)}"${post}>`; } catch { return m; }
+      });
+      html = html.replace(/<audio\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        if (shouldSkip(src)) return m;
+        try { const abs = new URL(src, baseHref).toString(); return `<audio ${pre}src="${safe(abs)}"${post}>`; } catch { return m; }
+      });
+      html = html.replace(/<track\s+([^>]*?)src=["']([^"']+)["']([^>]*)>/gi, (m, pre, src, post) => {
+        if (shouldSkip(src)) return m;
+        try { const abs = new URL(src, baseHref).toString(); return `<track ${pre}src="${safe(abs)}"${post}>`; } catch { return m; }
       });
 
       // Enhanced client-side navigation interceptor
@@ -416,10 +533,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    // Non-HTML: just pass through bytes with better error handling
+    // Non-HTML: pass through bytes with better error handling
     try {
-      const buf = Buffer.from(await upstream.arrayBuffer());
-      res.status(upstream.status).send(buf);
+      const arrBuf = await upstream.arrayBuffer();
+      res.status(upstream.status).send(Buffer.from(arrBuf));
     } catch (bufferError) {
       console.error('Buffer processing error:', bufferError);
       res.status(500).send('Failed to process non-HTML content');
