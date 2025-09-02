@@ -26,9 +26,11 @@ interface InternetProps {
   onClose?: () => void;
   // Allow parent container to start a drag when the titlebar is grabbed
   onDragHandlePointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  // Let parent (InternetTerminal) toggle maximize on green button
+  onToggleMaximize?: () => void;
 }
 
-export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
+export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }: InternetProps) {
   const [tabs, setTabs] = useState<Tab[]>([{ 
     id: '1', 
     url: 'https://apple.com', 
@@ -537,10 +539,13 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
                       'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
                   }} />
           </div>
-          {/* Zoom */}
-          <div
-            aria-hidden
-            className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)]"
+          {/* Zoom (Maximize) */}
+          <button
+            type="button"
+            aria-label="Maximize"
+            title="Maximize"
+            onClick={onToggleMaximize}
+            className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)] cursor-pointer"
             style={{
               background:
                 'radial-gradient(circle at 35% 30%, #b6f0c1 0%, #27ca3f 60%, #16a42b 100%)'
@@ -556,7 +561,7 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
                     background:
                       'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
                   }} />
-          </div>
+          </button>
         </div>
         <div className="text-[13px] font-medium text-[#333] flex-1 text-center truncate">
           {tabs.find(t => t.isActive)?.title || 'Internet'}
@@ -610,7 +615,7 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
             />
             <button 
               type="submit"
-              className="ml-2 px-3 py-[5px] bg-gradient-to-b from-[#fafafa] to-[#e0e0e0] border border-[#999] rounded text-[13px] hover:from-[#f4f4f4] hover:to-[#dcdcdc] active:from-[#d8d8d8] active:to-[#c8c8c8]"
+              className="ml-2 px-3 py-[5px] bg-gradient-to-b from-[#fafafa] to-[#e0e0e0] border border-[#999] rounded text-[13px] hover:from-[#f4f4f4] hover:to-[#dcdcdc] active:from-[#d8d8d8] active:to-[#c8c8c8] text-black"
             >
               Go
             </button>
