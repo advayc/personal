@@ -340,8 +340,22 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
     }
   };  const handleIframeError = () => {
     setIsLoading(false);
-    setLastError(`Failed to load: ${currentUrl}`);
-    console.error('Failed to load page:', currentUrl);
+    
+    // Determine the type of error based on the URL and retry count
+    let errorMessage = 'Failed to load the page';
+    
+    if (currentUrl.includes('github.com')) {
+      errorMessage = 'GitHub may be blocking iframe access. Try opening in a new tab.';
+    } else if (currentUrl.includes('google.com')) {
+      errorMessage = 'Google search may be experiencing issues. Please try again.';
+    } else if (retryCount >= 2) {
+      errorMessage = 'Maximum retry attempts reached. The site may be blocking iframe access.';
+    } else {
+      errorMessage = 'Connection failed. This may be due to network issues or site restrictions.';
+    }
+    
+    setLastError(errorMessage);
+    console.error('Failed to load page:', currentUrl, 'Error:', errorMessage);
     
     // Auto-retry up to 2 times with a delay
     if (retryCount < 2) {
@@ -650,7 +664,7 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
       </div>
 
       {/* Content area */}
-  <div className="flex-1 bg-white overflow-hidden relative">
+      <div className="flex-1 bg-white overflow-hidden relative">
         {currentUrl === 'about:blank' ? (
           <div className="w-full h-full flex items-center justify-center bg-white">
             <div className="text-center">
@@ -677,6 +691,35 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
               </div>
             </div>
           </div>
+        ) : lastError ? (
+          <div className="w-full h-full flex items-center justify-center bg-white">
+            <div className="text-center max-w-md mx-auto">
+              <h2 className="text-xl text-[#d32f2f] mb-4">Connection Failed</h2>
+              <p className="text-[#666] mb-6">Unable to load: <strong>{formatUrlForDisplay(currentUrl)}</strong></p>
+              <p className="text-[#666] mb-8 text-sm">{lastError}</p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => {
+                    setLastError(null);
+                    setRetryCount(0);
+                    navigateToUrl(currentUrl);
+                  }}
+                  className="px-4 py-2 bg-[#1976d2] text-white rounded hover:bg-[#1565c0]"
+                >
+                  Retry
+                </button>
+                <button
+                  onClick={() => {
+                    setLastError(null);
+                    navigateToUrl('https://www.google.com/search?igu=1&q=' + encodeURIComponent(currentUrl));
+                  }}
+                  className="px-4 py-2 bg-[#f5f5f5] text-[#333] rounded border hover:bg-[#e0e0e0]"
+                >
+                  Search Instead
+                </button>
+              </div>
+            </div>
+          </div>
         ) : (
           <>
             <iframe
@@ -686,8 +729,8 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
               title="Web Content"
               onLoad={handleIframeLoad}
               onError={handleIframeError}
-              /* Removed sandbox attribute to allow sites that refuse to connect due to sandbox restrictions */
-              allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
+              allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb; fullscreen"
+              allowFullScreen
             />
             {isLoading && (
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A90E2] animate-pulse"></div>
