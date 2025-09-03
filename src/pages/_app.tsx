@@ -16,7 +16,7 @@ function calculateAge(birthDate: Date): number {
   const estDate = new Date(utc + (3600000 * estOffset));
   
   let age = estDate.getFullYear() - birthDate.getFullYear();
-  const m = estDate.getMonth() - birthDate.getMonth();
+  const m = estDate.getMonth() - birthDate.getFullYear();
   
   if (m < 0 || (m === 0 && estDate.getDate() < birthDate.getDate())) {
     age--;
@@ -48,23 +48,6 @@ export default function App({ Component, pageProps }: AppProps) {
         {/* Google Site Verification */}
         <meta name="google-site-verification" content="30z2hGJJbeDm2vE7ctaz5MxQE8TMgULkFW-wEZ5RsdM" />
         
-        {/* Google Analytics */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"
-          strategy="afterInteractive"
-        />
-        <Script
-          id="google-analytics"
-          strategy="afterInteractive"
-        >
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-XXXXXXXX');
-          `}
-        </Script>
-        
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
@@ -93,6 +76,24 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="google" content="notranslate" />
         <link rel="canonical" href={SITE_URL} />
       </Head>
+      
+      {/* Google Analytics Scripts */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"
+        strategy="afterInteractive"
+      />
+      <Script
+        id="google-analytics"
+        strategy="afterInteractive"
+      >
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-XXXXXXXX');
+        `}
+      </Script>
+      
       <TerminalProvider>
         <SelectionBoxProvider>
           <Component {...pageProps} />

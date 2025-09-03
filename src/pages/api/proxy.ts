@@ -3,6 +3,37 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   let target = req.query.url as string;
+  // Some pages (or our HTML rewrites) may double-encode or HTML-escape query
+  // parameters (e.g. `%26amp%3B` -> `&amp;` -> `&`). Decode percent-encoding
+  // first (up to a few iterations) and then normalize common HTML entities
+  // so `new URL(target)` succeeds and fetch() hits the intended resource.
+  if (typeof target === 'string') {
+    // First, repeatedly decode percent-encodings (limit iterations)
+    try {
+      let prev = null;
+      let cur = target;
+      for (let i = 0; i < 4; i++) {
+        try {
+          const decoded = decodeURIComponent(cur);
+          if (decoded === cur || decoded === prev) break;
+          prev = cur;
+          cur = decoded;
+        } catch (e) {
+          break;
+        }
+      }
+      target = cur;
+    } catch (e) {
+      // ignore and fall back to entity normalization below
+    }
+
+    // Then replace HTML entities that may have survived decoding
+    target = target.replace(/&amp;/gi, '&')
+                   .replace(/&lt;/gi, '<')
+                   .replace(/&gt;/gi, '>')
+                   .replace(/&quot;/gi, '"')
+                   .replace(/&apos;/gi, "'");
+  }
   
   // Handle cases where the request might be a search or relative URL without the url parameter
   if (!target) {
@@ -20,9 +51,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  // Validate URL format
+
+  // If the target is a Google domain, redirect to Bing with the same query if possible
   try {
-    new URL(target);
+    const parsedUrl = new URL(target);
+    if (/\.google\./i.test(parsedUrl.hostname)) {
+      // If it's a search, extract the query and redirect to Bing search
+      const q = parsedUrl.searchParams.get('q');
+      if (q) {
+        res.writeHead(302, { Location: `https://www.bing.com/search?q=${encodeURIComponent(q)}` });
+        res.end();
+        return;
+      } else {
+        // Otherwise, just redirect to Bing homepage
+        res.writeHead(302, { Location: 'https://www.bing.com/' });
+        res.end();
+        return;
+      }
+    }
   } catch (error) {
     res.status(400).json({ error: 'Invalid URL format' });
     return;
@@ -324,54 +370,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Intercept link clicks to navigate within the same window instead of opening new tabs
             document.addEventListener('click', function(e) {
               try {
-                var target = e.target;
+                var el = e.target;
                 // Find the closest anchor tag
-                while (target && target.tagName !== 'A' && target.parentElement) {
-                  target = target.parentElement;
+                while (el && el.tagName !== 'A' && el.parentElement) {
+                  el = el.parentElement;
                 }
-                
-                if (target && target.tagName === 'A' && target.href) {
-                  var href = target.href;
-                  
+                if (el && el.tagName === 'A' && el.href) {
+                  var href = el.getAttribute('href') || el.href;
                   // Skip if it's a special link (javascript:, mailto:, tel:, etc.)
-                  if (/^(javascript:|mailto:|tel:|#)/.test(href)) {
-                    return;
-                  }
-                  
+                  if (/^(javascript:|mailto:|tel:|#)/i.test(href)) return;
                   // Skip if target is set to open in new window/tab
-                  if (target.target === '_blank' || target.target === '_new') {
-                    return;
-                  }
-                  
+                  if (el.target === '_blank' || el.target === '_new') return;
                   // Skip if ctrl/cmd key is held (user wants new tab)
-                  if (e.ctrlKey || e.metaKey) {
-                    return;
-                  }
-                  
+                  if (e.ctrlKey || e.metaKey) return;
                   e.preventDefault();
                   e.stopPropagation();
-                  
-                  // Extract the actual URL from the proxied URL if needed
-                  var actualUrl = href;
-                  if (href.includes('/api/proxy?url=')) {
-                    try {
-                      var urlParam = href.split('/api/proxy?url=')[1];
-                      actualUrl = decodeURIComponent(urlParam);
-                    } catch (urlError) {
-                      console.log('Failed to extract URL from proxy:', urlError);
-                    }
-                  }
-                  
+                  // Always route through proxy
+                  var absUrl;
+                  try {
+                    absUrl = new URL(href, ORIGINAL_BASE).toString();
+                  } catch { absUrl = href; }
+                  var proxied = PROXY_ENDPOINT + encodeURIComponent(absUrl);
                   // Send navigation message to parent window
                   try {
                     window.parent.postMessage({
                       type: 'navigate',
-                      url: actualUrl
+                      url: absUrl
                     }, '*');
                   } catch (msgError) {
-                    console.log('Failed to send navigation message:', msgError);
-                    // Fallback: navigate in current frame
-                    window.location.href = href;
+                    window.location.href = proxied;
                   }
                 }
               } catch (clickError) {

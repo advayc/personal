@@ -970,7 +970,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               <div className="absolute inset-0 bg-white flex items-center justify-center">
                 <div className="text-center p-8 max-w-md">
                   <div className="text-6xl mb-4">😟</div>
-                  <h2 className="text-xl font-semibold mb-2">Couldn't load page</h2>
+                  <h2 className="text-xl font-semibold mb-2">Couldn&apos;t load page</h2>
                   <p className="text-gray-600 mb-4">{lastError}</p>
                   <button 
                     onClick={() => {
