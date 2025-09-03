@@ -1,48 +1,33 @@
-// pages/api/proxy.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   let target = req.query.url as string;
-  // Some pages (or our HTML rewrites) may double-encode or HTML-escape query
-  // parameters (e.g. `%26amp%3B` -> `&amp;` -> `&`). Decode percent-encoding
-  // first (up to a few iterations) and then normalize common HTML entities
-  // so `new URL(target)` succeeds and fetch() hits the intended resource.
-  if (typeof target === 'string') {
-    // First, repeatedly decode percent-encodings (limit iterations)
-    try {
-      let prev = null;
-      let cur = target;
-      for (let i = 0; i < 4; i++) {
-        try {
-          const decoded = decodeURIComponent(cur);
-          if (decoded === cur || decoded === prev) break;
-          prev = cur;
-          cur = decoded;
-        } catch (e) {
-          break;
-        }
-      }
-      target = cur;
-    } catch (e) {
-      // ignore and fall back to entity normalization below
-    }
 
-    // Then replace HTML entities that may have survived decoding
-    target = target.replace(/&amp;/gi, '&')
-                   .replace(/&lt;/gi, '<')
-                   .replace(/&gt;/gi, '>')
-                   .replace(/&quot;/gi, '"')
-                   .replace(/&apos;/gi, "'");
+  if (typeof target === 'string') {
+    let prev = null;
+    let cur = target;
+    for (let i = 0; i < 4; i++) {
+      try {
+        const decoded = decodeURIComponent(cur);
+        if (decoded === cur || decoded === prev) break;
+        prev = cur;
+        cur = decoded;
+      } catch (e) {
+        break;
+      }
+    }
+    target = cur.replace(/&amp;/gi, '&')
+                .replace(/&lt;/gi, '<')
+                .replace(/&gt;/gi, '>')
+                .replace(/&quot;/gi, '"')
+                .replace(/&apos;/gi, "'");
   }
   
-  // Handle cases where the request might be a search or relative URL without the url parameter
   if (!target) {
-    // Check if this looks like a Bing search request
     if (req.query.q || req.query.search) {
       const searchQuery = req.query.q || req.query.search;
       target = `https://www.bing.com/search?q=${encodeURIComponent(searchQuery as string)}`;
     } else if (Object.keys(req.query).length > 0) {
-      // If there are query parameters but no url, it might be a relative request to Bing
       const queryString = new URLSearchParams(req.query as any).toString();
       target = `https://www.bing.com/search?${queryString}`;
     } else {
@@ -51,19 +36,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-
-  // If the target is a Google domain, redirect to Bing with the same query if possible
   try {
     const parsedUrl = new URL(target);
     if (/\.google\./i.test(parsedUrl.hostname)) {
-      // If it's a search, extract the query and redirect to Bing search
       const q = parsedUrl.searchParams.get('q');
       if (q) {
         res.writeHead(302, { Location: `https://www.bing.com/search?q=${encodeURIComponent(q)}` });
         res.end();
         return;
       } else {
-        // Otherwise, just redirect to Bing homepage
         res.writeHead(302, { Location: 'https://www.bing.com/' });
         res.end();
         return;
@@ -74,7 +55,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  // Set CORS headers and iframe-friendly headers for all requests
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -89,22 +69,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Copy request headers and ensure we have proper Accept headers for different content types
     const headers: HeadersInit = {
       'User-Agent':
         req.headers['user-agent'] ||
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122 Safari/537.36',
-      // Request uncompressed content to avoid encoding issues
       'Accept-Encoding': 'identity',
     };
     
-    // Forward essential headers for proper content negotiation, but exclude problematic ones
     const allowedHeaders = ['accept', 'accept-language', 'referer', 'cookie', 'origin', 'dnt'];
     allowedHeaders.forEach(header => {
       if (req.headers[header]) headers[header] = req.headers[header] as string;
     });
     
-    // Handle challenge-specific headers for sites like Bing
     if (target.includes('bing.com') || target.includes('google.com')) {
       headers['Sec-Fetch-Dest'] = 'document';
       headers['Sec-Fetch-Mode'] = 'navigate';
@@ -113,12 +89,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers['Upgrade-Insecure-Requests'] = '1';
     }
     
-    // Specific headers for image types to ensure proper binary handling
     if (target.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf)$/i)) {
       headers['Accept'] = 'image/*, */*';
     }
 
-    // Filter headers that can cause issues with fetch
     const blockedHeaders = [
       'host', 
       'content-length', 
@@ -132,21 +106,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'upgrade'
     ];
     
-    // Forward safe headers from the original request
     Object.keys(req.headers).forEach((key) => {
       if (!blockedHeaders.includes(key.toLowerCase()) && !headers[key]) {
         headers[key] = req.headers[key] as string;
       }
     });
 
-    // Ensure cookies are forwarded for session-based verification
     if (req.headers['cookie']) {
       headers['Cookie'] = req.headers['cookie'] as string;
     }
 
     const response = await fetch(target, { 
       headers,
-      // Forward the request method and body for non-GET requests
       method: req.method !== 'OPTIONS' ? req.method : 'GET',
       body: req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'OPTIONS' ? JSON.stringify(req.body) : undefined,
       redirect: 'follow',
@@ -161,7 +132,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    // Copy headers but strip frame-busting ones and problematic headers
     const skipHeaders = [
       'x-frame-options', 
       'content-security-policy', 
@@ -182,20 +152,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-  // Parse content type safely
-  const contentType = response.headers.get('content-type') || '';
-  const lowerCT = contentType.toLowerCase();
-  const isHTML = lowerCT.includes('text/html');
-  const isCSS = lowerCT.includes('text/css');
-  const isJS = lowerCT.includes('application/javascript') || lowerCT.includes('text/javascript');
+    const contentType = response.headers.get('content-type') || '';
+    const lowerCT = contentType.toLowerCase();
+    const isHTML = lowerCT.includes('text/html');
+    const isCSS = lowerCT.includes('text/css');
+    const isJS = lowerCT.includes('application/javascript') || lowerCT.includes('text/javascript');
 
     if (isHTML) {
       let body = await response.text();
 
-      // Remove the base tag injection as it's causing issues
-      // Instead, rewrite ALL URLs to go through our proxy
-
-      // Rewrite absolute URLs that match the target domain
       const targetDomain = new URL(target).origin;
       body = body.replace(
         new RegExp(`(href|src)=["']${targetDomain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^"']*)["']`, 'gi'),
@@ -210,12 +175,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       );
 
-      // Rewrite protocol-relative URLs //example.com/foo -> https://example.com/foo through proxy
       body = body.replace(
         /(href|src)=["'](\/\/[^"']+)["']/gi,
         (_match, attr, restWithSlashes) => {
           try {
-            // restWithSlashes begins with //
             const fullUrl = `https://${restWithSlashes.replace(/^\/\//, '')}`;
             const proxied = `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
             return `${attr}="${proxied}"`;
@@ -225,7 +188,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       );
 
-      // Rewrite relative URLs so CSS, JS, images go through proxy
       body = body.replace(
         /(href|src)=["'](?!https?:\/\/|data:|\/api\/proxy)([^"']+)["']/gi,
         (_match, attr, relUrl) => {
@@ -234,12 +196,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const proxied = `/api/proxy?url=${encodeURIComponent(absoluteUrl)}`;
             return `${attr}="${proxied}"`;
           } catch (e) {
-            return _match; // If URL parsing fails, return unchanged
+            return _match;
           }
         }
       );
 
-      // Rewrite srcset attributes (comma-separated URLs possibly with descriptors)
       body = body.replace(
         /(srcset)=\["']([^"']+)\["']/gi,
         (_m, attr, value) => {
@@ -249,7 +210,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               .map((part: string) => {
                 const trimmed = part.trim();
                 const [u, descriptor] = trimmed.split(/\s+/, 2);
-                if (/^(https?:\/\/|data:|\/api\/proxy)/i.test(u)) return trimmed; // leave
+                if (/^(https?:\/\/|data:|\/api\/proxy)/i.test(u)) return trimmed;
                 const absoluteUrl = new URL(u, target).toString();
                 const proxied = `/api/proxy?url=${encodeURIComponent(absoluteUrl)}`;
                 return descriptor ? `${proxied} ${descriptor}` : proxied;
@@ -261,7 +222,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         }
       );
-      // Rewrite <source srcset> in <picture> tags
+
       body = body.replace(
         /(<source[^>]+srcset=["'])([^"']+)(["'])/gi,
         (match, prefix, srcset, suffix) => {
@@ -284,7 +245,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       );
 
-      // Rewrite form action attributes
       body = body.replace(
         /(action)=["'](?!https?:\/\/|data:|\/api\/proxy)([^"']+)["']/gi,
         (_match, attr, relUrl) => {
@@ -298,7 +258,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       );
 
-      // Also proxy stylesheets' url() references
       body = body.replace(
         /(url\(["']?)(?!https?:\/\/|data:|\/api\/proxy)(.*?)(["']?\))/gi,
         (match, prefix, relUrl, suffix) => {
@@ -308,190 +267,194 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const proxied = `/api/proxy?url=${encodeURIComponent(absoluteUrl)}`;
             return `${prefix}${proxied}${suffix}`;
           } catch (e) {
-            return match; // If URL parsing fails, return unchanged
+            return match;
           }
         }
       );
 
-      // Remove potentially problematic scripts and iframe-unfriendly code
       body = body.replace(
         /<script\b[^>]*\bonload\s*=\s*["'][^"']*["'][^>]*>.*?<\/script>/gi, 
         ''
       );
 
-      // Remove history manipulation scripts that cause SecurityError
       body = body.replace(
         /history\.(pushState|replaceState|back|forward)/gi, 
         '/* removed history manipulation */'
       );
 
-      // Remove frame-busting scripts and add Google fallback
       body = body.replace(
         /(if\s*\(\s*self\s*!=\s*top\s*\)|if\s*\(\s*top\s*!=\s*self\s*\)|if\s*\(\s*window\s*!=\s*top\s*\)|if\s*\(\s*top\s*!=\s*window\s*\))[^}]*}/gi,
         '/* removed frame busting */'
       );
-      // Google fallback: if google.com refused to connect, show a friendly error or redirect to Bing
+
       if (/google\\.com refused to connect|X-Frame-Options|blocked by Chrome security policies/i.test(body)) {
         body = `<div style="font-family:sans-serif;text-align:center;padding:3em"><h2>Google search is blocked in this browser.</h2><p>Try <a href='https://www.bing.com/search?q=' target='_self'>Bing Search</a> instead.</p></div>`;
       }
 
-      // Remove specific frame-busting patterns
       body = body.replace(
         /(top\.location\s*=|top\.location\.href\s*=|window\.top\.location\s*=)/gi,
         '/* removed frame busting redirect */'
       );
 
-      // Remove X-Frame-Options via meta tags
       body = body.replace(
         /<meta[^>]*http-equiv\s*=\s*["']X-Frame-Options["'][^>]*>/gi,
         ''
       );
 
-      // Remove any existing base tags that might conflict
-      body = body.replace(/<base\b[^>]*>/gi, '');
-
-      // Remove SRI that could break when assets are proxied
       body = body.replace(/\s+integrity=["'][^"']+["']/gi, '');
-
-      // Remove or modify target="_blank" attributes to prevent new tab opening
       body = body.replace(/\starget=["']_blank["']/gi, ' target="_self"');
       body = body.replace(/\starget=["']_new["']/gi, ' target="_self"');
 
-      // Inject a lightweight shim that routes fetch/XHR through the proxy and fixes relative resolution
       const shim = `
         <script>(function(){
           try {
             var PROXY_ENDPOINT = '/api/proxy?url=';
             var ORIGINAL_BASE = ${JSON.stringify(target)};
-            var abs = function(u){
-              try { return new URL(u, ORIGINAL_BASE).toString(); } catch(e){ return u; }
+            var abs = function(u) {
+              try {
+                const url = new URL(u, ORIGINAL_BASE);
+                return url.toString();
+              } catch (e) {
+                console.warn('Failed to resolve URL:', u, e);
+                return u;
+              }
             };
             
-            // Intercept link clicks to navigate within the same window instead of opening new tabs
+            // Intercept all click events for better coverage
             document.addEventListener('click', function(e) {
               try {
-                var el = e.target;
-                // Find the closest anchor tag
+                let el = e.target;
                 while (el && el.tagName !== 'A' && el.parentElement) {
                   el = el.parentElement;
                 }
                 if (el && el.tagName === 'A' && el.href) {
-                  var href = el.getAttribute('href') || el.href;
-                  // Skip if it's a special link (javascript:, mailto:, tel:, etc.)
-                  if (/^(javascript:|mailto:|tel:|#)/i.test(href)) return;
-                  // Skip if target is set to open in new window/tab
-                  if (el.target === '_blank' || el.target === '_new') return;
-                  // Skip if ctrl/cmd key is held (user wants new tab)
-                  if (e.ctrlKey || e.metaKey) return;
+                  const href = el.getAttribute('href') || el.href;
+                  if (/^(javascript:|mailto:|tel:|#)/i.test(href)) {
+                    console.log('Skipping special link:', href);
+                    return;
+                  }
+                  if (el.target === '_blank' || el.target === '_new') {
+                    console.log('Skipping new window link:', href);
+                    return;
+                  }
+                  if (e.ctrlKey || e.metaKey) {
+                    console.log('Skipping modified click:', href);
+                    return;
+                  }
                   e.preventDefault();
                   e.stopPropagation();
-                  // Always route through proxy
-                  var absUrl;
+                  let absUrl = href;
                   try {
                     absUrl = new URL(href, ORIGINAL_BASE).toString();
-                  } catch { absUrl = href; }
-                  var proxied = PROXY_ENDPOINT + encodeURIComponent(absUrl);
-                  // Send navigation message to parent window
+                  } catch (err) {
+                    console.warn('URL parsing failed:', href, err);
+                  }
                   try {
                     window.parent.postMessage({
                       type: 'navigate',
                       url: absUrl
                     }, '*');
+                    console.log('Sent navigation message for:', absUrl);
                   } catch (msgError) {
+                    console.warn('postMessage failed, falling back to direct navigation:', absUrl, msgError);
+                    const proxied = PROXY_ENDPOINT + encodeURIComponent(absUrl);
                     window.location.href = proxied;
                   }
                 }
               } catch (clickError) {
-                console.log('Link click handling error:', clickError);
+                console.error('Link click handling error:', clickError);
+                window.parent.postMessage({
+                  type: 'error',
+                  message: 'Failed to handle link click: ' + clickError.message
+                }, '*');
               }
             }, true);
             
-            // Also handle form submissions to navigate within the same window
+            // Handle form submissions
             document.addEventListener('submit', function(e) {
               try {
-                var form = e.target;
+                const form = e.target;
                 if (form && form.tagName === 'FORM') {
-                  // Skip forms that explicitly target new windows
                   if (form.target === '_blank' || form.target === '_new') {
+                    console.log('Skipping form with target _blank/_new');
                     return;
                   }
-                  
-                  // For GET forms, convert to navigation
                   if (!form.method || form.method.toLowerCase() === 'get') {
                     e.preventDefault();
-                    
-                    var formData = new FormData(form);
-                    var url = new URL(form.action || window.location.href);
-                    
-                    // Add form data as query parameters
-                    for (var pair of formData.entries()) {
-                      url.searchParams.set(pair[0], pair[1]);
+                    const formData = new FormData(form);
+                    const url = new URL(form.action || ORIGINAL_BASE);
+                    for (const [key, value] of formData.entries()) {
+                      url.searchParams.set(key, value);
                     }
-                    
-                    var actualUrl = url.toString();
-                    if (actualUrl.includes('/api/proxy?url=')) {
-                      try {
-                        var urlParam = actualUrl.split('/api/proxy?url=')[1];
-                        actualUrl = decodeURIComponent(urlParam);
-                      } catch (urlError) {
-                        console.log('Failed to extract URL from proxy:', urlError);
-                      }
-                    }
-                    
-                    // Send navigation message to parent window
+                    const actualUrl = url.toString();
                     try {
                       window.parent.postMessage({
                         type: 'navigate',
                         url: actualUrl
                       }, '*');
+                      console.log('Sent form navigation message for:', actualUrl);
                     } catch (msgError) {
-                      console.log('Failed to send navigation message:', msgError);
+                      console.warn('Form postMessage failed, falling back:', actualUrl, msgError);
+                      const proxied = PROXY_ENDPOINT + encodeURIComponent(actualUrl);
+                      window.location.href = proxied;
                     }
+                  } else {
+                    // Handle POST forms by proxying the request
+                    const formData = new FormData(form);
+                    const actionUrl = abs(form.action || ORIGINAL_BASE);
+                    const proxied = PROXY_ENDPOINT + encodeURIComponent(actionUrl);
+                    form.action = proxied;
+                    console.log('Proxied POST form action:', proxied);
                   }
                 }
               } catch (submitError) {
-                console.log('Form submit handling error:', submitError);
+                console.error('Form submit handling error:', submitError);
+                window.parent.postMessage({
+                  type: 'error',
+                  message: 'Failed to handle form submission: ' + submitError.message
+                }, '*');
               }
             }, true);
             
-            // Send page title to parent window
+            // Send page title
             function sendTitleToParent() {
               try {
-                var title = document.title || document.querySelector('title')?.textContent || window.location.hostname;
+                const title = document.title || document.querySelector('title')?.textContent || window.location.hostname;
                 window.parent.postMessage({
                   type: 'title',
                   title: title
                 }, '*');
+                console.log('Sent title:', title);
               } catch (titleError) {
-                console.log('Failed to send title:', titleError);
+                console.error('Failed to send title:', titleError);
               }
             }
             
-            // Send title immediately and watch for changes
             sendTitleToParent();
             
-            // Send current URL to parent (in case of redirects)
+            // Send current URL
             function sendUrlToParent() {
               try {
-                var currentUrl = ORIGINAL_BASE;
+                const currentUrl = window.location.href.includes('/api/proxy?url=') 
+                  ? decodeURIComponent(window.location.href.split('/api/proxy?url=')[1])
+                  : ORIGINAL_BASE;
                 window.parent.postMessage({
                   type: 'url-update',
                   url: currentUrl
                 }, '*');
+                console.log('Sent URL update:', currentUrl);
               } catch (urlError) {
-                console.log('Failed to send URL update:', urlError);
+                console.error('Failed to send URL update:', urlError);
               }
             }
             
-            // Send URL update on load
             if (document.readyState === 'loading') {
               document.addEventListener('DOMContentLoaded', sendUrlToParent);
             } else {
               sendUrlToParent();
             }
             
-            // Watch for title changes
-            var titleObserver = new MutationObserver(function(mutations) {
+            const titleObserver = new MutationObserver(function(mutations) {
               mutations.forEach(function(mutation) {
                 if (mutation.type === 'childList' && mutation.target.nodeName === 'TITLE') {
                   sendTitleToParent();
@@ -499,13 +462,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               });
             });
             
-            var titleElement = document.querySelector('title');
+            const titleElement = document.querySelector('title');
             if (titleElement) {
               titleObserver.observe(titleElement, { childList: true, characterData: true, subtree: true });
             }
             
-            // Also watch for document title property changes
-            var originalTitle = document.title;
+            let originalTitle = document.title;
             Object.defineProperty(document, 'title', {
               get: function() { return originalTitle; },
               set: function(newTitle) {
@@ -513,137 +475,109 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 sendTitleToParent();
               }
             });
+
             // Hook fetch
-            var _fetch = window.fetch;
-            window.fetch = function(input, init){
+            const _fetch = window.fetch;
+            window.fetch = function(input, init) {
               try {
-                var url = (typeof input === 'string') ? input : (input && input.url) ? input.url : String(input);
-                if (!/^data:|^blob:|^about:/.test(url)) {
-                  // leave already proxied URLs
-                  if (!/^\/api\/proxy\?url=/.test(url)) {
-                    var targetUrl;
-                    if (/^https?:\/\//.test(url)) {
-                      try {
-                        var parsed = new URL(url, window.location.href);
-                        // If constructed against our own origin, remap to ORIGINAL_BASE origin
-                        if (parsed.origin === window.location.origin) {
-                          var pathAndQuery = parsed.pathname + parsed.search + parsed.hash;
-                          targetUrl = new URL(pathAndQuery, ORIGINAL_BASE).toString();
-                        } else {
-                          targetUrl = url;
-                        }
-                      } catch(e) { targetUrl = url; }
-                    } else {
-                      targetUrl = abs(url);
-                    }
-                    input = PROXY_ENDPOINT + encodeURIComponent(targetUrl);
-                  }
+                let url = (typeof input === 'string') ? input : (input && input.url) ? input.url : String(input);
+                if (!/^data:|^blob:|^about:/.test(url) && !/^\/api\/proxy\?url=/.test(url)) {
+                  url = abs(url);
+                  input = PROXY_ENDPOINT + encodeURIComponent(url);
                 }
-              } catch(e) {}
-              return _fetch.apply(this, arguments);
+                console.log('Proxied fetch:', url);
+              } catch (e) {
+                console.warn('Fetch URL processing failed:', e);
+              }
+              return _fetch.apply(this, [input, init]);
             };
+
             // Hook XMLHttpRequest
-            var _open = XMLHttpRequest.prototype.open;
-            XMLHttpRequest.prototype.open = function(method, url){
+            const _open = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function(method, url) {
               try {
                 if (typeof url === 'string' && !/^data:|^blob:|^about:/.test(url) && !/^\/api\/proxy\?url=/.test(url)) {
-                  var targetUrl;
-                  if (/^https?:\/\//.test(url)) {
-                    try {
-                      var parsed = new URL(url, window.location.href);
-                      if (parsed.origin === window.location.origin) {
-                        var pathAndQuery = parsed.pathname + parsed.search + parsed.hash;
-                        targetUrl = new URL(pathAndQuery, ORIGINAL_BASE).toString();
-                      } else {
-                        targetUrl = url;
-                      }
-                    } catch(e) { targetUrl = url; }
-                  } else {
-                    targetUrl = abs(url);
-                  }
-                  url = PROXY_ENDPOINT + encodeURIComponent(targetUrl);
+                  url = abs(url);
+                  url = PROXY_ENDPOINT + encodeURIComponent(url);
                 }
-              } catch(e) {}
+                console.log('Proxied XHR:', url);
+              } catch (e) {
+                console.warn('XHR URL processing failed:', e);
+              }
               return _open.apply(this, [method, url].concat([].slice.call(arguments, 2)));
             };
-            // Hook form submissions
-            var _submit = HTMLFormElement.prototype.submit;
-            HTMLFormElement.prototype.submit = function(){
+
+            // Hook form actions
+            const _submit = HTMLFormElement.prototype.submit;
+            HTMLFormElement.prototype.submit = function() {
               try {
                 if (this.action && !/^\/api\/proxy\?url=/.test(this.action)) {
-                  var targetUrl;
-                  if (/^https?:\/\//.test(this.action)) {
-                    try {
-                      var parsed = new URL(this.action, window.location.href);
-                      if (parsed.origin === window.location.origin) {
-                        var pathAndQuery = parsed.pathname + parsed.search + parsed.hash;
-                        targetUrl = new URL(pathAndQuery, ORIGINAL_BASE).toString();
-                      } else {
-                        targetUrl = this.action;
-                      }
-                    } catch(e) { targetUrl = this.action; }
-                  } else {
-                    targetUrl = abs(this.action);
-                  }
+                  const targetUrl = abs(this.action);
                   this.action = PROXY_ENDPOINT + encodeURIComponent(targetUrl);
+                  console.log('Proxied form submit:', targetUrl);
                 }
-              } catch(e) {}
+              } catch (e) {
+                console.warn('Form submit URL processing failed:', e);
+              }
               return _submit.apply(this, arguments);
             };
-            // Hook form submit events
-            document.addEventListener('submit', function(e) {
-              try {
-                var form = e.target;
-                if (form && form.action && !/^\/api\/proxy\?url=/.test(form.action)) {
-                  var targetUrl;
-                  if (/^https?:\/\//.test(form.action)) {
-                    try {
-                      var parsed = new URL(form.action, window.location.href);
-                      if (parsed.origin === window.location.origin) {
-                        var pathAndQuery = parsed.pathname + parsed.search + parsed.hash;
-                        targetUrl = new URL(pathAndQuery, ORIGINAL_BASE).toString();
-                      } else {
-                        targetUrl = form.action;
-                      }
-                    } catch(e) { targetUrl = form.action; }
-                  } else {
-                    targetUrl = abs(form.action);
-                  }
-                  form.action = PROXY_ENDPOINT + encodeURIComponent(targetUrl);
-                }
-              } catch(e) {}
-            }, true);
-            // Neutralize attempts to access top/document across sandboxes
-            try { Object.defineProperty(window, 'crossOriginIsolated', { get: function(){ return false; } }); } catch(e) {}
-            
-            // Detect if we're being blocked and notify parent
+
+            // Neutralize frame-busting attempts
+            try {
+              Object.defineProperty(window, 'crossOriginIsolated', { get: function() { return false; } });
+              Object.defineProperty(window, 'top', { get: function() { return window; } });
+              Object.defineProperty(window, 'parent', { get: function() { return window; } });
+            } catch (e) {
+              console.warn('Failed to neutralize frame-busting:', e);
+            }
+
+            // Detect and report errors
             window.addEventListener('error', function(e) {
               if (e.message && (e.message.includes('blocked') || e.message.includes('X-Frame-Options'))) {
                 try {
                   window.parent.postMessage({
                     type: 'error',
-                    message: 'This page has been blocked by Chrome security policies.'
+                    message: 'Content blocked by browser security policies.'
                   }, '*');
-                } catch(err) {}
+                  console.error('Blocked by security policies:', e.message);
+                } catch (err) {
+                  console.error('Failed to report blocking error:', err);
+                }
               }
             });
-            
-            // Check for frame-busting attempts
-            if (window.top !== window.self) {
-              try {
-                if (window.top.location.href !== window.location.href) {
-                  // We're in a frame, which is what we want
+
+            // Monitor DOM for dynamic links
+            const observer = new MutationObserver((mutations) => {
+              mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length) {
+                  mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) {
+                      const links = (node as Element).querySelectorAll('a[href]');
+                      links.forEach((link) => {
+                        const href = link.getAttribute('href');
+                        if (href && !/^(javascript:|mailto:|tel:|#)/i.test(href) && !/^\/api\/proxy\?url=/.test(href)) {
+                          try {
+                            const absUrl = abs(href);
+                            link.setAttribute('href', PROXY_ENDPOINT + encodeURIComponent(absUrl));
+                            console.log('Rewrote dynamic link:', absUrl);
+                          } catch (e) {
+                            console.warn('Failed to rewrite dynamic link:', href, e);
+                          }
+                        }
+                      });
+                    }
+                  });
                 }
-              } catch(e) {
-                // If we can't access top.location, we might be blocked
-                try {
-                  window.parent.postMessage({
-                    type: 'error',
-                    message: 'Content blocked due to security restrictions.'
-                  }, '*');
-                } catch(err) {}
-              }
-            }
+              });
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+          } catch (e) {
+            console.error('Shim initialization error:', e);
+            window.parent.postMessage({
+              type: 'error',
+              message: 'Shim initialization failed: ' + e.message
+            }, '*');
+          }
         })();</script>
       `;
       if (body.match(/<head[^>]*>/i)) {
@@ -656,14 +590,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         body = shim + body;
       }
 
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(body);
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(body);
     } else if (isCSS) {
-      // Rewrite url() in standalone CSS files using the CSS file as base
       const cssText = await response.text();
       const targetDomain = new URL(target).origin;
       
-      // First, rewrite absolute URLs that match the target domain
       let rewritten = cssText.replace(
         new RegExp(`url\\(["']?${targetDomain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^"']*)["']?\\)`, 'gi'),
         (_match, path) => {
@@ -677,7 +609,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       );
       
-      // Then rewrite relative URLs
       rewritten = rewritten.replace(
         /(url\(["']?)(?!https?:\/\/|data:|\/api\/proxy)(.*?)(["']?\))/gi,
         (match, prefix, relUrl, suffix) => {
@@ -694,11 +625,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Content-Type', contentType || 'text/css; charset=utf-8');
       res.send(rewritten);
     } else if (isJS) {
-      // Best-effort: rewrite obvious URL patterns in JS to avoid breaking code
       const js = await response.text();
       const targetDomain = new URL(target).origin;
       
-      // Rewrite absolute URLs that match the target domain in fetch() calls
       let rewritten = js.replace(
         new RegExp(`fetch\\(["']${targetDomain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^"']*)["']`, 'gi'),
         (_match, path) => {
@@ -711,8 +640,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         }
       );
-      
-      // Rewrite XMLHttpRequest open() calls
       rewritten = rewritten.replace(
         new RegExp(`\.open\\(["']\\w+["'],\\s*["']${targetDomain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^"']*)["']`, 'gi'),
         (_match, path) => {
@@ -729,9 +656,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Content-Type', contentType || 'application/javascript; charset=utf-8');
       res.send(rewritten);
     } else {
-      // Handle binary files (images, fonts, etc.) and other content types
       try {
-        // Special handling for known binary file types
         const isBinaryFile = /\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf|pdf|zip)$/i.test(target) || 
                             contentType.includes('image/') || 
                             contentType.includes('font/') || 
@@ -739,22 +664,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                             contentType.includes('application/octet-stream');
 
         if (isBinaryFile) {
-          // For binary data, ensure correct Content-Type
           res.setHeader('Content-Type', contentType);
-          
-          // Add caching headers for better performance
           res.setHeader('Cache-Control', 'public, max-age=86400');
-          
-          // Get and forward the content length if available
           const contentLength = response.headers.get('content-length');
           if (contentLength) res.setHeader('Content-Length', contentLength);
-          
-          // Stream the binary data
           const arrayBuffer = await response.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           res.send(buffer);
         } else {
-          // For other types of files, try direct streaming with proper Content-Type
           res.setHeader('Content-Type', contentType);
           const arrayBuffer = await response.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
@@ -774,7 +691,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       userAgent: req.headers['user-agent']
     });
     
-    // Provide more specific error messages
     let errorMessage = 'Unknown error';
     if (err.code === 'UND_ERR_INVALID_ARG') {
       errorMessage = 'Invalid request parameters';

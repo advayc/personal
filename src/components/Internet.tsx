@@ -24,9 +24,7 @@ interface HistoryEntry {
 
 interface InternetProps {
   onClose?: () => void;
-  // Allow parent container to start a drag when the titlebar is grabbed
   onDragHandlePointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void;
-  // Let parent (InternetTerminal) toggle maximize on green button
   onToggleMaximize?: () => void;
 }
 
@@ -50,7 +48,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const [retryCount, setRetryCount] = useState(0);
   const [lastError, setLastError] = useState<string | null>(null);
   const [titleTimeoutId, setTitleTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  // Suggestions/state for address bar
   const [filteredSuggestions, setFilteredSuggestions] = useState<Array<{ title: string; url: string; type?: 'search' | 'history' | 'bookmark' }>>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
   const [isUrlDropdownOpen, setIsUrlDropdownOpen] = useState(false);
@@ -58,16 +55,13 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
 
-  // Helper to map a canonical external URL to our local proxy endpoint
   const toProxy = (u: string) => `/api/proxy?url=${encodeURIComponent(u)}`;
   const isProxied = (u: string) => typeof u === 'string' && (u.startsWith('/api/proxy?url=') || u.includes('/api/proxy?url='));
   const unwrapProxied = (u: string) => {
     try {
       if (u.startsWith('/api/proxy?url=')) {
-        const raw = decodeURIComponent(u.replace('/api/proxy?url=', ''));
-        return raw;
+        return decodeURIComponent(u.replace('/api/proxy?url=', ''));
       }
-      // absolute same-origin URLs
       const parsed = new URL(u, window.location.origin);
       if (parsed.pathname === '/api/proxy' && parsed.searchParams.get('url')) {
         return parsed.searchParams.get('url') as string;
@@ -76,7 +70,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     return u;
   };
 
-  // URL helpers and search integration
   const stripProtocol = (url: string) => url.replace(/^(https?:\/\/|ftp:\/\/)/i, "");
   const normalizeUrlInline = (url: string) => url
     .trim()
@@ -87,22 +80,14 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const isValidUrl = (input: string) => {
     const s = input.trim();
     if (!s) return false;
-    
-    // Already has a protocol
     if (/^https?:\/\//i.test(s)) return true;
-    
-    // Local URLs and IPs
     if (/^localhost(:\d+)?(\/|$)/i.test(s)) return true;
-    if (/^\d{1,3}(\.\d{1,3}){3}(:\d+)?(\/|$)?$/.test(s)) return true; // IPv4
-    
-    // Domain-like URLs (including single-word domains like "apple")
+    if (/^\d{1,3}(\.\d{1,3}){3}(:\d+)?(\/|$)?$/.test(s)) return true;
     return /^[a-z0-9-]+(\.[a-z0-9-]+)*(:\d+)?(\/|$)?$/i.test(s);
   };
 
   const handleSearch = (query: string) => {
-    // Make sure the query isn't empty
     if (!query.trim()) return;
-    
     const searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
     navigateToUrl(searchUrl);
   };
@@ -151,7 +136,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     setIsUrlDropdownOpen(false);
   };
 
-  // Load data from localStorage on mount
   useEffect(() => {
     const savedBookmarks = localStorage.getItem('ie-bookmarks');
     const savedHistory = localStorage.getItem('ie-history');
@@ -190,12 +174,10 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       }
     }
     
-    // Initialize with apple.com navigation
     setTimeout(() => navigateToUrl('apple.com'), 100);
   }, []);
 
   const initializeDefaultBookmarks = () => {
-    // Restrict to the three requested bookmarks (also reused on the new-tab grid)
     const defaultBookmarks: Bookmark[] = [
       { title: 'advay.ca', url: 'https://advay.ca', favicon: '/favicon.png' },
       { title: 'github', url: 'https://github.com/advayc', favicon: '/api/proxy?url=https://github.com/favicon.ico' },
@@ -205,7 +187,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     localStorage.setItem('ie-bookmarks', JSON.stringify(defaultBookmarks));
   };
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (titleTimeoutId) {
@@ -222,8 +203,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     localStorage.setItem('ie-tabs', JSON.stringify(tabs));
   }, [tabs]);
 
-
-  // Always show full URL (with protocol)
   const formatUrlForDisplay = (url: string) => {
     try {
       return url.replace(/^https?:\/\//i, '');
@@ -232,7 +211,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     }
   };
 
-  // Add keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
@@ -274,7 +252,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       }
     };
 
-    // Message handler for iframe communication
     const handleMessage = (event: MessageEvent) => {
       try {
         if (event.data && typeof event.data === 'object') {
@@ -288,7 +265,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
             case 'url-update':
               if (event.data.url) {
                 console.log('Received URL update:', event.data.url);
-                // Update URL bar without navigating (useful for redirects)
                 setCurrentUrl(event.data.url);
                 setUrlInput(formatUrlForDisplay(event.data.url));
                 setTabs(prevTabs => 
@@ -307,7 +283,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
             case 'title':
               if (event.data.title) {
                 console.log('Received title update:', event.data.title);
-                // Clear the title timeout since we received a title
                 if (titleTimeoutId) {
                   clearTimeout(titleTimeoutId);
                   setTitleTimeoutId(null);
@@ -319,7 +294,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                       : tab
                   )
                 );
-                // Also update history entry
                 setHistory(prevHistory => 
                   prevHistory.map((entry, index) => 
                     index === 0 ? { ...entry, title: event.data.title } : entry
@@ -346,23 +320,19 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const navigateToUrl = useCallback((url: string) => {
     if (!url) return;
     
-    // Reset retry count and error state for new navigation
     setRetryCount(0);
     setLastError(null);
     
-    // If URL is already proxied, unwrap for state but keep proxied for iframe src
     const alreadyProxied = isProxied(url);
     if (alreadyProxied) {
       url = unwrapProxied(url);
     }
 
-    // Add protocol if missing and handle bing: query marker
     let fullUrl = url;
     if (/^bing:/i.test(url)) {
       const q = url.replace(/^bing:/i, '').trim();
       fullUrl = `https://www.bing.com/search?q=${encodeURIComponent(q)}`;
     } else if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      // Check if it's a search query or a URL
       if (!isValidUrl(url)) {
         fullUrl = `https://www.bing.com/search?q=${encodeURIComponent(url)}`;
       } else {
@@ -370,39 +340,32 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       }
     }
 
-  // If navigating to Bing, add parameters to reduce frame busting
     try {
       const u = new URL(fullUrl);
       const host = u.hostname;
       const isBing = /(^|\.)bing\.(com|ca|co\.[a-z]{2}|[a-z]{2})$/i.test(host);
       if (isBing) {
-        // Add parameters that help with iframe embedding
         if (!u.searchParams.has('FORM')) {
           u.searchParams.set('FORM', 'QBRE');
         }
         fullUrl = u.toString();
       }
-    } catch {
-      /* ignore parse issues */
-    }
+    } catch {}
 
     setIsLoading(true);
-  setCurrentUrl(fullUrl);
-  setUrlInput(fullUrl);
+    setCurrentUrl(fullUrl);
+    setUrlInput(fullUrl);
 
-    // Update navigation history
     const newHistory = [...navigationHistory.slice(0, navigationIndex + 1), fullUrl];
     setNavigationHistory(newHistory);
     setNavigationIndex(newHistory.length - 1);
     setCanGoBack(newHistory.length > 1);
     setCanGoForward(false);
 
-    // Clear any existing title timeout
     if (titleTimeoutId) {
       clearTimeout(titleTimeoutId);
     }
 
-    // Update active tab
     setTabs(prevTabs => 
       prevTabs.map(tab => 
         tab.isActive 
@@ -411,7 +374,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       )
     );
 
-    // Set a timeout to update title with a fallback if iframe doesn't send title
     const timeoutId = setTimeout(() => {
       try {
         const hostname = new URL(fullUrl).hostname;
@@ -423,7 +385,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               : tab
           )
         );
-        // Also update history entry
         setHistory(prevHistory => 
           prevHistory.map((entry, index) => 
             index === 0 && entry.title === 'Loading...' ? { ...entry, title: fallbackTitle } : entry
@@ -432,19 +393,16 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       } catch (error) {
         console.error('Failed to set fallback title:', error);
       }
-    }, 3000); // 3 second timeout
+    }, 3000);
     
     setTitleTimeoutId(timeoutId);
 
-    // Use proxy for external URLs
-    const proxiedUrl = alreadyProxied ? (typeof window !== 'undefined' ? toProxy(fullUrl) : toProxy(fullUrl)) : toProxy(fullUrl);
+    const proxiedUrl = alreadyProxied ? `/api/proxy?url=${encodeURIComponent(fullUrl)}` : toProxy(fullUrl);
     
     if (iframeRef.current) {
-      // If caller provided a proxied path, use that directly; else use constructed proxiedUrl
-      iframeRef.current.src = alreadyProxied ? `/api/proxy?url=${encodeURIComponent(fullUrl)}` : proxiedUrl;
+      iframeRef.current.src = proxiedUrl;
     }
 
-    // Add to history
     const historyEntry: HistoryEntry = {
       url: fullUrl,
       title: 'Loading...',
@@ -456,10 +414,9 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
 
   const handleIframeLoad = () => {
     setIsLoading(false);
-    setRetryCount(0); // Reset retry count on successful load
-    setLastError(null); // Clear any previous errors
+    setRetryCount(0);
+    setLastError(null);
 
-    // Clear title timeout since page loaded
     if (titleTimeoutId) {
       clearTimeout(titleTimeoutId);
       setTitleTimeoutId(null);
@@ -472,7 +429,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
         const hostname = new URL(currentUrl).hostname;
         const favicon = `https://icon.horse/icon/${hostname}` || '/icons/default_favicon.png';
         
-        // Update tab title
         setTabs(prevTabs => 
           prevTabs.map(tab => 
             tab.isActive 
@@ -481,14 +437,12 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
           )
         );
         
-        // Update history entry
         setHistory(prevHistory => 
           prevHistory.map((entry, index) => 
             index === 0 ? { ...entry, title, favicon } : entry
           )
         );
       } else {
-        // Fallback: try to get hostname for title
         try {
           const hostname = new URL(currentUrl).hostname;
           const fallbackTitle = hostname || 'Untitled Page';
@@ -508,10 +462,11 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       setIsLoading(false);
       setLastError('Failed to load content.');
     }
-  };  const handleIframeError = () => {
+  };
+
+  const handleIframeError = () => {
     setIsLoading(false);
     
-    // Check if it's a Chrome blocking issue
     const isBlocked = lastError?.includes('blocked') || 
                      lastError?.includes('X-Frame-Options') ||
                      lastError?.includes('refused to connect');
@@ -524,18 +479,16 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     
     console.error('Failed to load page:', currentUrl);
     
-    // Auto-retry up to 2 times with a delay for non-blocking errors
     if (retryCount < 2 && !isBlocked) {
       console.log(`Retrying... attempt ${retryCount + 1}`);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
         setIsLoading(true);
         if (iframeRef.current) {
-          // Add cache busting parameter to force reload
           const separator = currentUrl.includes('?') ? '&' : '?';
           iframeRef.current.src = toProxy(currentUrl) + separator + '_retry=' + Date.now();
         }
-      }, 1000 * (retryCount + 1)); // Exponential backoff
+      }, 1000 * (retryCount + 1));
     } else {
       console.error('Max retries reached for:', currentUrl);
     }
@@ -619,8 +572,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     if (isActiveTab && newTabs.length > 0) {
       const newActiveIndex = Math.min(tabIndex, newTabs.length - 1);
       newTabs[newActiveIndex].isActive = true;
-  setCurrentUrl(newTabs[newActiveIndex].url);
-  setUrlInput(newTabs[newActiveIndex].url);
+      setCurrentUrl(newTabs[newActiveIndex].url);
+      setUrlInput(newTabs[newActiveIndex].url);
     }
     
     setTabs(newTabs);
@@ -634,8 +587,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     
     const activeTab = newTabs.find(tab => tab.isActive);
     if (activeTab) {
-  setCurrentUrl(activeTab.url);
-  setUrlInput(activeTab.url);
+      setCurrentUrl(activeTab.url);
+      setUrlInput(activeTab.url);
       setTabs(newTabs);
       
       if (activeTab.url !== 'about:blank') {
@@ -657,20 +610,16 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     }
     let url: string;
     try {
-      // Try to create a URL - if it fails, treat as search or domain
       new URL(trimmedInput);
       url = trimmedInput;
     } catch {
-      // Check if it's a domain-like string (contains dots or is a common domain)
       if (trimmedInput.includes('.') || /^[a-z0-9-]+$/i.test(trimmedInput)) {
-        // Add https:// if missing
         if (!trimmedInput.startsWith('http://') && !trimmedInput.startsWith('https://')) {
           url = `https://${trimmedInput}`;
         } else {
           url = trimmedInput;
         }
       } else {
-        // Treat as search query
         url = `https://www.bing.com/search?q=${encodeURIComponent(trimmedInput)}`;
       }
     }
@@ -699,16 +648,15 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
         fontFamily: 'Geneva-12, ArkPixel, SerenityOS-Emoji, system-ui, -apple-system, sans-serif',
       }}
     >
-      {/* Aqua-style window title bar with glossy traffic lights and pinstripes */}
       <div
         className="relative border-b border-[#a7a7a7] px-3 py-[6px] flex items-center justify-between cursor-move select-none"
         onPointerDown={onDragHandlePointerDown}
-           style={{
-             backgroundImage:
-               'repeating-linear-gradient(0deg, rgba(255,255,255,0.4), rgba(255,255,255,0.4) 1px, rgba(240,240,240,0.4) 1px, rgba(240,240,240,0.4) 3px), linear-gradient(to bottom, #f6f6f6, #d6d6d6)'
-           }}>
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(0deg, rgba(255,255,255,0.4), rgba(255,255,255,0.4) 1px, rgba(240,240,240,0.4) 1px, rgba(240,240,240,0.4) 3px), linear-gradient(to bottom, #f6f6f6, #d6d6d6)'
+        }}
+      >
         <div className="flex items-center space-x-[6px] select-none">
-          {/* Close */}
           <button
             onClick={onClose}
             aria-label="Close"
@@ -723,14 +671,12 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                     background:
                       'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.0) 60%)'
                   }} />
-            {/* darker top band */}
             <span className="absolute top-0 left-0 right-0 h-[30%] rounded-t-full"
                   style={{
                     background:
                       'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0))'
                   }} />
           </button>
-          {/* Minimize */}
           <div
             aria-hidden
             className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)]"
@@ -750,7 +696,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                       'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
                   }} />
           </div>
-          {/* Zoom (Maximize) */}
           <button
             type="button"
             aria-label="Maximize"
@@ -780,7 +725,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
         <div className="w-16" />
       </div>
 
-      {/* Unified nav+bookmarks bar */}
       <div
         className="border-b border-[#a7a7a7] px-2 pt-1 pb-0"
         style={{
@@ -789,7 +733,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
         }}
       >
         <div className="flex items-center w-full">
-          {/* Back/Forward buttons */}
           <button
             onClick={goBack}
             disabled={!canGoBack}
@@ -816,7 +759,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               <polyline points="15,8 21,14 15,20" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          {/* Address bar */}
           <form onSubmit={handleUrlSubmit} className="flex-1 flex items-center relative  min-w-0">
             <input
               ref={urlInputRef}
@@ -863,7 +805,6 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               spellCheck={false}
               autoComplete="off"
             />
-            {/* Suggestions dropdown */}
             {isUrlDropdownOpen && filteredSuggestions.length > 0 && (
               <div
                 className="absolute left-0 right-0 mt-1 z-20 rounded-lg border border-[#d1d5db] shadow-lg overflow-hidden backdrop-blur-md bg-white/80"
@@ -896,9 +837,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               Go
             </button>
           </form>
-  </div>
+        </div>
 
-      {/* Bookmarks bar (now visually merged with nav bar) */}
         <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-2">
           {[
             { title: 'apple', url: 'https://apple.com', favicon: '/api/proxy?url=https://www.apple.com/favicon.ico' },
@@ -923,15 +863,13 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
         </div>
       </div>
 
-      {/* Content area */}
-  <div className="flex-1 bg-white overflow-hidden relative">
+      <div className="flex-1 bg-white overflow-hidden relative">
         {currentUrl === 'about:blank' ? (
           <div className="w-full h-full flex items-center justify-center bg-white">
             <div className="text-center">
               <h2 className="text-xl text-[#333] mb-4">New Tab</h2>
               <p className="text-[#666] mb-8">Enter a URL to browse the web</p>
               
-              {/* Quick access bookmarks */}
               <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
                 {bookmarks.slice(0, 6).map((bookmark, index) => (
                   <button
@@ -952,7 +890,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
             </div>
           </div>
         ) : (
-          <>
+          <div className="w-full h-full relative">
             <iframe
               ref={iframeRef}
               src={currentUrl !== 'about:blank' ? toProxy(currentUrl) : ''}
@@ -984,12 +922,11 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 
-      {/* Status bar */}
-  <div className="bg-gradient-to-b from-[#e8e8e8] to-[#d4d4d4] border-t border-[#999] px-3 py-1">
+      <div className="bg-gradient-to-b from-[#e8e8e8] to-[#d4d4d4] border-t border-[#999] px-3 py-1">
         <div className="flex items-center justify-between text-xs text-[#333]">
           <span>
             {lastError ? `Error: ${lastError}` : isLoading ? 'Loading...' : 'Done'}
