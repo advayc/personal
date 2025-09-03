@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 // Base URL for the counter service
-const RAW_BASE = process.env.NEXT_PUBLIC_HIT_COUNTER_URL || 'https://nums-ten.vercel.app';
+const RAW_BASE = process.env.NEXT_PUBLIC_HIT_COUNTER_URL || 'https://nums.advay.ca/';
 function normalizeCountEndpoint(base: string) {
   const stripped = base.replace(/\/$/, '');
   return stripped.endsWith('/count') ? stripped : `${stripped}/count`;

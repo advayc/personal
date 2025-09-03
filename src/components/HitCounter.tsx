@@ -30,7 +30,11 @@ const useAnimatedNumber = (target: number | null, duration = 800) => {
     return () => cancelAnimationFrame(frame);
   }, [target, duration]);
 
-  return target == null ? null : display;
+  const formatNumber = (num: number) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  return target == null ? null : formatNumber(display);
 };
 
 const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFetchOnly = false, variant = 'default', fontFamily }) => {

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 // Base can be provided with or without trailing /hit or slash
-const RAW_BASE = process.env.NEXT_PUBLIC_HIT_COUNTER_URL || 'https://nums-ten.vercel.app';
+const RAW_BASE = process.env.NEXT_PUBLIC_HIT_COUNTER_URL || 'https://nums.advay.ca/';
 function normalizeHitEndpoint(base: string) {
   // strip trailing slash
   const stripped = base.replace(/\/$/, '');
