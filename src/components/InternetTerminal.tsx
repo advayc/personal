@@ -27,7 +27,7 @@ export default function InternetTerminal({ onClose, headerText }: InternetTermin
   return (
     <motion.div
       className={`terminal-container fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/90 overflow-hidden rounded-lg`}
-      style={{ width, height, top: 48, left: 64, touchAction: 'none' }}
+      style={{ width, height, top: 4, left: 20, touchAction: 'none' }}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       drag

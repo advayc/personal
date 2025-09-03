@@ -49,6 +49,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [retryCount, setRetryCount] = useState(0);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [titleTimeoutId, setTitleTimeoutId] = useState<NodeJS.Timeout | null>(null);
   // Suggestions/state for address bar
   const [filteredSuggestions, setFilteredSuggestions] = useState<Array<{ title: string; url: string; type?: 'search' | 'history' | 'bookmark' }>>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
@@ -86,12 +87,22 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const isValidUrl = (input: string) => {
     const s = input.trim();
     if (!s) return false;
+    
+    // Already has a protocol
+    if (/^https?:\/\//i.test(s)) return true;
+    
+    // Local URLs and IPs
     if (/^localhost(:\d+)?(\/|$)/i.test(s)) return true;
     if (/^\d{1,3}(\.\d{1,3}){3}(:\d+)?(\/|$)?$/.test(s)) return true; // IPv4
-    return /^[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?(\/|$)?$/i.test(s);
+    
+    // Domain-like URLs (including single-word domains like "apple")
+    return /^[a-z0-9-]+(\.[a-z0-9-]+)*(:\d+)?(\/|$)?$/i.test(s);
   };
 
   const handleSearch = (query: string) => {
+    // Make sure the query isn't empty
+    if (!query.trim()) return;
+    
     const searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
     navigateToUrl(searchUrl);
   };
@@ -194,10 +205,14 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     localStorage.setItem('ie-bookmarks', JSON.stringify(defaultBookmarks));
   };
 
-  // Save to localStorage when data changes
+  // Cleanup timeout on unmount
   useEffect(() => {
-    localStorage.setItem('ie-bookmarks', JSON.stringify(bookmarks));
-  }, [bookmarks]);
+    return () => {
+      if (titleTimeoutId) {
+        clearTimeout(titleTimeoutId);
+      }
+    };
+  }, [titleTimeoutId]);
 
   useEffect(() => {
     localStorage.setItem('ie-history', JSON.stringify(history));
@@ -270,17 +285,44 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                 navigateToUrl(event.data.url);
               }
               break;
+            case 'url-update':
+              if (event.data.url) {
+                console.log('Received URL update:', event.data.url);
+                // Update URL bar without navigating (useful for redirects)
+                setCurrentUrl(event.data.url);
+                setUrlInput(formatUrlForDisplay(event.data.url));
+                setTabs(prevTabs => 
+                  prevTabs.map(tab => 
+                    tab.isActive 
+                      ? { ...tab, url: event.data.url }
+                      : tab
+                  )
+                );
+              }
+              break;
             case 'error':
               console.error('Iframe reported error:', event.data.message);
               setLastError(event.data.message);
               break;
             case 'title':
               if (event.data.title) {
+                console.log('Received title update:', event.data.title);
+                // Clear the title timeout since we received a title
+                if (titleTimeoutId) {
+                  clearTimeout(titleTimeoutId);
+                  setTitleTimeoutId(null);
+                }
                 setTabs(prevTabs => 
                   prevTabs.map(tab => 
                     tab.isActive 
                       ? { ...tab, title: event.data.title }
                       : tab
+                  )
+                );
+                // Also update history entry
+                setHistory(prevHistory => 
+                  prevHistory.map((entry, index) => 
+                    index === 0 ? { ...entry, title: event.data.title } : entry
                   )
                 );
               }
@@ -320,6 +362,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       const q = url.replace(/^bing:/i, '').trim();
       fullUrl = `https://www.bing.com/search?q=${encodeURIComponent(q)}`;
     } else if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      // Check if it's a search query or a URL
       if (!isValidUrl(url)) {
         fullUrl = `https://www.bing.com/search?q=${encodeURIComponent(url)}`;
       } else {
@@ -327,17 +370,15 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       }
     }
 
-  // If navigating to Google, ensure igu=1 param is present to reduce frame busting
+  // If navigating to Bing, add parameters to reduce frame busting
     try {
       const u = new URL(fullUrl);
       const host = u.hostname;
-      const isGoogle = /(^|\.)google\.(com|ca|co\.[a-z]{2}|[a-z]{2})$/i.test(host);
-      if (isGoogle) {
-        if (u.pathname === '/' || u.pathname === '') {
-          u.pathname = '/webhp';
-        }
-        if (!u.searchParams.has('igu')) {
-      u.searchParams.set('igu', '1');
+      const isBing = /(^|\.)bing\.(com|ca|co\.[a-z]{2}|[a-z]{2})$/i.test(host);
+      if (isBing) {
+        // Add parameters that help with iframe embedding
+        if (!u.searchParams.has('FORM')) {
+          u.searchParams.set('FORM', 'QBRE');
         }
         fullUrl = u.toString();
       }
@@ -356,6 +397,11 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     setCanGoBack(newHistory.length > 1);
     setCanGoForward(false);
 
+    // Clear any existing title timeout
+    if (titleTimeoutId) {
+      clearTimeout(titleTimeoutId);
+    }
+
     // Update active tab
     setTabs(prevTabs => 
       prevTabs.map(tab => 
@@ -364,6 +410,31 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
           : tab
       )
     );
+
+    // Set a timeout to update title with a fallback if iframe doesn't send title
+    const timeoutId = setTimeout(() => {
+      try {
+        const hostname = new URL(fullUrl).hostname;
+        const fallbackTitle = hostname || 'Untitled Page';
+        setTabs(prevTabs => 
+          prevTabs.map(tab => 
+            tab.isActive && tab.title === 'Loading...'
+              ? { ...tab, title: fallbackTitle }
+              : tab
+          )
+        );
+        // Also update history entry
+        setHistory(prevHistory => 
+          prevHistory.map((entry, index) => 
+            index === 0 && entry.title === 'Loading...' ? { ...entry, title: fallbackTitle } : entry
+          )
+        );
+      } catch (error) {
+        console.error('Failed to set fallback title:', error);
+      }
+    }, 3000); // 3 second timeout
+    
+    setTitleTimeoutId(timeoutId);
 
     // Use proxy for external URLs
     const proxiedUrl = alreadyProxied ? (typeof window !== 'undefined' ? toProxy(fullUrl) : toProxy(fullUrl)) : toProxy(fullUrl);
@@ -378,7 +449,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       url: fullUrl,
       title: 'Loading...',
       timestamp: Date.now(),
-      favicon: `https://www.google.com/s2/favicons?domain=${new URL(fullUrl).hostname}&sz=32`
+      favicon: `https://icon.horse/icon/${new URL(fullUrl).hostname}`
     };
     setHistory(prevHistory => [historyEntry, ...prevHistory.slice(0, 99)]);
   }, [navigationHistory, navigationIndex]);
@@ -388,12 +459,18 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     setRetryCount(0); // Reset retry count on successful load
     setLastError(null); // Clear any previous errors
 
+    // Clear title timeout since page loaded
+    if (titleTimeoutId) {
+      clearTimeout(titleTimeoutId);
+      setTitleTimeoutId(null);
+    }
+
     try {
       const iframe = iframeRef.current;
       if (iframe && iframe.contentDocument) {
         const title = iframe.contentDocument.title || formatUrlForDisplay(currentUrl);
         const hostname = new URL(currentUrl).hostname;
-        const favicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+        const favicon = `https://icon.horse/icon/${hostname}` || '/icons/default_favicon.png';
         
         // Update tab title
         setTabs(prevTabs => 
@@ -410,18 +487,45 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
             index === 0 ? { ...entry, title, favicon } : entry
           )
         );
+      } else {
+        // Fallback: try to get hostname for title
+        try {
+          const hostname = new URL(currentUrl).hostname;
+          const fallbackTitle = hostname || 'Untitled Page';
+          setTabs(prevTabs => 
+            prevTabs.map(tab => 
+              tab.isActive && (tab.title === 'Loading...' || !tab.title)
+                ? { ...tab, title: fallbackTitle }
+                : tab
+            )
+          );
+        } catch (error) {
+          console.error('Failed to set fallback title:', error);
+        }
       }
     } catch (error) {
       console.error('Failed to access iframe content:', error);
       setIsLoading(false);
+      setLastError('Failed to load content.');
     }
   };  const handleIframeError = () => {
     setIsLoading(false);
-    setLastError(`Failed to load: ${currentUrl}`);
+    
+    // Check if it's a Chrome blocking issue
+    const isBlocked = lastError?.includes('blocked') || 
+                     lastError?.includes('X-Frame-Options') ||
+                     lastError?.includes('refused to connect');
+    
+    if (isBlocked) {
+      setLastError(`This page has been blocked by the browser. Try opening "${currentUrl}" in a new tab instead.`);
+    } else {
+      setLastError(`Failed to load: ${currentUrl}`);
+    }
+    
     console.error('Failed to load page:', currentUrl);
     
-    // Auto-retry up to 2 times with a delay
-    if (retryCount < 2) {
+    // Auto-retry up to 2 times with a delay for non-blocking errors
+    if (retryCount < 2 && !isBlocked) {
       console.log(`Retrying... attempt ${retryCount + 1}`);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
@@ -545,13 +649,32 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
 
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedInput = urlInput.trim();
+    if (!trimmedInput) return;
     if (filteredSuggestions.length > 0 && isUrlDropdownOpen) {
       handleNavigateFromSuggestion(filteredSuggestions[selectedSuggestionIndex]);
-    } else if (isValidUrl(urlInput)) {
-      navigateToUrl(urlInput);
-    } else {
-      handleSearch(urlInput);
+      return;
     }
+    let url: string;
+    try {
+      // Try to create a URL - if it fails, treat as search or domain
+      new URL(trimmedInput);
+      url = trimmedInput;
+    } catch {
+      // Check if it's a domain-like string (contains dots or is a common domain)
+      if (trimmedInput.includes('.') || /^[a-z0-9-]+$/i.test(trimmedInput)) {
+        // Add https:// if missing
+        if (!trimmedInput.startsWith('http://') && !trimmedInput.startsWith('https://')) {
+          url = `https://${trimmedInput}`;
+        } else {
+          url = trimmedInput;
+        }
+      } else {
+        // Treat as search query
+        url = `https://www.bing.com/search?q=${encodeURIComponent(trimmedInput)}`;
+      }
+    }
+    navigateToUrl(url);
   };
 
   const addBookmark = () => {
@@ -702,9 +825,14 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               onChange={(e) => {
                 setUrlInput(e.target.value);
                 handleFilterSuggestions(e.target.value);
-                setIsUrlDropdownOpen(true);
+                setIsUrlDropdownOpen(e.target.value.trim().length > 0);
               }}
-              onFocus={() => setIsUrlDropdownOpen(true)}
+              onFocus={() => {
+                if (urlInput.trim().length > 0) {
+                  setIsUrlDropdownOpen(true);
+                }
+                urlInputRef.current?.select();
+              }}
               onBlur={() => setTimeout(() => setIsUrlDropdownOpen(false), 120)}
               onKeyDown={(e) => {
                 if (!isUrlDropdownOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
@@ -751,13 +879,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                   >
                     <span className="flex items-center mr-3">
                       <span className="inline-block align-middle w-4 h-4 mr-2">
-                        <span className={`inline-block w-4 h-4 rounded-full border-2 ${idx === selectedSuggestionIndex ? 'border-[#007aff]' : 'border-[#cfd8dc]'}`}
-                          style={{ background: idx === selectedSuggestionIndex ? '#007aff' : '#fff' }}
-                        >
-                          {idx === selectedSuggestionIndex && (
-                            <span className="block w-2 h-2 m-1 rounded-full bg-white" />
-                          )}
-                        </span>
+                        <FaGlobe className="w-4 h-4 text-[#888]" />
                       </span>
                       <span className="text-[#222] font-medium truncate max-w-[180px]">{s.title}</span>
                     </span>
@@ -780,7 +902,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
         <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-2">
           {[
             { title: 'apple', url: 'https://apple.com', favicon: '/api/proxy?url=https://www.apple.com/favicon.ico' },
-            { title: 'google', url: 'https://google.com', favicon: '/api/proxy?url=https://www.google.com/favicon.ico' },
+            { title: 'bing', url: 'https://bing.com', favicon: '/api/proxy?url=https://www.bing.com/favicon.ico' },
             { title: 'advay', url: 'https://advay.ca', favicon: '/favicon.png' },
             { title: 'github', url: 'https://github.com/advayc', favicon: '/api/proxy?url=https://github.com/favicon.ico' },
           ].map((b) => (
@@ -838,11 +960,29 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               title="Web Content"
               onLoad={handleIframeLoad}
               onError={handleIframeError}
-              sandbox="allow-scripts allow-forms allow-popups allow-pointer-lock allow-same-origin"
-              allow="geolocation; microphone; camera; midi; xr-spatial-tracking; accelerometer; gyroscope; payment; encrypted-media; usb"
+              sandbox="allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation allow-same-origin"
+              allow="geolocation; microphone; camera; midi; accelerometer; gyroscope; payment; encrypted-media; usb"
             />
             {isLoading && (
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A90E2] animate-pulse"></div>
+            )}
+            {lastError && (
+              <div className="absolute inset-0 bg-white flex items-center justify-center">
+                <div className="text-center p-8 max-w-md">
+                  <div className="text-6xl mb-4">😟</div>
+                  <h2 className="text-xl font-semibold mb-2">Couldn't load page</h2>
+                  <p className="text-gray-600 mb-4">{lastError}</p>
+                  <button 
+                    onClick={() => {
+                      setLastError(null);
+                      refresh();
+                    }}
+                    className="bg-[#4A90E2] text-white px-4 py-2 rounded hover:bg-[#357ABD] transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
             )}
           </>
         )}
@@ -852,7 +992,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   <div className="bg-gradient-to-b from-[#e8e8e8] to-[#d4d4d4] border-t border-[#999] px-3 py-1">
         <div className="flex items-center justify-between text-xs text-[#333]">
           <span>
-            {isLoading ? 'Loading...' : 'Done'}
+            {lastError ? `Error: ${lastError}` : isLoading ? 'Loading...' : 'Done'}
           </span>
           <span>
             {tabs.length} tab{tabs.length !== 1 ? 's' : ''}

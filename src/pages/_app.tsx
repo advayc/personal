@@ -5,6 +5,7 @@ import type { AppProps } from "next/app";
 import { TerminalProvider } from '@/components/TerminalContext';
 import { SelectionBoxProvider } from '@/components/SelectionContext';
 import Head from "next/head";
+import Script from "next/script";
 
 // Add this function at the top of the file, after the imports
 function calculateAge(birthDate: Date): number {
@@ -48,17 +49,21 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="google-site-verification" content="30z2hGJJbeDm2vE7ctaz5MxQE8TMgULkFW-wEZ5RsdM" />
         
         {/* Google Analytics */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-XXXXXXXX');
-            `
-          }}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"
+          strategy="afterInteractive"
         />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+        >
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-XXXXXXXX');
+          `}
+        </Script>
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
@@ -75,9 +80,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="twitter:image" content="/meta.png" />
         
         {/* Favicon */}
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
         
         {/* PWA */}
         <link rel="manifest" href="/site.webmanifest" />
