@@ -16,6 +16,14 @@
       {
         "image-alt": "off"
       }
-    ]
-  }
+    ],
+    "apple-touch-icons": "off"
+  },
+  "browserslist": [
+    "defaults",
+    "not ie 11",
+    "not and_ff <= 126",
+    "not firefox <= 126",
+    "not opera <= 110"
+  ]
 }

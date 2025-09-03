@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import SelectionBox from "@/components/SelectionBox";
 import { useTerminal } from "@/components/TerminalContext";
 import Link from '@/components/Link';
-import Head from 'next/head'; 
+import Head from 'next/head';
 import {fileConfigs} from '@/lib/fileConfigs';
 import { calculateAge } from '@/utils/age';
 import PongTerminal from "@/components/PongTerminal";
