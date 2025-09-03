@@ -21,15 +21,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const response = await fetch(target, {
-      headers: {
-        'User-Agent':
-          req.headers['user-agent'] ||
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122 Safari/537.36',
-        // Request uncompressed content to avoid encoding issues
-        'Accept-Encoding': 'identity',
-      },
-    });
+    // Copy request headers and ensure we have proper Accept headers for different content types
+    const headers: HeadersInit = {
+      'User-Agent':
+        req.headers['user-agent'] ||
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122 Safari/537.36',
+      // Request uncompressed content to avoid encoding issues
+      'Accept-Encoding': 'identity',
+    };
+    
+    // Forward essential headers for better content negotiation
+    if (req.headers['accept']) headers['Accept'] = req.headers['accept'] as string;
+    if (req.headers['referer']) headers['Referer'] = req.headers['referer'] as string;
+    
+    // Specific headers for image types to ensure proper binary handling
+    if (target.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf)$/i)) {
+      headers['Accept'] = 'image/*, */*';
+    }
+
+    const response = await fetch(target, { headers });
 
     if (!response.ok) {
       res.status(response.status).json({ 
@@ -284,12 +294,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Content-Type', contentType || 'application/javascript; charset=utf-8');
       res.send(js);
     } else {
-      // Stream non-HTML responses directly with CORS headers
+      // Handle binary files (images, fonts, etc.) and other content types
       try {
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        res.setHeader('Content-Type', contentType);
-        res.send(buffer);
+        // Special handling for known binary file types
+        const isBinaryFile = /\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf|pdf|zip)$/i.test(target) || 
+                            contentType.includes('image/') || 
+                            contentType.includes('font/') || 
+                            contentType.includes('application/font') ||
+                            contentType.includes('application/octet-stream');
+
+        if (isBinaryFile) {
+          // For binary data, ensure correct Content-Type
+          res.setHeader('Content-Type', contentType);
+          
+          // Add caching headers for better performance
+          res.setHeader('Cache-Control', 'public, max-age=86400');
+          
+          // Get and forward the content length if available
+          const contentLength = response.headers.get('content-length');
+          if (contentLength) res.setHeader('Content-Length', contentLength);
+          
+          // Stream the binary data
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          res.send(buffer);
+        } else {
+          // For other types of files, try direct streaming with proper Content-Type
+          res.setHeader('Content-Type', contentType);
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          res.send(buffer);
+        }
       } catch (err: any) {
         console.error('Error streaming response:', err);
         res.status(500).json({ error: `Error processing response: ${err.message || 'Unknown error'}` });

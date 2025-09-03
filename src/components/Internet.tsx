@@ -36,10 +36,10 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     url: 'https://apple.com', 
     title: 'Apple', 
     isActive: true, 
-    favicon: 'https://www.google.com/s2/favicons?domain=apple.com&sz=32' 
+    favicon: '/api/proxy?url=https://www.apple.com/favicon.ico' 
   }]);
   const [currentUrl, setCurrentUrl] = useState('https://apple.com');
-  const [urlInput, setUrlInput] = useState('apple.com');
+  const [urlInput, setUrlInput] = useState('https://apple.com');
   const [isLoading, setIsLoading] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -186,9 +186,9 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   const initializeDefaultBookmarks = () => {
     // Restrict to the three requested bookmarks (also reused on the new-tab grid)
     const defaultBookmarks: Bookmark[] = [
-      { title: 'advay.ca', url: 'https://advay.ca', favicon: 'https://www.google.com/s2/favicons?domain=advay.ca&sz=32' },
-      { title: 'github', url: 'https://github.com/advayc', favicon: 'https://www.google.com/s2/favicons?domain=github.com&sz=32' },
-      { title: 'linkedin', url: 'https://www.linkedin.com/in/advay/', favicon: 'https://www.google.com/s2/favicons?domain=linkedin.com&sz=32' },
+      { title: 'advay.ca', url: 'https://advay.ca', favicon: '/favicon.png' },
+      { title: 'github', url: 'https://github.com/advayc', favicon: '/api/proxy?url=https://github.com/favicon.ico' },
+      { title: 'linkedin', url: 'https://www.linkedin.com/in/advay/', favicon: '/api/proxy?url=https://www.linkedin.com/favicon.ico' },
     ];
     setBookmarks(defaultBookmarks);
     localStorage.setItem('ie-bookmarks', JSON.stringify(defaultBookmarks));
@@ -207,9 +207,14 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     localStorage.setItem('ie-tabs', JSON.stringify(tabs));
   }, [tabs]);
 
-  // Format URL for display (remove protocol)
+
+  // Always show full URL (with protocol)
   const formatUrlForDisplay = (url: string) => {
-    return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    try {
+      return url.replace(/^https?:\/\//i, '');
+    } catch {
+      return url;
+    }
   };
 
   // Add keyboard shortcuts
@@ -341,8 +346,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     }
 
     setIsLoading(true);
-    setCurrentUrl(fullUrl);
-    setUrlInput(formatUrlForDisplay(fullUrl));
+  setCurrentUrl(fullUrl);
+  setUrlInput(fullUrl);
 
     // Update navigation history
     const newHistory = [...navigationHistory.slice(0, navigationIndex + 1), fullUrl];
@@ -510,8 +515,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     if (isActiveTab && newTabs.length > 0) {
       const newActiveIndex = Math.min(tabIndex, newTabs.length - 1);
       newTabs[newActiveIndex].isActive = true;
-      setCurrentUrl(newTabs[newActiveIndex].url);
-      setUrlInput(formatUrlForDisplay(newTabs[newActiveIndex].url));
+  setCurrentUrl(newTabs[newActiveIndex].url);
+  setUrlInput(newTabs[newActiveIndex].url);
     }
     
     setTabs(newTabs);
@@ -525,8 +530,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     
     const activeTab = newTabs.find(tab => tab.isActive);
     if (activeTab) {
-      setCurrentUrl(activeTab.url);
-      setUrlInput(formatUrlForDisplay(activeTab.url));
+  setCurrentUrl(activeTab.url);
+  setUrlInput(activeTab.url);
       setTabs(newTabs);
       
       if (activeTab.url !== 'about:blank') {
@@ -563,7 +568,14 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
   };
 
   return (
-    <div className="w-full h-full bg-[#e9e9e9] flex flex-col overflow-hidden font-sans">
+    <div
+      className="w-full h-full flex flex-col overflow-hidden"
+      style={{
+        background:
+          'repeating-linear-gradient(0deg, #f7f7f7 0px, #f7f7f7 2px, #d2d2d2 2.5px, #f7f7f7 4px)',
+        fontFamily: 'Geneva-12, ArkPixel, SerenityOS-Emoji, system-ui, -apple-system, sans-serif',
+      }}
+    >
       {/* Aqua-style window title bar with glossy traffic lights and pinstripes */}
       <div
         className="relative border-b border-[#a7a7a7] px-3 py-[6px] flex items-center justify-between cursor-move select-none"
@@ -645,49 +657,51 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
         <div className="w-16" />
       </div>
 
-      {/* Navigation bar (thinner, Aqua toolbar with pinstripes) */}
+      {/* Unified nav+bookmarks bar */}
       <div
-        className="border-b border-[#a7a7a7] px-2 py-1"
+        className="border-b border-[#a7a7a7] px-2 pt-1 pb-0"
         style={{
           backgroundImage:
             'repeating-linear-gradient(0deg, rgba(255,255,255,0.35), rgba(255,255,255,0.35) 1px, rgba(238,238,238,0.35) 1px, rgba(238,238,238,0.35) 3px), linear-gradient(to bottom, #efefef, #d3d3d3)'
         }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center w-full">
           {/* Back/Forward buttons */}
           <button
             onClick={goBack}
             disabled={!canGoBack}
-            className={`w-7 h-7 rounded border ${
-              canGoBack 
-                ? 'bg-gradient-to-b from-[#fafafa] to-[#e0e0e0] border-[#999] hover:from-[#f4f4f4] hover:to-[#dcdcdc] active:from-[#d8d8d8] active:to-[#c8c8c8] text-[#333]' 
-                : 'bg-[#e8e8e8] border-[#ccc] cursor-not-allowed text-[#999]'
-            } flex items-center justify-center text-base font-bold leading-none`}
+            className={`w-5 h-7 flex items-center justify-center rounded transition-all border border-transparent bg-transparent
+              ${canGoBack ? 'hover:border-[#888] hover:bg-white/60' : 'opacity-60 cursor-not-allowed'}`}
+            style={{ minWidth: 32 }}
+            aria-label="Back"
           >
-            ‹
+            <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="21" y1="14" x2="7" y2="14" stroke="#111" strokeWidth="2.5" strokeLinecap="round"/>
+              <polyline points="13,8 7,14 13,20" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
           <button
             onClick={goForward}
             disabled={!canGoForward}
-            className={`w-7 h-7 rounded border ${
-              canGoForward 
-                ? 'bg-gradient-to-b from-[#fafafa] to-[#e0e0e0] border-[#999] hover:from-[#f4f4f4] hover:to-[#dcdcdc] active:from-[#d8d8d8] active:to-[#c8c8c8] text-[#333]' 
-                : 'bg-[#e8e8e8] border-[#ccc] cursor-not-allowed text-[#999]'
-            } flex items-center justify-center text-base font-bold leading-none`}
+            className={`w-5 h-7 mr-2 flex items-center justify-center rounded transition-all border border-transparent bg-transparent
+              ${canGoForward ? 'hover:border-[#888] hover:bg-white/60' : 'opacity-60 cursor-not-allowed'}`}
+            style={{ minWidth: 32 }}
+            aria-label="Forward"
           >
-            ›
+            <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="7" y1="14" x2="21" y2="14" stroke="#111" strokeWidth="2.5" strokeLinecap="round"/>
+              <polyline points="15,8 21,14 15,20" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
-
           {/* Address bar */}
-          <form onSubmit={handleUrlSubmit} className="flex-1 flex items-center relative">
+          <form onSubmit={handleUrlSubmit} className="flex-1 flex items-center relative  min-w-0">
             <input
               ref={urlInputRef}
               type="text"
               value={urlInput}
               onChange={(e) => {
-                const strippedValue = stripProtocol(e.target.value);
-                setUrlInput(strippedValue);
-                handleFilterSuggestions(strippedValue);
+                setUrlInput(e.target.value);
+                handleFilterSuggestions(e.target.value);
                 setIsUrlDropdownOpen(true);
               }}
               onFocus={() => setIsUrlDropdownOpen(true)}
@@ -711,17 +725,16 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                   }
                 }
               }}
-              className="flex-1 px-3 py-[5px] border border-[#9c9c9c] rounded-[6px] bg-white text-[13px] font-mono text-black shadow-[inset_0_1px_0_0_#ffffff,inset_0_0_6px_rgba(0,0,0,0.05)] focus:outline-none"
+              className="flex-1 px-3 py-[2px] border border-[#bdbdbd] rounded-[4px] bg-white text-[12px] font-sans text-black shadow-none focus:outline-none h-[28px] min-h-0"
+              style={{
+                boxSizing: 'border-box',
+                width: '100%',
+                fontFamily: '"SF Pro Text","SF Pro Display",-apple-system,Segoe UI,Roboto,Arial,sans-serif'
+              }}
               placeholder="Enter URL"
               spellCheck={false}
               autoComplete="off"
             />
-            <button 
-              type="submit"
-              className="ml-2 px-3 py-[5px] bg-gradient-to-b from-[#fafafa] to-[#e0e0e0] border border-[#999] rounded text-[13px] hover:from-[#f4f4f4] hover:to-[#dcdcdc] active:from-[#d8d8d8] active:to-[#c8c8c8] text-black"
-            >
-              Go
-            </button>
             {/* Suggestions dropdown */}
             {isUrlDropdownOpen && filteredSuggestions.length > 0 && (
               <div
@@ -753,35 +766,35 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                 ))}
               </div>
             )}
+            <button 
+              type="submit"
+              className="ml-2 px-3 bg-gradient-to-b from-[#fafafa] to-[#e0e0e0] border border-[#999] rounded text-[13px] hover:from-[#f4f4f4] hover:to-[#dcdcdc] active:from-[#d8d8d8] active:to-[#c8c8c8] text-black h-[24px] min-h-0"
+              style={{ minWidth: 36 }}
+            >
+              Go
+            </button>
           </form>
-        </div>
-      </div>
+  </div>
 
-      {/* Bookmarks bar */}
-      <div
-        className="border-b border-[#a7a7a7] px-2 py-[4px]"
-        style={{
-          backgroundImage:
-            'repeating-linear-gradient(0deg, rgba(255,255,255,0.35), rgba(255,255,255,0.35) 1px, rgba(238,238,238,0.35) 1px, rgba(238,238,238,0.35) 3px), linear-gradient(to bottom, #efefef, #d3d3d3)'
-        }}
-      >
-        <div className="flex items-center gap-2 overflow-x-auto">
-          {[{title: 'advay.ca', url: 'https://advay.ca'}, {title: 'github.com/advayc', url: 'https://github.com/advayc'}, {title: 'LinkedIn', url: 'https://www.linkedin.com/in/advay/'}].map((b) => (
+      {/* Bookmarks bar (now visually merged with nav bar) */}
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-2">
+          {[
+            { title: 'apple', url: 'https://apple.com', favicon: '/api/proxy?url=https://www.apple.com/favicon.ico' },
+            { title: 'google', url: 'https://google.com', favicon: '/api/proxy?url=https://www.google.com/favicon.ico' },
+            { title: 'advay', url: 'https://advay.ca', favicon: '/favicon.png' },
+            { title: 'github', url: 'https://github.com/advayc', favicon: '/api/proxy?url=https://github.com/favicon.ico' },
+          ].map((b) => (
             <button
               key={b.url}
               onClick={() => navigateToUrl(b.url)}
-              className="flex items-center gap-2 px-2 py-[3px] rounded border border-[#bdbdbd] bg-gradient-to-b from-white to-[#ececec] shadow-[inset_0_1px_0_0_#ffffff] hover:from-[#fafafa] hover:to-[#e6e6e6] active:from-[#e8e8e8] active:to-[#d8d8d8] text-[12px] text-[#333] whitespace-nowrap"
+              className="flex items-center gap-2 px-[7px] py-[3px] rounded border border-[#bdbdbd] hover:border-[#a7a7a7] shadow-[inset_0_1px_0_0_#ffffff] hover:from-[#fafafa] hover:to-[#e6e6e6] active:from-[#e8e8e8] active:to-[#d8d8d8] text-[12px] text-[#333] whitespace-nowrap"
               title={b.title}
             >
-              <span className="text-[#666]">
-                {b.url.includes('github.com') ? (
-                  <FaGithub className="w-3.5 h-3.5" />
-                ) : b.url.includes('linkedin.com') ? (
-                  <FaLinkedin className="w-3.5 h-3.5" />
-                ) : (
-                  <FaGlobe className="w-3.5 h-3.5" />
-                )}
-              </span>
+              {b.favicon ? (
+                <img src={b.favicon} alt="" className="w-4 h-4 rounded" />
+              ) : (
+                <FaGlobe className="w-3.5 h-3.5 text-[#666]" />
+              )}
               <span>{b.title}</span>
             </button>
           ))}
