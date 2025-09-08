@@ -64,7 +64,7 @@ const structuredData = {
   }
 };
 
-const BIRTH_DATE = new Date(2008, 11, 16);
+const BIRTH_DATE = new Date(2008, 12, 16);
 const AGE = calculateAge(BIRTH_DATE);
 
 export default function Home() {
