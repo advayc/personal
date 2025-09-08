@@ -60,14 +60,30 @@ export default function NotFound() {
           : bgStyle === 'dots' ? { backgroundColor: bgColor, backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.16) 1px, transparent 0)`, backgroundSize: '26px 26px' }
           : { backgroundColor: bgColor, backgroundImage: 'none' }}>
         <div className="text-center text-white relative z-10">
-          <h1 className="text-4xl font-bold mb-4">404 - You aren&apos;t supposed to be here!</h1>
+          <h1 className="text-4xl font-bold mb-4">error 404 - you aren&apos;t supposed to be here</h1>
           <p className="text-lg mb-6">
-            Looks like you&apos;ve wandered off the path. 
-            Head back to the <Link href="/">main page</Link> to find your way.
+            looks like you&apos;ve wandered off the path.
+            head back to the <Link href="/">landing page</Link> to find your way back
           </p>
         </div>
       </div>
       <SelectionBox />
+    <Footer selected={selected} setSelected={setSelected} accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
+    <ShortcutHint onOpen={() => setIsPaletteOpen(true)} />
+      <CommandPalette 
+        isOpen={isPaletteOpen} 
+        onClose={() => setIsPaletteOpen(false)}
+        setAccentColor={setAccentColor}
+        setFontFamily={setFontFamily}
+        setBgStyle={setBgStyle}
+        setBgColor={setBgColor}
+        setFreeMoveMode={handleFreeMoveToggle}
+        accentColor={accentColor}
+        fontFamily={fontFamily}
+        bgStyle={bgStyle}
+        bgColor={bgColor}
+        freeMoveMode={freeMoveMode}
+      />
     </motion.main>
   );
 }
