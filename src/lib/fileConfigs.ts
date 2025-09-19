@@ -85,6 +85,13 @@ export const fileConfigs = [
           technologies: "NextJS, Typescript, Gemeni"
         },
         {
+          title: "Spy",
+          description: "Spy is a social deduction party game for iOS, Android, and web. Gather your friends and play two unique modes: Classic Spy and Range Game.",
+          projectLink: "https://spy.advay.ca/",
+          repoUrl: "https://github.com/advayc/spy-web",
+          technologies: "React, TypeScript, NextJS"
+        },
+        {
           title: "nums",
           description: "Custom Go HTTP API to count website visits",
           projectLink: "https://docs.advay.ca/",

@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import SelectionBox from "@/components/SelectionBox";
 import Link from '@/components/Link';
 import Head from 'next/head';
+import Footer from "@/components/Footer";
+import CommandPalette from "@/components/CommandPalette";
+import ShortcutHint from "@/components/ShortcutHint";
 
 type ToggleOptionsType = 'dark' | 'light';
 
@@ -15,6 +18,15 @@ export default function NotFound() {
   const [selected, setSelected] = useState<ToggleOptionsType>('light');
   const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('grid');
   const [bgColor, setBgColor] = useState<string>('#0a0a0a');
+  const [isPaletteOpen, setIsPaletteOpen] = useState<boolean>(false);
+
+  // Add missing states
+  const [accentColor, setAccentColor] = useState<string>('#6366f1'); // default accent color
+  const [fontFamily, setFontFamily] = useState<string>('Inter, sans-serif');
+  const [freeMoveMode, setFreeMoveMode] = useState<boolean>(false);
+
+  // Handler for free move toggle
+  const handleFreeMoveToggle = () => setFreeMoveMode((prev) => !prev);
 
   // load settings from localStorage
   useEffect(() => {
@@ -63,7 +75,7 @@ export default function NotFound() {
           <h1 className="text-4xl font-bold mb-4">error 404 - you aren&apos;t supposed to be here</h1>
           <p className="text-lg mb-6">
             looks like you&apos;ve wandered off the path.
-            head back to the <Link href="/">landing page</Link> to find your way back
+            head back to the <Link href="/">landing page</Link>
           </p>
         </div>
       </div>
