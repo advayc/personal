@@ -88,7 +88,7 @@ export const fileConfigs = [
           title: "Spy",
           description: "Spy is a social deduction party game for iOS, Android, and web. Gather your friends and play two unique modes: Classic Spy and Range Game.",
           projectLink: "https://spy.advay.ca/",
-          repoUrl: "https://github.com/advayc/spy-web",
+          repoUrl: "https://github.com/advayc/spy",
           technologies: "React, TypeScript, NextJS"
         },
         {
