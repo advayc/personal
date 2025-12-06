@@ -158,16 +158,6 @@ export const fileConfigs = [
     }
   },
   {
-    id: 'pong',
-    filename: 'pong.exe',
-    imageSrc: '/icons/globe.png'
-  },
-  {
-    id: 'snake',
-    filename: 'snake.exe',
-    imageSrc: '/icons/msn3.png'
-  },
-  {
     id: 'draw',
     filename: 'draw.exe',
     imageSrc: '/icons/draw.png',
