@@ -82,7 +82,7 @@ export const fileConfigs = [
           description: "Turn your resume into a full personal website",
           projectLink: "https://sitemaker.advay.ca/",
           repoUrl: "https://github.com/advayc/sitemaker",
-          technologies: "NextJS, Typescript, Gemeni"
+          technologies: "NextJS, Typescript, Gemini"
         },
         {
           title: "Spy",
