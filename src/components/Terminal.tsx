@@ -381,7 +381,7 @@ const Terminal: React.FC<TerminalProps> = ({
     return (
       <div 
         ref={terminalRef}
-        className="p-4 bg-[#151515] text-primary select-text overflow-y-auto rounded-b-lg custom-scrollbar" 
+        className="p-4 bg-[#151515] text-primary select-text overflow-y-auto custom-scrollbar" 
         style={{ maxHeight: "calc(100% - 32px)" }}
       >
         <div 
@@ -427,7 +427,7 @@ const Terminal: React.FC<TerminalProps> = ({
     <motion.div
       className={`terminal-container ${inter.className} transition-all duration-300 ease-out ${
         isMinimized ? 'hidden' : isMobile ? 'w-[75vw] h-[40dvh]' : (isMaximized ? 'w-[862px] h-[700px]' : 'w-[600px] h-[400px]')
-      } ${isMobile ? 'rounded-lg' : 'rounded-lg'} fixed z-50 font-mono text-sm border border-gray-800/50 rounded-b-lg bg-[#151515]/90 overflow-hidden`}
+      } rounded-lg fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/90 overflow-hidden`}
       style={{ top: position.y, left: position.x, touchAction: 'none' }}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -441,7 +441,10 @@ const Terminal: React.FC<TerminalProps> = ({
       whileDrag={{ cursor: "grabbing" }}
     >
       <div 
-        className={`handle flex items-center justify-between bg-zinc-200 text-white px-4 ${isMobile ? 'py-2' : 'py-1'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move`}
+        className={`handle flex items-center justify-between text-white px-3 ${isMobile ? 'py-2' : 'py-[6px]'} ${isMobile ? '' : 'rounded-t-lg'} cursor-move select-none border-b border-[#a7a7a7]`}
+        style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.4), rgba(255,255,255,0.4) 1px, rgba(240,240,240,0.4) 1px, rgba(240,240,240,0.4) 3px), linear-gradient(to bottom, #f6f6f6, #d6d6d6)'
+        }}
         onPointerDown={(e) => {
           const target = e.target as HTMLElement;
           // Avoid starting drag on buttons/links inside header
@@ -449,28 +452,77 @@ const Terminal: React.FC<TerminalProps> = ({
           dragControls.start(e);
         }}
       >
-        <div className="flex space-x-2">
-          <div
-            className="w-3 h-3 md:w-3 md:h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 transition-colors duration-200 cursor-pointer no-drag"
-            onClick={handleClose}
-          ></div>
+        <div className="flex items-center space-x-[6px] select-none">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            aria-label="Close"
+            className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.35),inset_0_0_0_1px_rgba(0,0,0,0.45)]"
+            style={{
+              background: 'radial-gradient(circle at 35% 30%, #ffb3ad 0%, #ff5f56 60%, #e33d2e 100%)'
+            }}
+          >
+            <span className="absolute inset-0 rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.0) 60%)'
+                  }} />
+            <span className="absolute top-0 left-0 right-0 h-[30%] rounded-t-full"
+                  style={{
+                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0))'
+                  }} />
+          </button>
           {!isMobile && (
             <>
               <div
-                className="w-3 h-3 md:w-3 md:h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 transition-colors duration-200 cursor-pointer no-drag"
-                onClick={handleMinimize}
-              ></div>
-              <div
-                className="relative w-3 h-3 md:w-3 md:h-3 bg-gprimary rounded-full hover:bg-green-600 transition-colors duration-200 cursor-pointer no-drag"
-                onClick={handleMaximize}
-              ></div>
+                aria-hidden
+                className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)]"
+                style={{
+                  background: 'radial-gradient(circle at 35% 30%, #ffe0a1 0%, #ffbd2e 60%, #d79b1e 100%)'
+                }}
+              >
+                <span className="absolute inset-0 rounded-full"
+                      style={{
+                        background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.0) 60%)'
+                      }} />
+                <span className="absolute top-0 left-0 right-0 h-[30%] rounded-t-full"
+                      style={{
+                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
+                      }} />
+              </div>
+              <button
+                type="button"
+                aria-label="Maximize"
+                title="Maximize"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMaximize();
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)] cursor-pointer"
+                style={{
+                  background: 'radial-gradient(circle at 35% 30%, #b6f0c1 0%, #27ca3f 60%, #16a42b 100%)'
+                }}
+              >
+                <span className="absolute inset-0 rounded-full"
+                      style={{
+                        background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.0) 60%)'
+                      }} />
+                <span className="absolute top-0 left-0 right-0 h-[30%] rounded-t-full"
+                      style={{
+                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
+                      }} />
+              </button>
             </>
           )}
         </div>
-        <div className="flex-grow text-center text-black flex items-center justify-center">
+        <div className="text-[13px] font-medium text-[#333] flex-1 text-center truncate flex items-center justify-center">
           <img src="/icons/directory_closed.png" className="mr-2" alt="Directory" />
-          <span className="font-medium text-[13px]">{headerText}</span>
+          <span>{headerText}</span>
         </div>
+        <div className="w-16" />
       </div>
       {renderContent()}
     </motion.div>

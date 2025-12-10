@@ -210,7 +210,7 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
 
   return (
     <motion.div
-  className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': ''} fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/95 ${isMobile ? 'w-[78vw] h-[36dvh] rounded-lg' : 'rounded-lg'} shadow-lg shadow-black/40`}
+  className={`terminal-container transition-all duration-300 ease-out ${isMinimized? 'hidden': ''} fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/95 rounded-lg shadow-lg shadow-black/40`}
       style={{ width: isMobile ? undefined : width + 40, height: isMobile ? undefined : height + 140, top: position.y, left: position.x, touchAction: 'none' }}
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -223,21 +223,74 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
       dragConstraints={dragConstraints}
     >
       <div
-        className={`draw-header flex items-center justify-between bg-white text-black px-4 py-2 cursor-move select-none ${isMobile ? '' : 'rounded-t'}`}
+        className={`draw-header flex items-center justify-between text-black px-3 py-[6px] cursor-move select-none border-b border-[#a7a7a7] ${isMobile ? '' : 'rounded-t'}`}
+        style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.4), rgba(255,255,255,0.4) 1px, rgba(240,240,240,0.4) 1px, rgba(240,240,240,0.4) 3px), linear-gradient(to bottom, #f6f6f6, #d6d6d6)'
+        }}
         onPointerDown={handleHeaderPointerDown}
       >
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 bg-[#FB5F57] rounded-full hover:bg-red-600 cursor-pointer" onClick={handleClose} />
+        <div className="flex items-center space-x-[6px] select-none">
+          <button
+            onClick={handleClose}
+            aria-label="Close"
+            className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.35),inset_0_0_0_1px_rgba(0,0,0,0.45)]"
+            style={{
+              background: 'radial-gradient(circle at 35% 30%, #ffb3ad 0%, #ff5f56 60%, #e33d2e 100%)'
+            }}
+          >
+            <span className="absolute inset-0 rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.0) 60%)'
+                  }} />
+            <span className="absolute top-0 left-0 right-0 h-[30%] rounded-t-full"
+                  style={{
+                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0))'
+                  }} />
+          </button>
           {!isMobile && (
             <>
-              <div className="w-3 h-3 bg-[#FBBD2E] rounded-full hover:bg-amber-600 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)} />
-              <div className="w-3 h-3 bg-gprimary rounded-full hover:bg-green-600 cursor-pointer" onClick={() => setIsMaximized(!isMaximized)} />
+              <div
+                aria-hidden
+                className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)]"
+                style={{
+                  background: 'radial-gradient(circle at 35% 30%, #ffe0a1 0%, #ffbd2e 60%, #d79b1e 100%)'
+                }}
+              >
+                <span className="absolute inset-0 rounded-full"
+                      style={{
+                        background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.0) 60%)'
+                      }} />
+                <span className="absolute top-0 left-0 right-0 h-[30%] rounded-t-full"
+                      style={{
+                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
+                      }} />
+              </div>
+              <button
+                type="button"
+                aria-label="Maximize"
+                title="Maximize"
+                onClick={() => setIsMaximized(!isMaximized)}
+                className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)] cursor-pointer"
+                style={{
+                  background: 'radial-gradient(circle at 35% 30%, #b6f0c1 0%, #27ca3f 60%, #16a42b 100%)'
+                }}
+              >
+                <span className="absolute inset-0 rounded-full"
+                      style={{
+                        background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.0) 60%)'
+                      }} />
+                <span className="absolute top-0 left-0 right-0 h-[30%] rounded-t-full"
+                      style={{
+                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
+                      }} />
+              </button>
             </>
           )}
         </div>
-        <div className="flex-grow text-center flex items-center justify-center text-xs tracking-wide text-black ">
-          <span className="font-medium">advaychandorkar@personalsite: ~/personal/{mode === 'whiteboard' ? 'whiteboard' : 'draw'} mode</span>
+        <div className="text-[13px] font-medium text-[#333] flex-1 text-center truncate">
+          <span>advaychandorkar@personalsite: ~/personal/{mode === 'whiteboard' ? 'whiteboard' : 'draw'} mode</span>
         </div>
+        <div className="w-16" />
       </div>
   <div className="flex flex-col bg-[#0e0e0e] h-full">
         <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-white/5 bg-[#141414] select-none">
