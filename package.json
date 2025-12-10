@@ -21,7 +21,7 @@
     "domhandler": "^5.0.3",
     "framer-motion": "^11.3.28",
     "mini-svg-data-uri": "^1.4.4",
-    "next": "^15.5.2",
+    "next": "15.5.7",
     "nextjs": "^0.0.3",
     "node-fetch": "^3.3.2",
     "react": "^18",
