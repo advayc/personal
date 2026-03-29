@@ -469,10 +469,11 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
     
     const isBlocked = lastError?.includes('blocked') || 
                      lastError?.includes('X-Frame-Options') ||
-                     lastError?.includes('refused to connect');
+                     lastError?.includes('refused to connect') ||
+                     lastError?.includes('frame');
     
     if (isBlocked) {
-      setLastError(`This page has been blocked by the browser. Try opening "${currentUrl}" in a new tab instead.`);
+      setLastError(`This site cannot be displayed in a frame. Some sites block embedding for security reasons.`);
     } else {
       setLastError(`Failed to load: ${currentUrl}`);
     }
@@ -609,20 +610,35 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
       return;
     }
     let url: string;
-    try {
-      new URL(trimmedInput);
-      url = trimmedInput;
-    } catch {
-      if (trimmedInput.includes('.') || /^[a-z0-9-]+$/i.test(trimmedInput)) {
+    
+    // Check if it's clearly a URL (has protocol, localhost, IP, or looks like a domain)
+    const looksLikeUrl = (
+      trimmedInput.startsWith('http://') || 
+      trimmedInput.startsWith('https://') ||
+      trimmedInput.startsWith('localhost') ||
+      /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(trimmedInput) ||
+      // Domain-like: something.tld with no spaces
+      (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(trimmedInput) && !trimmedInput.includes(' '))
+    );
+    
+    if (looksLikeUrl) {
+      // It's a URL
+      try {
+        new URL(trimmedInput);
+        url = trimmedInput;
+      } catch {
+        // Add https:// if missing
         if (!trimmedInput.startsWith('http://') && !trimmedInput.startsWith('https://')) {
           url = `https://${trimmedInput}`;
         } else {
           url = trimmedInput;
         }
-      } else {
-        url = `https://www.bing.com/search?q=${encodeURIComponent(trimmedInput)}`;
       }
+    } else {
+      // It's a search query (has spaces, special chars, or doesn't look like a domain)
+      url = `https://www.bing.com/search?q=${encodeURIComponent(trimmedInput)}`;
     }
+    
     navigateToUrl(url);
   };
 
@@ -801,7 +817,7 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                 width: '100%',
                 fontFamily: '"SF Pro Text","SF Pro Display",-apple-system,Segoe UI,Roboto,Arial,sans-serif'
               }}
-              placeholder="Enter URL"
+              placeholder="Search or enter URL"
               spellCheck={false}
               autoComplete="off"
             />
@@ -910,15 +926,35 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
                   <div className="text-6xl mb-4">😟</div>
                   <h2 className="text-xl font-semibold mb-2">Couldn&apos;t load page</h2>
                   <p className="text-gray-600 mb-4">{lastError}</p>
-                  <button 
-                    onClick={() => {
-                      setLastError(null);
-                      refresh();
-                    }}
-                    className="bg-[#4A90E2] text-white px-4 py-2 rounded hover:bg-[#357ABD] transition-colors"
-                  >
-                    Try Again
-                  </button>
+                  <div className="flex gap-2 justify-center">
+                    <button 
+                      onClick={() => {
+                        setLastError(null);
+                        refresh();
+                      }}
+                      className="bg-[#4A90E2] text-white px-4 py-2 rounded hover:bg-[#357ABD] transition-colors"
+                    >
+                      Try Again
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const domain = currentUrl.replace(/^https?:\/\//, '').split('/')[0];
+                        handleSearch(`${domain} site`);
+                        setLastError(null);
+                      }}
+                      className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
+                    >
+                      Search Instead
+                    </button>
+                    <button 
+                      onClick={() => {
+                        window.open(currentUrl, '_blank');
+                      }}
+                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+                    >
+                      Open in New Tab
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
