@@ -914,6 +914,8 @@ export function Internet({ onClose, onDragHandlePointerDown, onToggleMaximize }:
               title="Web Content"
               onLoad={handleIframeLoad}
               onError={handleIframeError}
+              // Note: allow-scripts + allow-same-origin is required for proxy functionality
+              // Content is proxied through our server which sanitizes frame-busting code
               sandbox="allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation allow-same-origin"
               allow="geolocation; microphone; camera; midi; accelerometer; gyroscope; payment; encrypted-media; usb"
             />

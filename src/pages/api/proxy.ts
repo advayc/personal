@@ -38,6 +38,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const parsedUrl = new URL(target);
+    
+    // Block tracking and analytics domains to reduce console noise
+    const blockedDomains = [
+      'collector.github.com',
+      'google-analytics.com',
+      'googletagmanager.com',
+      'analytics.google.com',
+      'doubleclick.net',
+      'facebook.com/tr',
+      'connect.facebook.net',
+      'twitter.com/i/adsct',
+      'ads-twitter.com',
+      'clarity.ms',
+      'hotjar.com',
+      'mouseflow.com',
+      'crazyegg.com',
+      'segment.com',
+      'segment.io',
+      'mixpanel.com',
+      'amplitude.com'
+    ];
+    
+    if (blockedDomains.some(domain => parsedUrl.hostname.includes(domain))) {
+      // Return empty 1x1 transparent GIF for tracking requests
+      res.setHeader('Content-Type', 'image/gif');
+      res.send(Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64'));
+      return;
+    }
+    
     if (/\.google\./i.test(parsedUrl.hostname)) {
       const q = parsedUrl.searchParams.get('q');
       if (q) {
@@ -125,9 +154,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!response.ok) {
+      // Handle errors gracefully without failing the entire request
       console.error(`Fetch failed for ${target}: ${response.status} ${response.statusText}`);
+      
+      // For 404s and 401s on resources (not HTML pages), return empty content instead of failing
+      const isResourceRequest = target.match(/\.(js|css|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf|json|xml)$/i);
+      
+      if ((response.status === 404 || response.status === 401 || response.status === 403) && isResourceRequest) {
+        // Return empty content for missing/unauthorized resources to prevent breaking the page
+        const ext = target.split('.').pop()?.toLowerCase();
+        if (ext === 'js') {
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+          res.send('/* Resource not available */');
+          return;
+        } else if (ext === 'css') {
+          res.setHeader('Content-Type', 'text/css; charset=utf-8');
+          res.send('/* Resource not available */');
+          return;
+        } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'].includes(ext || '')) {
+          // Return 1x1 transparent PNG
+          res.setHeader('Content-Type', 'image/png');
+          res.send(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
+          return;
+        } else if (['woff', 'woff2', 'ttf', 'eot', 'otf'].includes(ext || '')) {
+          // Return empty font
+          res.setHeader('Content-Type', 'font/woff2');
+          res.send(Buffer.alloc(0));
+          return;
+        } else if (['json', 'xml'].includes(ext || '')) {
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.send('{}');
+          return;
+        }
+      }
+      
+      // For other errors, return error response
       res.status(response.status).json({ 
-        error: `Fetch failed: ${response.status} ${response.statusText}` 
+        error: `Fetch failed: ${response.status} ${response.statusText}`,
+        url: target
       });
       return;
     }
@@ -146,6 +210,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'cross-origin-opener-policy',
       'cross-origin-resource-policy'
     ];
+    
+    // Check if site blocks framing - if so, return error page
+    const xFrameOptions = response.headers.get('x-frame-options')?.toLowerCase();
+    const csp = response.headers.get('content-security-policy')?.toLowerCase();
+    const blocksFraming = xFrameOptions === 'deny' || 
+                         xFrameOptions === 'sameorigin' ||
+                         (csp && csp.includes('frame-ancestors') && csp.includes("'none'"));
+    
     response.headers.forEach((value, key) => {
       if (!skipHeaders.includes(key.toLowerCase())) {
         res.setHeader(key, value);
@@ -160,6 +232,69 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (isHTML) {
       let body = await response.text();
+      
+      // If site explicitly blocks framing, show error page
+      if (blocksFraming) {
+        const hostname = new URL(target).hostname;
+        body = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Site Blocks Embedding</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .container {
+      background: white;
+      padding: 3rem;
+      border-radius: 1rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 500px;
+      text-align: center;
+    }
+    h1 { margin: 0 0 1rem; color: #1a202c; font-size: 1.5rem; }
+    p { color: #4a5568; margin: 0 0 2rem; line-height: 1.6; }
+    .buttons { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+    .primary { background: #4a90e2; color: white; }
+    .primary:hover { background: #357abd; transform: translateY(-2px); }
+    .secondary { background: #e2e8f0; color: #4a5568; }
+    .secondary:hover { background: #cbd5e0; }
+    .domain { font-family: monospace; background: #f7fafc; padding: 0.25rem 0.5rem; border-radius: 0.25rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔒 This site cannot be embedded</h1>
+    <p>
+      <span class="domain">${hostname}</span> has security policies that prevent it from being displayed in an iframe.
+    </p>
+    <div class="buttons">
+      <button class="primary" onclick="window.open('${target}', '_blank')">Open in New Tab</button>
+      <button class="secondary" onclick="window.parent.postMessage({type:'navigate',url:'https://www.bing.com/search?q=${encodeURIComponent(hostname)}'}, '*')">Search Instead</button>
+    </div>
+  </div>
+</body>
+</html>`;
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(body);
+        return;
+      }
 
       const targetDomain = new URL(target).origin;
       body = body.replace(
@@ -625,36 +760,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Content-Type', contentType || 'text/css; charset=utf-8');
       res.send(rewritten);
     } else if (isJS) {
-      const js = await response.text();
-      const targetDomain = new URL(target).origin;
+      let js = await response.text();
       
-      let rewritten = js.replace(
-        new RegExp(`fetch\\(["']${targetDomain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^"']*)["']`, 'gi'),
-        (_match, path) => {
-          try {
-            const fullUrl = targetDomain + path;
-            const proxied = `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
-            return `fetch("${proxied}"`;
-          } catch (e) {
-            return _match;
-          }
-        }
-      );
-      rewritten = rewritten.replace(
-        new RegExp(`\.open\\(["']\\w+["'],\\s*["']${targetDomain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^"']*)["']`, 'gi'),
-        (_match, path) => {
-          try {
-            const fullUrl = targetDomain + path;
-            const proxied = `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
-            return `.open("GET", "${proxied}"`;
-          } catch (e) {
-            return _match;
-          }
-        }
-      );
+      // Don't try to rewrite JavaScript - it's too risky and causes regex errors
+      // The shim in HTML pages handles fetch/XHR proxying
+      // Just pass through JS files as-is to avoid breaking them
       
       res.setHeader('Content-Type', contentType || 'application/javascript; charset=utf-8');
-      res.send(rewritten);
+      res.send(js);
     } else {
       try {
         const isBinaryFile = /\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf|pdf|zip)$/i.test(target) || 
