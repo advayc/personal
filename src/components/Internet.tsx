@@ -177,10 +177,8 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
           refresh();
           break;
         case 'Escape':
-          if (isLoading) {
-            e.preventDefault();
-            stopLoading();
-          }
+          e.preventDefault();
+          onClose?.();
           break;
       }
     };
@@ -211,6 +209,9 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
                 );
               }
               break;
+            case 'escape':
+              onClose?.();
+              break;
           }
         }
       } catch (error) {
@@ -225,7 +226,7 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('message', handleMessage);
     };
-  }, [tabs, isLoading]);
+  }, [tabs, isLoading, onClose]);
 
   const navigateToUrl = useCallback((url: string) => {
     if (!url) return;
@@ -245,29 +246,10 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       // Check if it looks like a search query (contains spaces or no dots)
       if (url.includes(' ') || (!url.includes('.') && !url.includes('localhost'))) {
-        // Default to Google Search; add igu=1 to improve iframe behavior
-        fullUrl = `https://www.google.com/search?q=${encodeURIComponent(url)}&igu=1`;
+        fullUrl = `https://duckduckgo.com/?q=${encodeURIComponent(url)}`;
       } else {
         fullUrl = `https://${url}`;
       }
-    }
-
-    // If navigating to Google, ensure igu=1 param is present to reduce frame busting
-    try {
-      const u = new URL(fullUrl);
-      const host = u.hostname;
-      const isGoogle = /(^|\.)google\.(com|ca|co\.[a-z]{2}|[a-z]{2})$/i.test(host);
-      if (isGoogle) {
-        if (u.pathname === '/' || u.pathname === '') {
-          u.pathname = '/webhp';
-        }
-        if (!u.searchParams.has('igu')) {
-        u.searchParams.set('igu', '1');
-        }
-        fullUrl = u.toString();
-      }
-    } catch {
-      /* ignore parse issues */
     }
 
     setIsLoading(true);

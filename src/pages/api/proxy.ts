@@ -38,6 +38,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const parsedUrl = new URL(target);
+
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      res.status(400).json({ error: 'Only http(s) URLs are supported' });
+      return;
+    }
     
     // Block tracking and analytics domains to reduce console noise
     const blockedDomains = [
@@ -67,18 +72,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
     
-    if (/\.google\./i.test(parsedUrl.hostname)) {
-      const q = parsedUrl.searchParams.get('q');
-      if (q) {
-        res.writeHead(302, { Location: `https://www.bing.com/search?q=${encodeURIComponent(q)}` });
-        res.end();
-        return;
-      } else {
-        res.writeHead(302, { Location: 'https://www.bing.com/' });
-        res.end();
-        return;
-      }
-    }
   } catch (error) {
     res.status(400).json({ error: 'Invalid URL format' });
     return;
@@ -352,10 +345,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         '/* removed frame busting */'
       );
 
-      if (/google\\.com refused to connect|X-Frame-Options|blocked by Chrome security policies/i.test(body)) {
-        body = `<div style="font-family:sans-serif;text-align:center;padding:3em"><h2>Google search is blocked in this browser.</h2><p>Try <a href='https://www.bing.com/search?q=' target='_self'>Bing Search</a> instead.</p></div>`;
-      }
-
       body = body.replace(
         /(top\.location\s*=|top\.location\.href\s*=|window\.top\.location\s*=)/gi,
         '/* removed frame busting redirect */'
@@ -384,6 +373,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return u;
               }
             };
+
+            document.addEventListener('keydown', function(e) {
+              if (e.key === 'Escape') {
+                try {
+                  window.parent.postMessage({ type: 'escape' }, '*');
+                } catch (err) {
+                  console.warn('Failed to relay escape key:', err);
+                }
+              }
+            }, true);
             
             // Intercept all click events for better coverage
             document.addEventListener('click', function(e) {
