@@ -22,7 +22,7 @@ export const fileConfigs = [
           title: "President",
           company: "Glenforest Computer Science Club",
           duration: "Sept 2024 - Jun 2026",
-          description: "wrote contests and organized events for my high school computer science club. led competitive programming and html workshops working with hackclub, & managing finances",
+          description: "wrote and managed region wide programming contests (gfsshc25!) and organized events for my high school computer science club. led competitive programming and html workshops working with hackclub, & managing finances",
           link: "https://github.com/GFSSCompSci/",
           imageSrc: "/experiences/gfsscsclub.png",
           technologies: "Leadership, Collaboration, Teamwork"
@@ -40,15 +40,15 @@ export const fileConfigs = [
           title: "Team Lead",
           company: "VEX Robotics 31331",
           duration: "May 2024 - Apr 2026",
-          description: "led my schools robotics team to a provincial championship, building and coding semi autonomous robotics for vex robotics competitions. mentored new members and organized practices.",
+          description: "led my schools robotics team to a provincial championship, building and coding semi autonomous robotics for vex robotics competitions (2025 high stakes & 2026 push back). mentored new members and organized practices.",
           link: "https://github.com/advayc/31331B-VRC-High-Stakes",
           imageSrc: "/experiences/vex.png"
         },
         {
           title: "Media Captain",
           company: "FRC 6070: Gryphon Machine",
-          duration: "May 2023 - Apr 2024 · 1 yr",
-          description: "managed Social Media, frc6070.ca and created promotional material shown to thousands of people.",
+          duration: "May 2023 - Apr 2024",
+          description: "managed Social Media, coded frc6070.ca website [domain expired :( ] and created promotional material shown to thousands of people. also built semiautonomous robots for the 2023 (charged up) and 2024 (crescendo) frc seasons ",
           link: "https://www.linkedin.com/company/frc-6070-gryphon-machine/",
           imageSrc: "/experiences/frc.webp",
           technologies: "Video Editing, Marketing, nextjs"
@@ -86,29 +86,38 @@ export const fileConfigs = [
         },
         {
           title: "Spy",
-          description: "Social deduction party game for iOS, Android, and web with Classic Spy and Range Game modes.",
+          description: "i saw that every guess the imposter party game app had adds and low customizability for free users. so i built my own app with no ads, open source code, and a simple interface that allows you to customize the game to your liking. built with react native and typescript and shipped to the appstore in < 1 week",
           projectLink: "https://spy.advay.ca/",
           repoUrl: "https://github.com/advayc/spy",
           imageSrc: "/projects/spy.png",
           technologies: "react native, typeScript"
         },
         {
-          title: "miway leaderboard",
-          description: "Tracks MiWay bus speeds live using Mississauga's realtime API and shows a ranked feed.",
-          projectLink: "https://miway.advay.ca/",
-          repoUrl: "https://github.com/advayc/miway-leaderboard",
-          imageSrc: "/projects/miway-leaderboard.png",
-          technologies: "postman, typescript"
-        },
-        {
           title: "GFSS Calendar",
-          description: "Full-stack calendar for club events with admin posting and student-friendly views.",
+          description: "clubs and students around my school didnt know when other clubs were meeting. so i built a simple full stack calendar app used by the clubs and school admin to present club meetings/events on a simple calendar system. built with a simple nextjs frontend and was used by my school (1k+ mau)",
           projectLink: "https://clubs.advay.ca/",
           repoUrl: "https://github.com/advayc/gfsscalender",
           imageSrc: "/projects/gfss-calendar.png",
           technologies: "nextjs, Typescript",
           markerText: "(1k monthly users)",
           markerColor: "red"
+        },
+        {
+          title: "GQ Planets",
+          description: "machine learning tool that classifies possible exoplanets using nasas Kepler, K2, and TESS mission data. used a trained neural network deployed onto a simple web interface. built in PyTorch and trained on merged NASA exoplanet datasets. NASA Space Apps Global Nominee & Most Innovative",
+          repoUrl: "https://github.com/DeadUser123/Space-APPS-Hackathon",
+          imageSrc: "/projects/gq-planets.png",
+          technologies: "machine learning, python",
+          markerText: "(won nasa hackathon)",
+          markerColor: "yellow"
+        },
+     {
+          title: "miway leaderboard",
+          description: "Tracks MiWay bus speeds live using Mississauga's realtime API and shows a ranked feed.",
+          projectLink: "https://miway.advay.ca/",
+          repoUrl: "https://github.com/advayc/miway-leaderboard",
+          imageSrc: "/projects/miway-leaderboard.png",
+          technologies: "postman, typescript"
         },
         {
           title: "nums",
@@ -118,15 +127,6 @@ export const fileConfigs = [
           imageSrc: "/projects/nums.png",
           technologies: "golang"
         },
-        {
-          title: "GQ Planets",
-          description: "NASA hackathon project visualizing exoplanet data with interactive exploration tools.",
-          repoUrl: "https://github.com/advayc/Biped",
-          imageSrc: "/projects/gq-planets.png",
-          technologies: "Arduino, C++, electronics",
-          markerText: "(won nasa hackathon)",
-          markerColor: "yellow"
-        }
       ]
     }
   },

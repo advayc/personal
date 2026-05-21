@@ -255,9 +255,9 @@ const Terminal: React.FC<TerminalProps> = ({
   const renderExperienceCard = (experience: WorkExperience, index: number) => {
     const activeItemIndex = cursorPosition.y >= 2 ? cursorPosition.y - 2 : null;
     const isSelected = activeItemIndex === index;
-    const shouldWrapDuration = isMaximized && !isMobile;
-    const titleSizeClass = isMaximized && !isMobile ? 'text-[18px]' : 'text-[20px]';
-    const companySizeClass = isMaximized && !isMobile ? 'text-[12px]' : 'text-[13px]';
+    const isWideExperienceLayout = isMaximized && !isMobile;
+    const titleSizeClass = isWideExperienceLayout ? 'text-[18px]' : 'text-[20px]';
+    const companySizeClass = isWideExperienceLayout ? 'text-[12px]' : 'text-[13px]';
     return (
       <motion.article key={`${experience.title}-${index}`}>
           <a
@@ -278,7 +278,7 @@ const Terminal: React.FC<TerminalProps> = ({
           className={`group relative flex items-start gap-2 rounded-[6px] px-1 py-1 text-white transition duration-200 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${isSelected ? 'bg-white/5' : ''}`}
         >
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="relative -mt-1 flex h-20 w-20 shrink-0 items-start justify-start overflow-hidden rounded-[10px]">
                   <Image
@@ -290,15 +290,15 @@ const Terminal: React.FC<TerminalProps> = ({
                   />
                 </div>
                 <div className="min-w-0">
-                  <div className={`${titleSizeClass} font-semibold leading-tight tracking-tight text-white/95 whitespace-normal break-words`}>
+                  <div className={`${titleSizeClass} whitespace-nowrap font-semibold leading-tight tracking-tight text-white/95`}>
                     {experience.title}
                   </div>
                   <div className={`mt-0 ${companySizeClass} text-white/55 whitespace-normal break-words`}>{experience.company}</div>
+                  <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-white/35 whitespace-normal break-words leading-[1.15]">
+                    {experience.duration}
+                  </div>
                 </div>
               </div>
-              <span className={`ml-3 text-right text-[10px] uppercase tracking-[0.22em] text-white/35 ${shouldWrapDuration ? 'max-w-[140px] whitespace-normal break-words leading-[1.15]' : 'whitespace-nowrap'}`}>
-                {experience.duration}
-              </span>
             </div>
             <p className="mt-2 text-[12px] leading-5 text-white/60 w-full whitespace-normal break-words">
               {experience.description}
