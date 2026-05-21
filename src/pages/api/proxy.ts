@@ -211,13 +211,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'cross-origin-resource-policy'
     ];
     
-    // Check if site blocks framing - if so, return error page
-    const xFrameOptions = response.headers.get('x-frame-options')?.toLowerCase();
-    const csp = response.headers.get('content-security-policy')?.toLowerCase();
-    const blocksFraming = xFrameOptions === 'deny' || 
-                         xFrameOptions === 'sameorigin' ||
-                         (csp && csp.includes('frame-ancestors') && csp.includes("'none'"));
-    
     response.headers.forEach((value, key) => {
       if (!skipHeaders.includes(key.toLowerCase())) {
         res.setHeader(key, value);
@@ -233,69 +226,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (isHTML) {
       let body = await response.text();
       
-      // If site explicitly blocks framing, show error page
-      if (blocksFraming) {
-        const hostname = new URL(target).hostname;
-        body = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Site Blocks Embedding</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    .container {
-      background: white;
-      padding: 3rem;
-      border-radius: 1rem;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      max-width: 500px;
-      text-align: center;
-    }
-    h1 { margin: 0 0 1rem; color: #1a202c; font-size: 1.5rem; }
-    p { color: #4a5568; margin: 0 0 2rem; line-height: 1.6; }
-    .buttons { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
-    button {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 0.5rem;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: 600;
-    }
-    .primary { background: #4a90e2; color: white; }
-    .primary:hover { background: #357abd; transform: translateY(-2px); }
-    .secondary { background: #e2e8f0; color: #4a5568; }
-    .secondary:hover { background: #cbd5e0; }
-    .domain { font-family: monospace; background: #f7fafc; padding: 0.25rem 0.5rem; border-radius: 0.25rem; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🔒 This site cannot be embedded</h1>
-    <p>
-      <span class="domain">${hostname}</span> has security policies that prevent it from being displayed in an iframe.
-    </p>
-    <div class="buttons">
-      <button class="primary" onclick="window.open('${target}', '_blank')">Open in New Tab</button>
-      <button class="secondary" onclick="window.parent.postMessage({type:'navigate',url:'https://www.bing.com/search?q=${encodeURIComponent(hostname)}'}, '*')">Search Instead</button>
-    </div>
-  </div>
-</body>
-</html>`;
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.send(body);
-        return;
-      }
-
       const targetDomain = new URL(target).origin;
       body = body.replace(
         new RegExp(`(href|src)=["']${targetDomain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^"']*)["']`, 'gi'),

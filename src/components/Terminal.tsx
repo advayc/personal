@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Inter } from "next/font/google";
 import { useTerminal } from './TerminalContext';
 import Link from '@/components/Link';
 import Image from 'next/image';
 import { FaGithub } from 'react-icons/fa6';
+import { FiExternalLink } from 'react-icons/fi';
 import { motion, useDragControls } from "framer-motion";
 import Pong from '@/components/Pong';
 
@@ -39,8 +39,6 @@ interface TerminalProps {
   initialY?: number;
 }
 
-const inter = Inter({ subsets: ["latin"] });
-
 const Terminal: React.FC<TerminalProps> = ({
   onClose,
   headerText,
@@ -58,14 +56,9 @@ const Terminal: React.FC<TerminalProps> = ({
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const { setIsTerminalOpen } = useTerminal();
   const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
-  const [dragConstraints, setDragConstraints] = useState({
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0
-  });
   const [showPong, setShowPong] = useState(false);
   const [input, setInput] = useState('');
   const pongRef = useRef<HTMLDivElement>(null);
@@ -74,6 +67,9 @@ const Terminal: React.FC<TerminalProps> = ({
   const [pongInstanceExists, setPongInstanceExists] = useState(false);
   const [position, setPosition] = useState({ x: 64, y: 64 });
   const [isMobile, setIsMobile] = useState(false);
+  const [fontFamily, setFontFamily] = useState<string>(
+    '"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'
+  );
   const dragControls = useDragControls();
 
   useEffect(() => {
@@ -81,6 +77,13 @@ const Terminal: React.FC<TerminalProps> = ({
     evalMobile();
     window.addEventListener('resize', evalMobile);
     return () => window.removeEventListener('resize', evalMobile);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const storedFont = localStorage.getItem('siteFontFamily');
+      if (storedFont) setFontFamily(storedFont);
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -105,40 +108,10 @@ const Terminal: React.FC<TerminalProps> = ({
   const handleMinimize = () => setIsMinimized(!isMinimized);
   const handleMaximize = () => setIsMaximized(!isMaximized);
 
-  const getTerminalDimensions = () => {
-    if (typeof window === 'undefined') {
-      return { width: 600, height: 400 };
-    }
-
-    if (isMobile) {
-      return {
-        width: window.innerWidth * 0.75,
-        height: window.innerHeight * 0.4
-      };
-    }
-
-    return {
-      width: isMaximized ? 862 : 600,
-      height: isMaximized ? 700 : 400
-    };
-  };
-
-  const clampPosition = (nextPosition: { x: number; y: number }, width: number, height: number) => {
-    if (typeof window === 'undefined') {
-      return nextPosition;
-    }
-
-    return {
-      x: Math.max(0, Math.min(nextPosition.x, window.innerWidth - width)),
-      y: Math.max(0, Math.min(nextPosition.y, window.innerHeight - height))
-    };
-  };
-
   const calculateTotalLines = () => {
     const baseLines = 2;
-    const projectLines = projects ? projects.length * 3 : 0;
-    const workExperienceLines = workExperience ? workExperience.length * 4 : 0;
-    return baseLines + projectLines + workExperienceLines;
+    const itemCount = projects ? projects.length : (workExperience ? workExperience.length : 0);
+    return baseLines + itemCount;
   };
 
   const scrollToCursor = () => {
@@ -155,6 +128,15 @@ const Terminal: React.FC<TerminalProps> = ({
       }
     }
   };
+
+  useEffect(() => {
+    const activeIndex = cursorPosition.y >= 2 ? cursorPosition.y - 2 : null;
+    if (activeIndex === null) return;
+    const target = itemRefs.current[activeIndex];
+    if (target) {
+      target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [cursorPosition.y]);
 
   useEffect(() => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
@@ -208,39 +190,6 @@ const Terminal: React.FC<TerminalProps> = ({
   }, [cursorPosition, lastKeyPressed, isPong]);
 
   useEffect(() => {
-    const updateConstraints = () => {
-      const { width: terminalWidth, height: terminalHeight } = getTerminalDimensions();
-
-      setDragConstraints({
-        left: 0,
-        top: 0,
-        right: Math.max(0, window.innerWidth - terminalWidth),
-        bottom: Math.max(0, window.innerHeight - terminalHeight)
-      });
-
-      if (typeof window !== 'undefined') {
-        const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
-        if (!hasManual) {
-          const baseX = Math.max(0, (window.innerWidth - terminalWidth) / 2);
-          const baseY = Math.max(24, (window.innerHeight - terminalHeight) / 2);
-          if (isMobile) {
-            setPosition({ x: baseX, y: baseY });
-          } else {
-            setPosition(prev => {
-              const movedFar = Math.hypot(prev.x - baseX, prev.y - baseY) > 200;
-              return movedFar ? prev : { x: baseX, y: baseY };
-            });
-          }
-        }
-      }
-    };
-
-    updateConstraints();
-    window.addEventListener('resize', updateConstraints);
-    return () => window.removeEventListener('resize', updateConstraints);
-  }, [isMaximized, isMobile]);
-
-  useEffect(() => {
     if (typeof window === 'undefined') return;
     const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
     if (hasManual) {
@@ -255,179 +204,168 @@ const Terminal: React.FC<TerminalProps> = ({
     }
   }, []);
 
-  useEffect(() => {
-    if (!isMobile) return;
-    const recenter = () => {
-  // Match mobile terminal dimensions used elsewhere (75vw x 40vh)
-  const w = window.innerWidth * 0.9;
-  const h = window.innerHeight * 0.5;
-      const baseX = Math.max(0, (window.innerWidth - w) / 2);
-      const baseY = Math.max(24, (window.innerHeight - h) / 2);
-  const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
-  if (!hasManual) setPosition({ x: baseX, y: baseY });
-    };
-    window.addEventListener('resize', recenter);
-    return () => window.removeEventListener('resize', recenter);
-  }, [isMobile]);
-
   const selectedLineStyle = { backgroundColor: 'rgba(0, 255, 247, 0.175)' };
 
   const renderProjectCard = (project: Project, index: number) => {
     const projectHref = project.projectLink || project.repoUrl;
-    const techList = project.technologies.split(',').map((tech) => tech.trim()).filter(Boolean);
+    const activeItemIndex = cursorPosition.y >= 2 ? cursorPosition.y - 2 : null;
+    const isSelected = activeItemIndex === index;
 
     return (
       <motion.article
         key={`${project.title}-${index}`}
-        className="group overflow-hidden rounded-[28px] border border-black/10 bg-[#f5efe2] text-[#1f1813] shadow-[0_18px_40px_rgba(0,0,0,0.14)]"
-        whileHover={{ y: -4 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+        className={`group rounded-[14px] px-3 py-3 text-white transition hover:bg-white/5 ${isSelected ? 'bg-white/5' : ''}`}
+        whileHover={{ y: -1 }}
+        transition={{ type: 'spring', stiffness: 220, damping: 24 }}
       >
-        <div className="relative overflow-hidden border-b border-black/10">
+        <div className="flex items-start justify-between gap-4">
           <a
             href={projectHref}
             target="_blank"
             rel="noreferrer"
             aria-label={`Open ${project.title}`}
-            className="relative block aspect-[16/10] w-full overflow-hidden"
+            tabIndex={0}
+            ref={(el) => {
+              itemRefs.current[index] = el;
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                (event.currentTarget as HTMLAnchorElement).click();
+              }
+            }}
+            className="block text-[19px] font-semibold leading-tight tracking-tight text-white/95 transition duration-200 hover:text-white"
           >
+            {project.title}
+          </a>
+
+          <div className="flex items-center gap-2 text-white/55">
+            {project.repoUrl && (
+              <a
+                href={project.repoUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Open ${project.title} repository`}
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    (event.currentTarget as HTMLAnchorElement).click();
+                  }
+                }}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"
+              >
+                <FaGithub className="h-4 w-4" />
+              </a>
+            )}
+            {project.projectLink && (
+              <a
+                href={project.projectLink}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Open ${project.title} live site`}
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    (event.currentTarget as HTMLAnchorElement).click();
+                  }
+                }}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"
+              >
+                <FiExternalLink className="h-4 w-4" />
+              </a>
+            )}
+          </div>
+        </div>
+
+        <p className="mt-1 text-[13px] leading-6 text-white/60">
+          {project.description}
+        </p>
+
+        <a
+          href={projectHref}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`Open ${project.title}`}
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              (event.currentTarget as HTMLAnchorElement).click();
+            }
+          }}
+          className="mt-3 block w-full max-w-[420px] overflow-hidden rounded-[12px]"
+        >
+          <div className="relative aspect-[16/9] w-full">
             <Image
               src={project.imageSrc || '/projects/sitemaker.png'}
               alt={`${project.title} screenshot`}
               fill
-              className="object-cover object-center transition duration-500 ease-out group-hover:scale-[1.04] group-hover:brightness-[1.03]"
-              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover object-center transition duration-300 ease-out group-hover:scale-[1.02]"
+              sizes="(max-width: 768px) 90vw, 420px"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/0 to-black/0 opacity-0 transition duration-500 group-hover:opacity-100" />
-          </a>
-
-          <div className="absolute right-3 top-3 flex items-center gap-2">
-            {project.projectLink && (
-              <span className="rounded-full border border-white/70 bg-white/85 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#725442] backdrop-blur-sm">
-                live
-              </span>
-            )}
-            <a
-              href={project.repoUrl}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`Open ${project.title} repository`}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/75 bg-white/90 text-[#1b1b1b] shadow-[0_6px_18px_rgba(0,0,0,0.16)] transition duration-300 hover:scale-110 hover:bg-white"
-            >
-              <FaGithub className="h-4 w-4" />
-            </a>
           </div>
-        </div>
-
-        <div className="space-y-4 p-5 sm:p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.34em] text-[#7d6a59]">project</p>
-              <h3 className="mt-2 text-2xl font-semibold leading-[0.95] tracking-tight sm:text-[28px]">
-                <a href={projectHref} target="_blank" rel="noreferrer" className="transition duration-300 hover:text-[var(--accent-color)]">
-                  {project.title}
-                </a>
-              </h3>
-            </div>
-            <span className="rounded-full border border-black/10 bg-white/55 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#6d5d4f]">
-              project
-            </span>
-          </div>
-
-          <p className="max-w-[40rem] text-sm leading-7 text-[#5f5347] sm:text-[15px]">
-            {project.description}
-          </p>
-
-          <div className="flex flex-wrap gap-2">
-            {techList.map((tech) => (
-              <span
-                key={`${project.title}-${tech}`}
-                className="rounded-full border border-black/10 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#665546]"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-        </div>
+        </a>
       </motion.article>
     );
   };
 
   const renderExperienceCard = (experience: WorkExperience, index: number) => {
+    const activeItemIndex = cursorPosition.y >= 2 ? cursorPosition.y - 2 : null;
+    const isSelected = activeItemIndex === index;
+    const shouldWrapDuration = isMaximized && !isMobile;
+    const titleSizeClass = isMaximized && !isMobile ? 'text-[18px]' : 'text-[20px]';
+    const companySizeClass = isMaximized && !isMobile ? 'text-[12px]' : 'text-[13px]';
     return (
-      <motion.article
-        key={`${experience.title}-${index}`}
-        className="group overflow-hidden rounded-[28px] border border-black/10 bg-[#f4ede1] text-[#1f1813] shadow-[0_18px_40px_rgba(0,0,0,0.12)]"
-        whileHover={{ y: -3 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-      >
-        <div className="grid gap-0 lg:grid-cols-[0.96fr_1.04fr]">
+      <motion.article key={`${experience.title}-${index}`}>
           <a
             href={experience.link}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Open ${experience.company}`}
-            className="relative block min-h-[220px] overflow-hidden lg:min-h-[100%]"
-          >
-            <Image
-              src={experience.imageSrc || '/experiences/neurotech.png'}
-              alt={`${experience.company} screenshot`}
-              fill
-              className="object-cover object-center transition duration-500 ease-out group-hover:scale-[1.04] group-hover:brightness-[1.03]"
-              sizes="(max-width: 1024px) 100vw, 48vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/22 via-black/0 to-black/0 opacity-0 transition duration-500 group-hover:opacity-100" />
-            <div className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/85 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#725442] backdrop-blur-sm">
-              experience
-            </div>
-          </a>
-
-          <div className="space-y-4 p-5 sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.34em] text-[#7d6a59]">experience</p>
-                <h3 className="mt-2 text-[26px] font-semibold leading-[1] tracking-tight sm:text-[30px]">
-                  {experience.title}
-                </h3>
-                {experience.company && (
-                  <p className="mt-2 text-base font-medium text-[#493d33]">
-                    at <Link href={experience.link} className="text-[#2d241e]">{experience.company}</Link>
-                  </p>
-                )}
+            aria-label={`Open ${experience.company || experience.title}`}
+            tabIndex={0}
+            ref={(el) => {
+              itemRefs.current[index] = el;
+            }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              (event.currentTarget as HTMLAnchorElement).click();
+            }
+          }}
+          className={`group relative flex items-start gap-2 rounded-[6px] px-1 py-1 text-white transition duration-200 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${isSelected ? 'bg-white/5' : ''}`}
+        >
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="relative -mt-1 flex h-20 w-20 shrink-0 items-start justify-start overflow-hidden rounded-[10px]">
+                  <Image
+                    src={experience.imageSrc || '/experiences/neurotechuoft.png'}
+                    alt={`${experience.company || experience.title} logo`}
+                    fill
+                    className="object-contain object-left p-1"
+                    sizes="80px"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <div className={`${titleSizeClass} font-semibold leading-tight tracking-tight text-white/95 whitespace-normal break-words`}>
+                    {experience.title}
+                  </div>
+                  <div className={`mt-0 ${companySizeClass} text-white/55 whitespace-normal break-words`}>{experience.company}</div>
+                </div>
               </div>
-              <span className="shrink-0 rounded-full border border-black/10 bg-white/55 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#6d5d4f]">
+              <span className={`ml-3 text-right text-[10px] uppercase tracking-[0.22em] text-white/35 ${shouldWrapDuration ? 'max-w-[140px] whitespace-normal break-words leading-[1.15]' : 'whitespace-nowrap'}`}>
                 {experience.duration}
               </span>
             </div>
-
-            <p className="max-w-[40rem] text-sm leading-7 text-[#5f5347] sm:text-[15px]">
+            <p className="mt-2 text-[12px] leading-5 text-white/60 w-full whitespace-normal break-words">
               {experience.description}
             </p>
-
-            {experience.technologies && (
-              <div className="flex flex-wrap gap-2">
-                {experience.technologies.split(',').map((tech) => (
-                  <span
-                    key={`${experience.title}-${tech.trim()}`}
-                    className="rounded-full border border-black/10 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#665546]"
-                  >
-                    {tech.trim()}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
-        </div>
+        </a>
       </motion.article>
     );
-  };
-
-  const handleTerminalDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: { offset: { x: number; y: number } }) => {
-    const { width, height } = getTerminalDimensions();
-    setPosition((prev) => clampPosition({
-      x: prev.x + info.offset.x,
-      y: prev.y + info.offset.y
-    }, width, height));
   };
 
   const renderProjects = () => {
@@ -436,9 +374,9 @@ const Terminal: React.FC<TerminalProps> = ({
     const isWideLayout = isMaximized && !isMobile;
 
     return (
-      <div className="mt-4 space-y-4">
+      <div className="mt-4">
         <div
-          className="grid gap-4"
+          className="grid gap-6"
           style={{ gridTemplateColumns: isWideLayout ? 'repeat(2, minmax(0, 1fr))' : 'repeat(1, minmax(0, 1fr))' }}
         >
           {projects.map((project, index) => renderProjectCard(project, index))}
@@ -453,9 +391,9 @@ const Terminal: React.FC<TerminalProps> = ({
     const isWideLayout = isMaximized && !isMobile;
 
     return (
-      <div className="mt-4 space-y-4">
+      <div className="mt-4">
         <div
-          className="grid gap-4"
+          className="grid gap-6"
           style={{ gridTemplateColumns: isWideLayout ? 'repeat(2, minmax(0, 1fr))' : 'repeat(1, minmax(0, 1fr))' }}
         >
           {workExperience.map((experience, index) => renderExperienceCard(experience, index))}
@@ -545,11 +483,11 @@ const Terminal: React.FC<TerminalProps> = ({
       );
     }
     return (
-      <div 
-        ref={terminalRef}
-        className="p-4 bg-[#151515] text-primary select-text overflow-y-auto custom-scrollbar" 
-        style={{ maxHeight: "calc(100% - 32px)" }}
-      >
+        <div 
+          ref={terminalRef}
+          className="p-4 bg-[#151515] text-primary select-text overflow-y-auto custom-scrollbar" 
+          style={{ maxHeight: "calc(100% - 32px)", fontFamily }}
+        >
         <div 
           className="flex items-center"
           style={selectedLine === 0 ? selectedLineStyle : {}}
@@ -591,10 +529,10 @@ const Terminal: React.FC<TerminalProps> = ({
 
   return (
     <motion.div
-      className={`terminal-container ${inter.className} transition-all duration-300 ease-out ${
+      className={`terminal-container transition-all duration-300 ease-out ${
         isMinimized ? 'hidden' : isMobile ? 'w-[75vw] h-[40dvh]' : (isMaximized ? 'w-[862px] h-[700px]' : 'w-[600px] h-[400px]')
-      } rounded-lg fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/90 overflow-hidden`}
-      style={{ top: position.y, left: position.x, touchAction: 'none' }}
+      } rounded-lg fixed z-50 text-sm border border-gray-800/50 bg-[#151515]/90 overflow-hidden`}
+      style={{ top: position.y, left: position.x, touchAction: 'none', fontFamily }}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
@@ -603,8 +541,6 @@ const Terminal: React.FC<TerminalProps> = ({
       dragListener={false}
       dragMomentum={false}
       dragElastic={0}
-      dragConstraints={dragConstraints}
-      onDragEnd={handleTerminalDragEnd}
       whileDrag={{ cursor: "grabbing" }}
     >
       <div 
@@ -685,11 +621,11 @@ const Terminal: React.FC<TerminalProps> = ({
             </>
           )}
         </div>
-        <div className="text-[13px] font-medium text-[#333] flex-1 text-center truncate flex items-center justify-center">
-          <img src="/icons/directory_closed.png" className="mr-2" alt="Directory" />
-          <span>{headerText}</span>
+        <div className="text-[12px] font-medium text-[#333] flex-1 min-w-0 text-center truncate flex items-center justify-center">
+          <img src="/icons/directory_closed.png" className="mr-1 h-3.5 w-3.5" alt="Directory" />
+          <span className="truncate">{headerText}</span>
         </div>
-        <div className="w-16" />
+        <div className="w-16 shrink-0" />
       </div>
       {renderContent()}
     </motion.div>
