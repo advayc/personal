@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FaLinkedin, FaGithub, FaFileAlt } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import { MdMail } from "react-icons/md";
 import { IoColorPaletteOutline } from "react-icons/io5";
 import Link from 'next/link';
@@ -7,34 +8,34 @@ import { useSelectionBox, isElementInSelectionBox } from '@/components/Selection
 
 import HitCounter from './HitCounter';
 
-type ToggleOptionsType = 'dark' | 'light';
+type ToggleOptionsType = 'light';
 
 interface FooterProps {
     selected?: ToggleOptionsType;
-    setSelected?: React.Dispatch<React.SetStateAction<ToggleOptionsType>>;
     accentColorProp?: string;
     setAccentColorProp?: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: propSetSelected, accentColorProp, setAccentColorProp }) => {
-    const [internalSelected, setInternalSelected] = useState<ToggleOptionsType>('light');
+const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp, setAccentColorProp }) => {
+    const [internalSelected] = useState<ToggleOptionsType>('light');
         const [internalAccentColor, setInternalAccentColor] = useState('#22D3EE');
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [currentTime, setCurrentTime] = useState('');
     const [currentDate, setCurrentDate] = useState('');
     const selected = propSelected ?? internalSelected;
-    const setSelected = propSetSelected ?? setInternalSelected;
         const accentColor = accentColorProp ?? internalAccentColor;
         const setAccentColor = setAccentColorProp ?? setInternalAccentColor;
     const selectionBox = useSelectionBox();
 
     const linkedInRef = useRef<HTMLAnchorElement>(null);
+    const xRef = useRef<HTMLAnchorElement>(null);
     const githubRef = useRef<HTMLAnchorElement>(null);
     const resumeRef = useRef<HTMLAnchorElement>(null);
     const mailRef = useRef<HTMLAnchorElement>(null);
     const colorPickerRef = useRef<HTMLButtonElement>(null);
 
     const [isLinkedInSelected, setIsLinkedInSelected] = useState(false);
+    const [isXSelected, setIsXSelected] = useState(false);
     const [isGithubSelected, setIsGithubSelected] = useState(false);
     const [isResumeSelected, setIsResumeSelected] = useState(false);
     const [isMailSelected, setIsMailSelected] = useState(false);
@@ -63,13 +64,8 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
     }, []);
 
     useEffect(() => {
-      if (selected === 'light') {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.classList.add('light');
-      } else {
-        document.documentElement.classList.remove('light');
-        document.documentElement.classList.add('dark');
-      }
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
       
       document.documentElement.style.setProperty('--accent-color', accentColor);
       document.documentElement.style.setProperty('--accent-color-rgb', hexToRgb(accentColor));
@@ -78,6 +74,9 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
     useEffect(() => {
       if (linkedInRef.current) {
         setIsLinkedInSelected(isElementInSelectionBox(linkedInRef.current, selectionBox));
+      }
+      if (xRef.current) {
+        setIsXSelected(isElementInSelectionBox(xRef.current, selectionBox));
       }
       if (githubRef.current) {
         setIsGithubSelected(isElementInSelectionBox(githubRef.current, selectionBox));
@@ -132,6 +131,17 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, setSelected: pr
                         rel="noopener noreferrer"
                     >
                         <FaLinkedin className="w-6 h-6 sm:w-7 sm:h-7" />
+                    </Link>
+                    <Link
+                        ref={xRef}
+                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
+                            isXSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
+                        }`}
+                        href="https://x.com/advay_c"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <FaXTwitter className="w-6 h-6 sm:w-7 sm:h-7" />
                     </Link>
                     <Link
                         ref={githubRef}

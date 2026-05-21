@@ -68,15 +68,17 @@ export const fileConfigs = [
       projects: [
         {
           title: "Sitemaker",
-          description: "app that turns your resume into a full personal website",
+          description: "Turns a resume into a clean personal site with sections, theme presets, and deploy-ready pages.",
           projectLink: "https://sitemaker.advay.ca/",
           repoUrl: "https://github.com/advayc/sitemaker",
           imageSrc: "/projects/sitemaker.png",
-          technologies: "nextjs, typescript"
+          technologies: "nextjs, typescript",
+          markerText: "(resume to website)",
+          markerColor: "blue"
         },
         {
           title: "Seva Eats",
-          description: "A platform connecting authentic Gurdwara food to families in need, free of charge",
+          description: "Connects gurdwara meals to families in need with simple listings, requests, and pickup details.",
           projectLink: "https://sevaeats.vercel.app/",
           repoUrl: "https://github.com/Seva-Eats/seva-eats",
           imageSrc: "/projects/seva-eats.png",
@@ -84,7 +86,7 @@ export const fileConfigs = [
         },
         {
           title: "Spy",
-          description: "Spy is a social deduction party game for iOS, Android, and web. Gather your friends and play two unique modes: Classic Spy and Range Game.",
+          description: "Social deduction party game for iOS, Android, and web with Classic Spy and Range Game modes.",
           projectLink: "https://spy.advay.ca/",
           repoUrl: "https://github.com/advayc/spy",
           imageSrc: "/projects/spy.png",
@@ -92,7 +94,7 @@ export const fileConfigs = [
         },
         {
           title: "miway leaderboard",
-          description: "site to track current speeds of miway buses from the mississauga realtime data api",
+          description: "Tracks MiWay bus speeds live using Mississauga's realtime API and shows a ranked feed.",
           projectLink: "https://miway.advay.ca/",
           repoUrl: "https://github.com/advayc/miway-leaderboard",
           imageSrc: "/projects/miway-leaderboard.png",
@@ -100,15 +102,17 @@ export const fileConfigs = [
         },
         {
           title: "GFSS Calendar",
-          description: "full stack calendar app to display club events/meetings around my school",
+          description: "Full-stack calendar for club events with admin posting and student-friendly views.",
           projectLink: "https://clubs.advay.ca/",
           repoUrl: "https://github.com/advayc/gfsscalender",
           imageSrc: "/projects/gfss-calendar.png",
-          technologies: "nextjs, Typescript"
+          technologies: "nextjs, Typescript",
+          markerText: "(1k monthly users)",
+          markerColor: "red"
         },
         {
           title: "nums",
-          description: "Custom Go HTTP API to count website visits",
+          description: "Tiny Go service for counting page views with a clean JSON API and badge output.",
           projectLink: "https://docs.advay.ca/",
           repoUrl: "https://github.com/advayc/nums",
           imageSrc: "/projects/nums.png",
@@ -116,10 +120,12 @@ export const fileConfigs = [
         },
         {
           title: "GQ Planets",
-          description: "nasa hackathon winning project ",
+          description: "NASA hackathon project visualizing exoplanet data with interactive exploration tools.",
           repoUrl: "https://github.com/advayc/Biped",
           imageSrc: "/projects/gq-planets.png",
-          technologies: "Arduino, C++, electronics"
+          technologies: "Arduino, C++, electronics",
+          markerText: "(won nasa hackathon)",
+          markerColor: "yellow"
         }
       ]
     }

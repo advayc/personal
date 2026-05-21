@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTerminal } from './TerminalContext';
-import Link from '@/components/Link';
 import Image from 'next/image';
-import { FaGithub } from 'react-icons/fa6';
-import { FiExternalLink } from 'react-icons/fi';
 import { motion, useDragControls } from "framer-motion";
-import Pong from '@/components/Pong';
 
 interface Project {
   title: string;
@@ -34,7 +30,7 @@ interface TerminalProps {
   infoText: string;
   projects?: Project[];
   workExperience?: WorkExperience[];
-  isPong?: boolean;
+  startMaximized?: boolean;
   initialX?: number;
   initialY?: number;
 }
@@ -47,11 +43,11 @@ const Terminal: React.FC<TerminalProps> = ({
   infoText,
   projects,
   workExperience,
-  isPong,
+  startMaximized,
   initialX,
   initialY
 }) => {
-  const [isMaximized, setIsMaximized] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(Boolean(startMaximized));
   const [isMinimized, setIsMinimized] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
@@ -59,12 +55,6 @@ const Terminal: React.FC<TerminalProps> = ({
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const { setIsTerminalOpen } = useTerminal();
   const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
-  const [showPong, setShowPong] = useState(false);
-  const [input, setInput] = useState('');
-  const pongRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLDivElement>(null);
-  const { isTerminalOpen } = useTerminal();
-  const [pongInstanceExists, setPongInstanceExists] = useState(false);
   const [position, setPosition] = useState({ x: 64, y: 64 });
   const [isMobile, setIsMobile] = useState(false);
   const [fontFamily, setFontFamily] = useState<string>(
@@ -86,26 +76,15 @@ const Terminal: React.FC<TerminalProps> = ({
     } catch {}
   }, []);
 
-  useEffect(() => {
-    if (isPong) {
-      const existingPong = document.querySelector('[data-pong-instance]');
-      if (existingPong) {
-        onClose();
-      } else {
-        setPongInstanceExists(true);
-      }
-    }
-  }, [isPong, onClose]);
-
   const handleClose = () => {
-    if (isPong) {
-      setPongInstanceExists(false);
-    }
     onClose();
     setIsTerminalOpen(false);
   };
 
-  const handleMinimize = () => setIsMinimized(!isMinimized);
+  const handleMinimize = () => {
+    setIsMinimized(false);
+    setIsMaximized(false);
+  };
   const handleMaximize = () => setIsMaximized(!isMaximized);
 
   const calculateTotalLines = () => {
@@ -140,54 +119,52 @@ const Terminal: React.FC<TerminalProps> = ({
 
   useEffect(() => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
-      if (!isPong) {
-        const key = event.key.toLowerCase();
-        let newPosition = { ...cursorPosition };
-        const totalLines = calculateTotalLines();
+      const key = event.key.toLowerCase();
+      let newPosition = { ...cursorPosition };
+      const totalLines = calculateTotalLines();
 
-        if (key === 'escape') {
-          handleClose();
-          return;
-        }
-
-        if (lastKeyPressed === 'y' && key === 'y') {
-          setSelectedLine(cursorPosition.y);
-          setLastKeyPressed(null);
-          return;
-        }
-
-        setLastKeyPressed(key);
-
-        switch (key) {
-          case 'arrowup':
-          case 'k':
-            newPosition.y = Math.max(0, cursorPosition.y - 1);
-            break;
-          case 'arrowdown':
-          case 'j':
-            newPosition.y = Math.min(totalLines - 1, cursorPosition.y + 1);
-            break;
-          case 'arrowleft':
-          case 'h':
-            newPosition.x = Math.max(0, cursorPosition.x - 1);
-            break;
-          case 'arrowright':
-          case 'l':
-            newPosition.x = cursorPosition.x + 1;
-            break;
-        }
-
-        setCursorPosition(newPosition);
-        setSelectedLine(null);
-        scrollToCursor();
+      if (key === 'escape') {
+        handleClose();
+        return;
       }
+
+      if (lastKeyPressed === 'y' && key === 'y') {
+        setSelectedLine(cursorPosition.y);
+        setLastKeyPressed(null);
+        return;
+      }
+
+      setLastKeyPressed(key);
+
+      switch (key) {
+        case 'arrowup':
+        case 'k':
+          newPosition.y = Math.max(0, cursorPosition.y - 1);
+          break;
+        case 'arrowdown':
+        case 'j':
+          newPosition.y = Math.min(totalLines - 1, cursorPosition.y + 1);
+          break;
+        case 'arrowleft':
+        case 'h':
+          newPosition.x = Math.max(0, cursorPosition.x - 1);
+          break;
+        case 'arrowright':
+        case 'l':
+          newPosition.x = cursorPosition.x + 1;
+          break;
+      }
+
+      setCursorPosition(newPosition);
+      setSelectedLine(null);
+      scrollToCursor();
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown);
     };
-  }, [cursorPosition, lastKeyPressed, isPong]);
+  }, [cursorPosition, lastKeyPressed]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -210,15 +187,43 @@ const Terminal: React.FC<TerminalProps> = ({
     const projectHref = project.projectLink || project.repoUrl;
     const activeItemIndex = cursorPosition.y >= 2 ? cursorPosition.y - 2 : null;
     const isSelected = activeItemIndex === index;
+    const imageWidthClass = isMaximized && !isMobile ? 'max-w-none' : 'max-w-[420px]';
 
     return (
       <motion.article
         key={`${project.title}-${index}`}
-        className={`group rounded-[14px] px-3 py-3 text-white transition hover:bg-white/5 ${isSelected ? 'bg-white/5' : ''}`}
+        className="group rounded-[8px] px-1 py-1 text-white transition duration-200"
+        style={isSelected ? { boxShadow: 'inset 0 0 0 1px rgba(var(--accent-color-rgb), 0.22)' } : undefined}
         whileHover={{ y: -1 }}
         transition={{ type: 'spring', stiffness: 220, damping: 24 }}
       >
-        <div className="flex items-start justify-between gap-4">
+        <a
+          href={projectHref}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`Open ${project.title}`}
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              (event.currentTarget as HTMLAnchorElement).click();
+            }
+          }}
+          className={`block w-full ${imageWidthClass} overflow-hidden rounded-[12px] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30`}
+          style={{ boxShadow: 'inset 0 0 0 1px rgba(var(--accent-color-rgb), 0.16)' }}
+        >
+          <div className="relative aspect-[16/9] w-full">
+            <Image
+              src={project.imageSrc || '/projects/sitemaker.png'}
+              alt={`${project.title} screenshot`}
+              fill
+              className="object-cover object-center transition duration-500 ease-out group-hover:scale-[1.03]"
+              sizes="(max-width: 768px) 90vw, (max-width: 1400px) 45vw, 560px"
+            />
+          </div>
+        </a>
+
+        <div className="mt-2 min-w-0">
           <a
             href={projectHref}
             target="_blank"
@@ -234,79 +239,15 @@ const Terminal: React.FC<TerminalProps> = ({
                 (event.currentTarget as HTMLAnchorElement).click();
               }
             }}
-            className="block text-[19px] font-semibold leading-tight tracking-tight text-white/95 transition duration-200 hover:text-white"
+            className="inline-block rounded-[3px] px-1 text-[19px] font-semibold leading-tight tracking-tight text-white/95 transition duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+            style={{ backgroundColor: 'var(--accent-color-hover)' }}
           >
             {project.title}
           </a>
-
-          <div className="flex items-center gap-2 text-white/55">
-            {project.repoUrl && (
-              <a
-                href={project.repoUrl}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`Open ${project.title} repository`}
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    (event.currentTarget as HTMLAnchorElement).click();
-                  }
-                }}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"
-              >
-                <FaGithub className="h-4 w-4" />
-              </a>
-            )}
-            {project.projectLink && (
-              <a
-                href={project.projectLink}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`Open ${project.title} live site`}
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    (event.currentTarget as HTMLAnchorElement).click();
-                  }
-                }}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"
-              >
-                <FiExternalLink className="h-4 w-4" />
-              </a>
-            )}
-          </div>
+          <p className="mt-1 text-[13px] leading-6 text-white/65">
+            {project.description}
+          </p>
         </div>
-
-        <p className="mt-1 text-[13px] leading-6 text-white/60">
-          {project.description}
-        </p>
-
-        <a
-          href={projectHref}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={`Open ${project.title}`}
-          tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              (event.currentTarget as HTMLAnchorElement).click();
-            }
-          }}
-          className="mt-3 block w-full max-w-[420px] overflow-hidden rounded-[12px]"
-        >
-          <div className="relative aspect-[16/9] w-full">
-            <Image
-              src={project.imageSrc || '/projects/sitemaker.png'}
-              alt={`${project.title} screenshot`}
-              fill
-              className="object-cover object-center transition duration-300 ease-out group-hover:scale-[1.02]"
-              sizes="(max-width: 768px) 90vw, 420px"
-            />
-          </div>
-        </a>
       </motion.article>
     );
   };
@@ -376,7 +317,7 @@ const Terminal: React.FC<TerminalProps> = ({
     return (
       <div className="mt-4">
         <div
-          className="grid gap-6"
+          className="grid gap-8"
           style={{ gridTemplateColumns: isWideLayout ? 'repeat(2, minmax(0, 1fr))' : 'repeat(1, minmax(0, 1fr))' }}
         >
           {projects.map((project, index) => renderProjectCard(project, index))}
@@ -402,86 +343,7 @@ const Terminal: React.FC<TerminalProps> = ({
     );
   };
 
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (isPong) {
-      if (e.key === 'Escape') {
-        handleClose();
-        return;
-      }
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  };
-
-  useEffect(() => {
-    if (isPong) {
-      window.addEventListener('keydown', handleKeyPress, true);
-      return () => window.removeEventListener('keydown', handleKeyPress, true);
-    }
-  }, [isPong, handleClose]);
-
-  const handleTerminalInput = (e: React.KeyboardEvent) => {
-    if (!isPong || showPong) return;
-    e.stopPropagation();
-    e.preventDefault();
-    if (e.key === 'Enter') {
-      if (input.trim().toLowerCase() === 'play;') {
-        setShowPong(true);
-        setInput('');
-        setTimeout(() => {
-          if (pongRef.current) {
-            pongRef.current.focus();
-          }
-        }, 100);
-      }
-      return;
-    }
-    if (e.key === 'Backspace') {
-      setInput(prev => prev.slice(0, -1));
-    } else if (e.key.length === 1) {
-      setInput(prev => prev + e.key);
-    }
-  };
-
-  const handleTerminalClick = () => {
-    if (isPong && !showPong) {
-      terminalRef.current?.focus();
-    }
-  };
-
-  useEffect(() => {
-    if (isPong && !showPong) {
-      terminalRef.current?.focus();
-    }
-  }, [isPong, showPong]);
-
-  const renderPongTerminal = () => {
-    const mobileWidth = Math.max(260, Math.min(typeof window !== 'undefined' ? Math.floor(window.innerWidth * 0.76) : 340, 520));
-    const mobileHeight = Math.max(160, Math.min(typeof window !== 'undefined' ? Math.floor(window.innerHeight * 0.3) : 220, 320));
-    return (
-      <div 
-        className="flex-1 bg-black rounded-b-lg overflow-hidden"
-        data-pong-instance
-        tabIndex={0}
-        style={{ height: "calc(100% - 32px)" }}
-      >
-        <Pong 
-          width={isMobile ? mobileWidth : (isMaximized ? 800 : 550)} 
-          height={isMobile ? mobileHeight : (isMaximized ? 600 : 300)}
-          onGameEnd={() => {}}
-        />
-      </div>
-    );
-  };
-
   const renderContent = () => {
-    if (isPong) {
-      return (
-        <div className="flex flex-col h-full">
-          {renderPongTerminal()}
-        </div>
-      );
-    }
     return (
         <div 
           ref={terminalRef}
@@ -510,12 +372,6 @@ const Terminal: React.FC<TerminalProps> = ({
       </div>
     );
   };
-
-  useEffect(() => {
-    if (isPong && !showPong && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isPong, showPong]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -579,8 +435,15 @@ const Terminal: React.FC<TerminalProps> = ({
           </button>
           {!isMobile && (
             <>
-              <div
-                aria-hidden
+              <button
+                type="button"
+                aria-label="Minimize"
+                title="Minimize to window"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMinimize();
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
                 className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)]"
                 style={{
                   background: 'radial-gradient(circle at 35% 30%, #ffe0a1 0%, #ffbd2e 60%, #d79b1e 100%)'
@@ -594,7 +457,7 @@ const Terminal: React.FC<TerminalProps> = ({
                       style={{
                         background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
                       }} />
-              </div>
+              </button>
               <button
                 type="button"
                 aria-label="Maximize"

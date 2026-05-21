@@ -7,15 +7,12 @@ import Footer from "@/components/Footer";
 import CommandPalette from "@/components/CommandPalette";
 import ShortcutHint from "@/components/ShortcutHint";
 
-type ToggleOptionsType = 'dark' | 'light';
-
 const fadeIn = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.9 } }
 };
 
 export default function NotFound() {
-  const [selected, setSelected] = useState<ToggleOptionsType>('light');
   const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('grid');
   const [bgColor, setBgColor] = useState<string>('#0a0a0a');
   const [isPaletteOpen, setIsPaletteOpen] = useState<boolean>(false);
@@ -39,18 +36,13 @@ export default function NotFound() {
   }, []);
 
   useEffect(() => {
-    if (selected === 'light') {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    } else {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-    }
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
     const favicon = document.querySelector('link[rel="shortcut icon"]');
     if (favicon) {
       favicon.setAttribute('href', '/favicon.png');
     }
-  }, [selected]);
+  }, []);
 
   useEffect(() => { try { localStorage.setItem('siteBgStyle', bgStyle); } catch {} }, [bgStyle]);
   useEffect(() => { try { localStorage.setItem('siteBgColor', bgColor); } catch {} }, [bgColor]);
@@ -64,7 +56,7 @@ export default function NotFound() {
     >
       <Head>
         <title>404 - Page Not Found</title>
-        <link rel="shortcut icon" href={selected === 'light' ? '/favicon.png' : '/favicon2.png'} />
+        <link rel="shortcut icon" href="/favicon.png" />
       </Head>
   
       <div className="h-screen w-full relative flex items-center justify-center px-3 sm:px-0"
@@ -80,7 +72,7 @@ export default function NotFound() {
         </div>
       </div>
       <SelectionBox />
-    <Footer selected={selected} setSelected={setSelected} accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
+    <Footer accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
     <ShortcutHint onOpen={() => setIsPaletteOpen(true)} />
       <CommandPalette 
         isOpen={isPaletteOpen} 

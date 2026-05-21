@@ -9,15 +9,11 @@ import Link from '@/components/Link';
 import Head from 'next/head';
 import {fileConfigs} from '@/lib/fileConfigs';
 import { calculateAge } from '@/utils/age';
-import PongTerminal from "@/components/PongTerminal";
-import SnakeTerminal from "@/components/SnakeTerminal";
 import DrawTerminal from "@/components/DrawTerminal";
 import InternetTerminal from "@/components/InternetTerminal";
 import CommandPalette from "@/components/CommandPalette";
 import ShortcutHint from "@/components/ShortcutHint";
 import HitCounter from '@/components/HitCounter';
-
-type ToggleOptionsType = 'dark' | 'light';
 
 interface TerminalState {
   id: number;
@@ -28,6 +24,7 @@ interface TerminalState {
   infoText: string;
   projects?: Project[];
   workExperience?: WorkExperience[];
+  startMaximized?: boolean;
 }
 
 interface Project {
@@ -69,63 +66,11 @@ const AGE = calculateAge(BIRTH_DATE);
 
 export default function Home() {
   const { isTerminalOpen, setIsTerminalOpen } = useTerminal();
-  const [selected, setSelected] = useState<ToggleOptionsType>('light');
   const [terminals, setTerminals] = useState<TerminalState[]>([]);
-  const [pongTerminalOpen, setPongTerminalOpen] = useState(false);
-  const [snakeTerminalOpen, setSnakeTerminalOpen] = useState(false);
   const [drawTerminalOpen, setDrawTerminalOpen] = useState(false);
   const [internetTerminalOpen, setInternetTerminalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  // Free-move mode and persisted icon positions
-  const [freeMoveMode, setFreeMoveMode] = useState<boolean>(false);
-  const [iconPositions, setIconPositions] = useState<Record<string, {x:number;y:number}>>({});
-  
-  // Capture grid positions when switching to free-move mode
-  const captureGridPositions = () => {
-    if (!freeMoveMode) return; // Only capture when switching TO free-move mode
-    
-    const newPositions: Record<string, {x:number;y:number}> = {};
-    fileConfigs.forEach((fileConfig) => {
-      const element = document.querySelector(`[data-file-id="${fileConfig.id}"]`);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        // Store absolute screen coordinates
-        newPositions[fileConfig.id] = {
-          x: rect.left,
-          y: rect.top
-        };
-      }
-    });
-    
-    // Only update if we found positions
-    if (Object.keys(newPositions).length > 0) {
-      setIconPositions(newPositions);
-    }
-  };
-
-  // Function to handle free-move mode toggle
-  const handleFreeMoveToggle = (enabled: boolean) => {
-    if (enabled && !freeMoveMode) {
-      // Capture positions before switching to free-move
-      const newPositions: Record<string, {x:number;y:number}> = {};
-      fileConfigs.forEach((fileConfig) => {
-        const element = document.querySelector(`[data-file-id="${fileConfig.id}"]`);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          newPositions[fileConfig.id] = {
-            x: rect.left,
-            y: rect.top
-          };
-        }
-      });
-      
-      if (Object.keys(newPositions).length > 0) {
-        setIconPositions(newPositions);
-      }
-    }
-    setFreeMoveMode(enabled);
-  };
   // persisted settings
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
   const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
@@ -139,17 +84,10 @@ export default function Home() {
       const storedFont = localStorage.getItem('siteFontFamily');
       const storedBg = localStorage.getItem('siteBgStyle');
     const storedBgColor = localStorage.getItem('siteBgColor');
-      const storedFree = localStorage.getItem('siteFreeMove') === 'true';
-      const storedPos = localStorage.getItem('siteIconPositions');
       if (storedAccent) setAccentColor(storedAccent);
       if (storedFont) setFontFamily(storedFont);
   if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
     if (storedBgColor) setBgColor(storedBgColor);
-      setFreeMoveMode(storedFree);
-      // Only load positions if free-move mode is enabled and positions exist
-      if (storedFree && storedPos) {
-        try { setIconPositions(JSON.parse(storedPos)); } catch {}
-      }
     } catch {}
   }, []);
 
@@ -186,23 +124,16 @@ export default function Home() {
   useEffect(() => { try { localStorage.setItem('siteFontFamily', fontFamily); } catch {} }, [fontFamily]);
   useEffect(() => { try { localStorage.setItem('siteBgStyle', bgStyle); } catch {} }, [bgStyle]);
   useEffect(() => { try { localStorage.setItem('siteBgColor', bgColor); } catch {} }, [bgColor]);
-  useEffect(() => { try { localStorage.setItem('siteFreeMove', String(freeMoveMode)); } catch {} }, [freeMoveMode]);
-  useEffect(() => { try { localStorage.setItem('siteIconPositions', JSON.stringify(iconPositions)); } catch {} }, [iconPositions]);
 
   useEffect(() => {
-    if (selected === 'light') {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    } else {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-    }
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
 
     const favicon = document.querySelector('link[rel="shortcut icon"]');
     if (favicon) {
       favicon.setAttribute('href', '/favicon.png');
     }
-  }, [selected]);
+  }, []);
 
   const fadeIn = {
     hidden: { opacity: 0 },
@@ -216,22 +147,6 @@ export default function Home() {
   const overrideY = params.get('ty');
   const manualX = overrideX !== null ? Number(overrideX) : undefined;
   const manualY = overrideY !== null ? Number(overrideY) : undefined;
-    if (fileId === 'pong') {
-      const existingPong = document.querySelector('[data-pong-instance]');
-      if (!existingPong) {
-        setPongTerminalOpen(true);
-        setIsTerminalOpen(true);
-      }
-      return;
-    }
-    if (fileId === 'snake') {
-      const existingSnake = document.querySelector('[data-snake-instance]');
-      if (!existingSnake) {
-        setSnakeTerminalOpen(true);
-        setIsTerminalOpen(true);
-      }
-      return;
-    }
     if (fileId === 'draw') {
       const existingDraw = document.querySelector('[data-draw-instance]');
       if (!existingDraw) {
@@ -262,17 +177,14 @@ export default function Home() {
         branchText: fileConfig.terminalConfig.branchText,
         infoText: fileConfig.terminalConfig.infoText,
         projects: fileConfig.terminalConfig.projects,
-        workExperience: fileConfig.terminalConfig.workExperience
+        workExperience: fileConfig.terminalConfig.workExperience,
+        startMaximized: fileId === 'projects'
       };
       setTerminals([...terminals, newTerminal]);
       setIsTerminalOpen(true);
     }
   };
 
-  const handleClosePong = () => {
-    setPongTerminalOpen(false);
-  };
-  const handleCloseSnake = () => { setSnakeTerminalOpen(false); };
   const handleCloseDraw = () => { setDrawTerminalOpen(false); };
   const handleCloseInternet = () => { setInternetTerminalOpen(false); };
 
@@ -285,7 +197,7 @@ export default function Home() {
     >
       <Head>
         <title>advay chandorkar</title>
-        <link rel="shortcut icon" href={selected === 'light' ? '/favicon.png' : '/favicon2.png'} />
+        <link rel="shortcut icon" href="/favicon.png" />
         {/* Preload & load selected fonts if they involve external families */}
         {fontFamily.includes('Inter') && (
           <>
@@ -352,21 +264,18 @@ export default function Home() {
               </div>
             </div>
           </motion.div>
-          {/* Files grid when not in free-move mode */}
-          {!freeMoveMode && (
-            <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-3 sm:gap-4 flex-wrap justify-center max-w-[92vw] px-2">
-              {fileConfigs.map((fileConfig) => (
-                <File
-                  key={fileConfig.id}
-                  setWindowOpen={() => openTerminal(fileConfig.id)}
-                  className="px-1 sm:px-2"
-                  filename={fileConfig.filename}
-                  imageSrc={fileConfig.imageSrc}
-                  id={fileConfig.id}
-                />
-              ))}
-            </div>
-          )}
+          <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-3 sm:gap-4 flex-wrap justify-center max-w-[92vw] px-2">
+            {fileConfigs.map((fileConfig) => (
+              <File
+                key={fileConfig.id}
+                setWindowOpen={() => openTerminal(fileConfig.id)}
+                className="px-1 sm:px-2"
+                filename={fileConfig.filename}
+                imageSrc={fileConfig.imageSrc}
+                id={fileConfig.id}
+              />
+            ))}
+          </div>
           {terminals.map((terminal) => (
             <motion.div
               key={terminal.id}
@@ -382,6 +291,7 @@ export default function Home() {
                 infoText={terminal.infoText}
                 projects={terminal.projects}
                 workExperience={terminal.workExperience}
+                startMaximized={terminal.startMaximized}
                 initialX={isMobile ? undefined : terminal.position.x}
                 initialY={isMobile ? undefined : terminal.position.y}
                 />
@@ -393,18 +303,6 @@ export default function Home() {
               headerText="advaychandorkar@personalsite: ~/internet/browser"
             />
           )}
-          {pongTerminalOpen && (
-            <PongTerminal
-            onClose={handleClosePong}
-            headerText="advaychandorkar@personalsite: ~/games/pong"
-            />
-          )}
-          {snakeTerminalOpen && (
-            <SnakeTerminal
-            onClose={handleCloseSnake}
-            headerText="advaychandorkar@personalsite: ~/games/snake"
-            />
-          )}
           {drawTerminalOpen && (
             <DrawTerminal
               onClose={handleCloseDraw}
@@ -412,33 +310,8 @@ export default function Home() {
             />
           )}
         </motion.div>
-        {/* Free-move absolute layer over the whole screen */}
-        {freeMoveMode && (
-          <div className="absolute inset-0 z-10 pointer-events-auto select-none">
-            {fileConfigs.map((fileConfig, idx) => {
-              // Use saved position or fallback to a reasonable default if no position captured yet
-              const pos = iconPositions[fileConfig.id] ?? { 
-                x: 250, 
-                y: 300
-              };
-              return (
-                <File
-                  key={fileConfig.id}
-                  id={fileConfig.id}
-                  freeMoveEnabled
-                  position={pos}
-                  onPositionChange={(p) => setIconPositions(prev => ({ ...prev, [fileConfig.id]: p }))}
-                  setWindowOpen={() => openTerminal(fileConfig.id)}
-                  className="px-1 sm:px-2"
-                  filename={fileConfig.filename}
-                  imageSrc={fileConfig.imageSrc}
-                />
-              );
-            })}
-          </div>
-        )}
       </div>
-      <Footer selected={selected} setSelected={setSelected} accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
+      <Footer accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
       <SelectionBox />
       <ShortcutHint onOpen={() => setIsPaletteOpen(true)} />
       <CommandPalette 
@@ -448,12 +321,10 @@ export default function Home() {
         setFontFamily={setFontFamily}
         setBgStyle={setBgStyle}
         setBgColor={setBgColor}
-        setFreeMoveMode={handleFreeMoveToggle}
         accentColor={accentColor}
         fontFamily={fontFamily}
         bgStyle={bgStyle}
         bgColor={bgColor}
-        freeMoveMode={freeMoveMode}
       />
       
     </motion.main>

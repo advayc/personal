@@ -4,7 +4,6 @@ import clsx from "clsx";
 import { useSelectionBox, isElementInSelectionBox } from './SelectionContext';
 import Image from 'next/image';
 import { Inter } from "next/font/google";
-import { useTerminal } from './TerminalContext';
 const inter = Inter({ subsets: ["latin"] });
 
 interface FileProps {
@@ -12,12 +11,7 @@ interface FileProps {
   className: string;
   filename: string;
   imageSrc: string;
-  // Free-move mode props
   id?: string;
-  freeMoveEnabled?: boolean;
-  position?: { x: number; y: number };
-  onPositionChange?: (pos: { x: number; y: number }) => void;
-  snapSize?: number;
 }
 
 export default function File({
@@ -26,24 +20,11 @@ export default function File({
   filename,
   imageSrc,
   id,
-  freeMoveEnabled,
-  position,
-  onPositionChange,
-  snapSize = 32,
 }: FileProps) {
   const selectionBox = useSelectionBox();
   const fileRef = useRef<HTMLDivElement>(null);
   const [isSelected, setIsSelected] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const { setIsDragging } = useTerminal();
-
-  // local controlled drag state for free-move
-  const [xy, setXy] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  useEffect(() => {
-    if (freeMoveEnabled && position) {
-      setXy(position);
-    }
-  }, [freeMoveEnabled, position?.x, position?.y]);
 
   useEffect(() => {
     if (fileRef.current) {
@@ -52,12 +33,7 @@ export default function File({
   }, [selectionBox]);
 
   const open = () => {
-    if (filename === 'pong.exe') {
-      const existingPong = document.querySelector('[data-pong-instance]');
-      if (!existingPong) {
-        setWindowOpen(true);
-      }
-    } else if (filename === 'draw.exe') {
+    if (filename === 'draw.exe') {
       const existingDraw = document.querySelector('[data-draw-instance]');
       if (!existingDraw) {
         setWindowOpen(true);
@@ -68,8 +44,7 @@ export default function File({
   };
 
   const handleClick = () => {
-    // In free move mode, single click should not open; double-click opens instead
-    if (!freeMoveEnabled) open();
+    open();
   };
 
   const content = (
@@ -83,11 +58,7 @@ export default function File({
         "hover:bg-[rgba(var(--accent-color-rgb),0.21)] hover:border-[var(--accent-color)] text-white",
         isSelected && "bg-[rgba(var(--accent-color-rgb),0.1)] border-[var(--accent-color)]"
       )}
-      onMouseDown={(e) => {
-        if (freeMoveEnabled) {
-          // prevent desktop selection box from starting
-          e.stopPropagation();
-        }
+      onMouseDown={() => {
         setIsSelected(true);
       }}
       onMouseUp={() => setIsSelected(false)}
@@ -126,31 +97,5 @@ export default function File({
     </div>
   );
 
-  if (!freeMoveEnabled) return content;
-
-  return (
-    <motion.div
-      className="absolute z-20"
-      animate={{ x: xy.x, y: xy.y }}
-      transition={{ type: 'spring', stiffness: 380, damping: 20, mass: 0.6 }}
-      drag
-      dragMomentum={false}
-      onDragStart={() => setIsDragging(true)}
-      onDragEnd={(_, info) => {
-        setIsDragging(false);
-        const rawX = xy.x + info.offset.x;
-        const rawY = xy.y + info.offset.y;
-        const snapped = {
-          x: Math.round(rawX / snapSize) * snapSize,
-          y: Math.round(rawY / snapSize) * snapSize,
-        };
-        const nx = Number.isFinite(snapped.x) ? snapped.x : xy.x;
-        const ny = Number.isFinite(snapped.y) ? snapped.y : xy.y;
-        setXy({ x: nx, y: ny });
-        onPositionChange && onPositionChange({ x: nx, y: ny });
-      }}
-    >
-      {content}
-    </motion.div>
-  );
+  return content;
 }

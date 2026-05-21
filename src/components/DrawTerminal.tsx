@@ -202,6 +202,10 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
   };
 
   const handleClose = () => { onClose(); setIsTerminalOpen(false); };
+  const handleMinimize = () => {
+    setIsMinimized(false);
+    setIsMaximized(false);
+  };
 
   // Start drag ONLY when the header is grabbed
   const handleHeaderPointerDown = (e: React.PointerEvent) => {
@@ -232,6 +236,7 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
         <div className="flex items-center space-x-[6px] select-none">
           <button
             onClick={handleClose}
+            onPointerDown={(e) => e.stopPropagation()}
             aria-label="Close"
             className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.35),inset_0_0_0_1px_rgba(0,0,0,0.45)]"
             style={{
@@ -249,8 +254,12 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
           </button>
           {!isMobile && (
             <>
-              <div
-                aria-hidden
+              <button
+                type="button"
+                aria-label="Minimize"
+                title="Minimize to window"
+                onClick={handleMinimize}
+                onPointerDown={(e) => e.stopPropagation()}
                 className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)]"
                 style={{
                   background: 'radial-gradient(circle at 35% 30%, #ffe0a1 0%, #ffbd2e 60%, #d79b1e 100%)'
@@ -264,12 +273,13 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
                       style={{
                         background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
                       }} />
-              </div>
+              </button>
               <button
                 type="button"
                 aria-label="Maximize"
                 title="Maximize"
                 onClick={() => setIsMaximized(!isMaximized)}
+                onPointerDown={(e) => e.stopPropagation()}
                 className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)] cursor-pointer"
                 style={{
                   background: 'radial-gradient(circle at 35% 30%, #b6f0c1 0%, #27ca3f 60%, #16a42b 100%)'

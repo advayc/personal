@@ -24,11 +24,13 @@ interface HistoryEntry {
 
 interface InternetProps {
   onClose?: () => void;
+  onMinimize?: () => void;
+  onToggleMaximize?: () => void;
   // Allow parent container to start a drag when the titlebar is grabbed
   onDragHandlePointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
-export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
+export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePointerDown }: InternetProps) {
   const [tabs, setTabs] = useState<Tab[]>([{ 
     id: '1', 
     url: 'https://apple.com', 
@@ -498,6 +500,7 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
           {/* Close */}
           <button
             onClick={onClose}
+            onPointerDown={(e) => e.stopPropagation()}
             aria-label="Close"
             className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.35),inset_0_0_0_1px_rgba(0,0,0,0.45)]"
             style={{
@@ -518,8 +521,11 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
                   }} />
           </button>
           {/* Minimize */}
-          <div
-            aria-hidden
+          <button
+            type="button"
+            onClick={onMinimize}
+            onPointerDown={(e) => e.stopPropagation()}
+            aria-label="Minimize"
             className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)]"
             style={{
               background:
@@ -536,10 +542,13 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
                     background:
                       'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
                   }} />
-          </div>
+          </button>
           {/* Zoom */}
-          <div
-            aria-hidden
+          <button
+            type="button"
+            onClick={onToggleMaximize}
+            onPointerDown={(e) => e.stopPropagation()}
+            aria-label="Maximize"
             className="relative w-[14px] h-[14px] rounded-full shadow-[0_2px_3px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(0,0,0,0.4)]"
             style={{
               background:
@@ -556,7 +565,7 @@ export function Internet({ onClose, onDragHandlePointerDown }: InternetProps) {
                     background:
                       'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0))'
                   }} />
-          </div>
+          </button>
         </div>
         <div className="text-[13px] font-medium text-[#333] flex-1 text-center truncate">
           {tabs.find(t => t.isActive)?.title || 'Internet'}

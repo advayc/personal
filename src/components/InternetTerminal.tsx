@@ -13,6 +13,11 @@ export default function InternetTerminal({ onClose, headerText }: InternetTermin
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
 
+  const handleMinimize = () => {
+    setIsMinimized(false);
+    setIsMaximized(false);
+  };
+
   if (isMinimized) return null;
 
   return (
@@ -31,6 +36,8 @@ export default function InternetTerminal({ onClose, headerText }: InternetTermin
       <div className="w-full h-full bg-transparent">
         <Internet
           onClose={onClose}
+          onMinimize={handleMinimize}
+          onToggleMaximize={() => setIsMaximized(!isMaximized)}
           onDragHandlePointerDown={(e) => dragControls.start(e)}
         />
       </div>

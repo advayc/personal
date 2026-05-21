@@ -102,23 +102,43 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
   if (variant === 'hero') {
     return (
       <div
-        className={`select-none flex items-center justify-center gap-1 px-2 py-0.5 rounded bg-black/70 backdrop-blur-md shadow-xl border border-white/10 mt-0 mx-auto w-fit` + (className ? ` ${className}` : '')}
+        className={`select-none flex items-center justify-center gap-2 mt-0 mx-auto w-fit` + (className ? ` ${className}` : '')}
         aria-label={hits == null ? 'Loading view count' : `Page viewed ${hits} times`}
         style={fontFamily ? { fontFamily } : undefined}
       >
-        <span className="text-primary font-extrabold text-base sm:text-base tracking-widest" style={{letterSpacing: '0.08em'}}>views:</span>
-        <span className="font-extrabold text-base sm:text-base tabular-nums" style={{color: 'var(--accent-color)', letterSpacing: '0.08em'}}>{animated == null ? '…' : animated}</span>
+        <span className="text-primary text-base sm:text-base">views —</span>
+        <span
+          className="font-bold text-base sm:text-base tabular-nums transition duration-200 hover:underline"
+          style={{
+            color: 'var(--accent-color)',
+            textDecorationColor: 'var(--accent-color)',
+            textDecorationStyle: 'dotted',
+            textUnderlineOffset: '3px'
+          }}
+        >
+          {animated == null ? '…' : animated}
+        </span>
       </div>
     );
   }
   return (
     <div
-      className={`select-none inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-mono tracking-wide shadow-sm backdrop-blur-sm border-[var(--accent-color)]/40 bg-[rgba(var(--accent-color-rgb),0.08)] text-[var(--accent-color)] ${className}`}
+      className={`select-none inline-flex items-center gap-2 text-xs font-mono tracking-wide ${className}`}
       aria-label={hits == null ? 'Loading view count' : `Page viewed ${hits} times`}
       style={fontFamily ? { fontFamily } : undefined}
     >
       <span className="opacity-70">views</span>
-      <span className="tabular-nums font-semibold text-primary">{animated == null ? '…' : animated}</span>
+      <span
+        className="tabular-nums font-semibold transition duration-200 hover:underline"
+        style={{
+          color: 'var(--accent-color)',
+          textDecorationColor: 'var(--accent-color)',
+          textDecorationStyle: 'dotted',
+          textUnderlineOffset: '3px'
+        }}
+      >
+        {animated == null ? '…' : animated}
+      </span>
     </div>
   );
 };

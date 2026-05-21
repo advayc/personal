@@ -44,8 +44,9 @@ class MyDocument extends Document {
             dangerouslySetInnerHTML={{
               __html: `
                 (function() {
-                  const theme = localStorage.getItem('theme') || 'light';
-                  document.documentElement.classList.add(theme);
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.classList.add('light');
+                  try { localStorage.setItem('theme', 'light'); } catch (e) {}
                 })();
               `,
             }}
