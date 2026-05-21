@@ -13,57 +13,46 @@ export const fileConfigs = [
           title: "Software Developer",
           company: "NeurotechUoft",
           duration: "Jun 2025 - Present",
-          description: "At Neurotech UofT, we are pioneering innovation in neurotechnology by merging engineering and neuroscience to create meaningful change.",
+          description: "built website and internal tools for a research club at the university of toronto that focuses on neurotechnology research",
           link: "https://neurotechuoft.ca/",
-          technologies: "Next.JS, Typescript, Tailwind CSS"
+          imageSrc: "/experiences/neurotech.png",
+          technologies: "nextjs, typescript"
+        },
+        {
+          title: "President",
+          company: "Glenforest Computer Science Club",
+          duration: "Sept 2024 - June 2025 · 1 yr",
+          description: "wrote contests and organized events for my high school computer science club. led competitive programming and html workshops working with hackclub, & managing finances",
+          link: "https://github.com/GFSSCompSci/",
+          imageSrc: "/experiences/cs-club.png",
+          technologies: "Leadership, Collaboration, Teamwork"
         },
         {
           title: "Lead Web Developer",
           company: "FutureMD",
-          duration: "Jun 2024 - Present",
-          description: "FutureMD is a student-led, registered nonprofit organization dedicated to educating teens about life during and after medical school.",
+          duration: "Jun 2024 - June 2025 · 1 yr",
+          description: "coded website for a healthcare nonprofit that provides free healthcare to teens intreseted in medicine. found sponsors and organized a workshop event through seo and socialmedia marketing",
           link: "https://futuremd.net/",
-          technologies: "Next.JS, Typescript, Tailwind CSS"
+          imageSrc: "/experiences/neurotech.png",
+          technologies: "nextjs, typescript"
         },
         {
           title: "Team Lead",
           company: "VEX Robotics",
-          duration: "May 2024 - Present",
-          description: "Team Lead @ VEX Robotics Team 31331B, Provincial Qualifiers",
-          link: "https://github.com/advayc/31331B-VRC-High-Stakes"
-        },
-        {
-          title: "Trainer",
-          company: "Glenforest Computer Science Club",
-          duration: "Sept 2024 - Present",
-          description: "Created a Github repository with solutions to 70+ CCC solutions, mentored students for the CCC",
-          link: "https://gfsscs.ca/",
-          technologies: "Leadership, Collaboration, Teamwork"
+          duration: "May 2024 - June 2025 · 1 yr",
+          description: "led my schools robotics team to a provincial championship, building and coding semi autonomous robotics for vex robotics competitions. mentored new members and organized practices.",
+          link: "https://github.com/advayc/31331B-VRC-High-Stakes",
+          imageSrc: "/experiences/vex-robotics.jpeg"
         },
         {
           title: "Media Captain",
           company: "FRC 6070: Gryphon Machine",
           duration: "May 2023 - Apr 2024 · 1 yr",
-          description: "Managed Social Media, frc6070.ca and created promotional material shown to thousands of people.",
+          description: "managed Social Media, frc6070.ca and created promotional material shown to thousands of people.",
           link: "https://www.linkedin.com/company/frc-6070-gryphon-machine/",
-          technologies: "Video Editing, Marketing, Next.JS"
+          imageSrc: "/experiences/frc.png",
+          technologies: "Video Editing, Marketing, nextjs"
         },
-        {
-          title: "Build & Electrical Member",
-          company: "FRC 6070: Gryphon Machine",
-          duration: "Sep 2022 - Jun 2023 · 10 mos",
-          description: "Built and Wired robot for the 2023 Charged Up First Robotics season where we competed in two competitions; The Western University District Event and The Windsor Essex Great Lakes District Event ",
-          link: "https://www.linkedin.com/company/frc-6070-gryphon-machine/",
-          technologies: "Electrical Wiring, Manufacturing Tools"
-        },
-        {
-          title: "Web Developer",
-          company: "AiVolution",
-          duration: "Oct 2023 - Jan 2024 · 4 mos",
-          description: "Utilized Typescript, Next.JS, Git, and Tailwind CSS to create the Contact page along with the Updates page.",
-          link: "https://www.linkedin.com/company/aivolutiongta/",
-          technologies: "Next.JS, Typescript, Tailwind CSS"
-        }
       ]
     }
   },
@@ -79,68 +68,57 @@ export const fileConfigs = [
       projects: [
         {
           title: "Sitemaker",
-          description: "Turn your resume into a full personal website",
+          description: "app that turns your resume into a full personal website",
           projectLink: "https://sitemaker.advay.ca/",
           repoUrl: "https://github.com/advayc/sitemaker",
-          technologies: "NextJS, Typescript, Gemini"
+          imageSrc: "/projects/sitemaker.png",
+          technologies: "nextjs, typescript"
+        },
+        {
+          title: "Seva Eats",
+          description: "A platform connecting authentic Gurdwara food to families in need, free of charge",
+          projectLink: "https://sevaeats.vercel.app/",
+          repoUrl: "https://github.com/Seva-Eats/seva-eats",
+          imageSrc: "/projects/seva-eats.png",
+          technologies: "react native, typescript"
         },
         {
           title: "Spy",
           description: "Spy is a social deduction party game for iOS, Android, and web. Gather your friends and play two unique modes: Classic Spy and Range Game.",
           projectLink: "https://spy.advay.ca/",
           repoUrl: "https://github.com/advayc/spy",
-          technologies: "React, TypeScript, NextJS"
+          imageSrc: "/projects/spy.png",
+          technologies: "react native, typeScript"
+        },
+        {
+          title: "miway leaderboard",
+          description: "site to track current speeds of miway buses from the mississauga realtime data api",
+          projectLink: "https://miway.advay.ca/",
+          repoUrl: "https://github.com/advayc/miway-leaderboard",
+          imageSrc: "/projects/miway-leaderboard.png",
+          technologies: "postman, typescript"
+        },
+        {
+          title: "GFSS Calendar",
+          description: "full stack calendar app to display club events/meetings around my school",
+          projectLink: "https://clubs.advay.ca/",
+          repoUrl: "https://github.com/advayc/gfsscalender",
+          imageSrc: "/projects/gfss-calendar.png",
+          technologies: "nextjs, Typescript"
         },
         {
           title: "nums",
           description: "Custom Go HTTP API to count website visits",
           projectLink: "https://docs.advay.ca/",
           repoUrl: "https://github.com/advayc/nums",
-          technologies: "Golang (Go), cURL, Vercel"
-        },
-        {
-          title: "Notes App",
-          description: "Notes app built in typescript with supabase authentication",
-          projectLink: "https://advayc-notes.vercel.app/",
-          repoUrl: "https://github.com/advayc/notes",
-          technologies: "NextJS, Typescript, Supabase"
-        },
-        {
-          title: "FutureMD Website",
-          description: "Website for A youth-led nonprofit organization with the goal to educate teens about life during and after medical school!",
-          projectLink: "https://futuremd.net/",
-          repoUrl: "https://github.com/advayc/futuremd-site",
-          technologies: "NextJS, Typescript, Tailwind CSS"
-        },
-        {
-          title: "Graph Visualizer",
-          description: "Python functions to visualize weighted and unweighted graphs and paths using Matplotlib and Networkx libraries.",
-          repoUrl: "https://github.com/advayc/graph-visualizer",
-          technologies: "Python, Matplotlib, Networkx"
-        },
-        {
-          title: "Competitive Programming Solutions",
-          description: "Full Python and C++ Solutions to 100+ Leetcode, Codeforces, DMOJ and CCC solutions. Obtained a DMOJ rating of 1597 (Expert)",
-          projectLink: "https://github.com/advayc/ccc-solutions",
-          repoUrl: "https://github.com/advayc/ccc-solutions",
-          technologies: "Python, Github, Problem-Solving"
-        },
-        {
-          title: "LCD Calculator",
-          description: "ATMEGA 324PA microcontroller-based calculator with LCD display and ADC input.",
-          repoUrl: "https://github.com/advayc/calculator",
-          technologies: "Arduino, C++, electronics"
-        },
-        {
-          title: "Rhymebot",
-          description: "Elevate your writing with the ultimate rhyming, synonym, and antonym companion. Craft masterpieces anytime, anywhere with ease.",
-          repoUrl: "https://github.com/advayc/rhymebot",
-          technologies: "Javascript, HTML, CSS"
+          imageSrc: "/projects/nums.png",
+          technologies: "golang"
         },
         {
           title: "Humanoid Robot",
           description: "Walking and dancing humanoid robot using 7 servo motors and custom Arduino nano board.",
           repoUrl: "https://github.com/advayc/Biped",
+          imageSrc: "/projects/gq-planets.png",
           technologies: "Arduino, C++, electronics"
         }
       ]
