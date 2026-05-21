@@ -260,7 +260,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       );
 
       body = body.replace(
-        /(srcset)=\["']([^"']+)\["']/gi,
+        /(srcset)=["']([^"']+)["']/gi,
         (_m, attr, value) => {
           try {
             const rewritten = value
@@ -312,20 +312,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return `${attr}="${proxied}"`;
           } catch (e) {
             return _match;
-          }
-        }
-      );
-
-      body = body.replace(
-        /(url\(["']?)(?!https?:\/\/|data:|\/api\/proxy)(.*?)(["']?\))/gi,
-        (match, prefix, relUrl, suffix) => {
-          try {
-            const cleanUrl = relUrl.replace(/['"]/g, '');
-            const absoluteUrl = new URL(cleanUrl, target).toString();
-            const proxied = `/api/proxy?url=${encodeURIComponent(absoluteUrl)}`;
-            return `${prefix}${proxied}${suffix}`;
-          } catch (e) {
-            return match;
           }
         }
       );
@@ -616,7 +602,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 if (mutation.addedNodes.length) {
                   mutation.addedNodes.forEach((node) => {
                     if (node.nodeType === 1) {
-                      const links = (node as Element).querySelectorAll('a[href]');
+                      const links = node.querySelectorAll('a[href]');
                       links.forEach((link) => {
                         const href = link.getAttribute('href');
                         if (href && !/^(javascript:|mailto:|tel:|#)/i.test(href) && !/^\/api\/proxy\?url=/.test(href)) {

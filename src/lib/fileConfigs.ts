@@ -48,7 +48,7 @@ export const fileConfigs = [
           title: "Media Captain",
           company: "FRC 6070: Gryphon Machine",
           duration: "May 2023 - Apr 2024",
-          description: "managed Social Media, coded frc6070.ca website [domain expired :( ] and created promotional material shown to thousands of people. also built semiautonomous robots for the 2023 (charged up) and 2024 (crescendo) frc seasons ",
+          description: "managed Social Media, coded frc6070.ca website domain expired :( and created promotional material shown to thousands of people. also built semiautonomous robots for the 2023 (charged up) and 2024 (crescendo) frc seasons ",
           link: "https://www.linkedin.com/company/frc-6070-gryphon-machine/",
           imageSrc: "/experiences/frc.webp",
           technologies: "Video Editing, Marketing, nextjs"

@@ -119,7 +119,7 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
     const defaultBookmarks: Bookmark[] = [
       { title: 'advay.ca', url: 'https://advay.ca', favicon: 'https://www.google.com/s2/favicons?domain=advay.ca&sz=32' },
       { title: 'github', url: 'https://github.com/advayc', favicon: 'https://www.google.com/s2/favicons?domain=github.com&sz=32' },
-      { title: 'linkedin', url: 'https://www.linkedin.com/in/advay/', favicon: 'https://www.google.com/s2/favicons?domain=linkedin.com&sz=32' },
+      { title: 'linkedin', url: 'https://www.linkedin.com', favicon: 'https://www.google.com/s2/favicons?domain=linkedin.com&sz=32' },
     ];
     setBookmarks(defaultBookmarks);
     localStorage.setItem('ie-bookmarks', JSON.stringify(defaultBookmarks));
@@ -141,6 +141,27 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
   // Format URL for display (remove protocol)
   const formatUrlForDisplay = (url: string) => {
     return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  };
+
+  const resolveInputToUrl = (input: string) => {
+    const value = input.trim();
+    if (!value) return 'https://www.bing.com';
+    if (value === 'about:blank') return value;
+
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return value;
+    }
+
+    const looksLikeDomain =
+      value.includes('localhost') ||
+      /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/.*)?$/i.test(value) ||
+      /^[a-z0-9.-]+\.[a-z]{2,}(?::\d+)?(\/.*)?$/i.test(value);
+
+    if (looksLikeDomain) {
+      return `https://${value}`;
+    }
+
+    return `https://www.bing.com/search?q=${encodeURIComponent(value)}`;
   };
 
   // Add keyboard shortcuts
@@ -241,16 +262,7 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
       url = unwrapProxied(url);
     }
 
-    // Add protocol if missing
-    let fullUrl = url;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      // Check if it looks like a search query (contains spaces or no dots)
-      if (url.includes(' ') || (!url.includes('.') && !url.includes('localhost'))) {
-        fullUrl = `https://duckduckgo.com/?q=${encodeURIComponent(url)}`;
-      } else {
-        fullUrl = `https://${url}`;
-      }
-    }
+    const fullUrl = resolveInputToUrl(url);
 
     setIsLoading(true);
     setCurrentUrl(fullUrl);
@@ -392,13 +404,14 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
     }
   };
 
-  const createNewTab = () => {
+  const createNewTab = (initialUrl: string = 'about:blank') => {
+    const normalizedUrl = initialUrl === 'about:blank' ? 'about:blank' : resolveInputToUrl(initialUrl);
     const newTab: Tab = {
       id: Date.now().toString(),
-      url: 'about:blank',
-      title: 'New Tab',
+      url: normalizedUrl,
+      title: normalizedUrl === 'about:blank' ? 'New Tab' : 'Loading...',
       isActive: true,
-      favicon: undefined
+      favicon: normalizedUrl === 'about:blank' ? undefined : `https://www.google.com/s2/favicons?domain=${new URL(normalizedUrl).hostname}&sz=32`
     };
     
     setTabs(prevTabs => [
@@ -406,9 +419,29 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
       newTab
     ]);
     
-    setCurrentUrl('about:blank');
-    setUrlInput('');
-    setIsLoading(false);
+    setCurrentUrl(normalizedUrl);
+    setUrlInput(normalizedUrl === 'about:blank' ? '' : formatUrlForDisplay(normalizedUrl));
+    setIsLoading(normalizedUrl !== 'about:blank');
+
+    if (normalizedUrl !== 'about:blank') {
+      const newHistory = [...navigationHistory.slice(0, navigationIndex + 1), normalizedUrl];
+      setNavigationHistory(newHistory);
+      setNavigationIndex(newHistory.length - 1);
+      setCanGoBack(newHistory.length > 1);
+      setCanGoForward(false);
+
+      const historyEntry: HistoryEntry = {
+        url: normalizedUrl,
+        title: 'Loading...',
+        timestamp: Date.now(),
+        favicon: `https://www.google.com/s2/favicons?domain=${new URL(normalizedUrl).hostname}&sz=32`
+      };
+      setHistory(prevHistory => [historyEntry, ...prevHistory.slice(0, 99)]);
+
+      if (iframeRef.current) {
+        iframeRef.current.src = toProxy(normalizedUrl);
+      }
+    }
   };
 
   const closeTab = (tabId: string) => {
@@ -424,6 +457,15 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
       newTabs[newActiveIndex].isActive = true;
       setCurrentUrl(newTabs[newActiveIndex].url);
       setUrlInput(formatUrlForDisplay(newTabs[newActiveIndex].url));
+
+      if (newTabs[newActiveIndex].url !== 'about:blank') {
+        setIsLoading(true);
+        if (iframeRef.current) {
+          iframeRef.current.src = toProxy(newTabs[newActiveIndex].url);
+        }
+      } else {
+        setIsLoading(false);
+      }
     }
     
     setTabs(newTabs);
@@ -557,6 +599,44 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
 
       {/* Navigation bar (thinner, Aqua toolbar with pinstripes) */}
       <div
+        className="border-b border-[#a7a7a7] px-2 py-[3px]"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(0deg, rgba(255,255,255,0.35), rgba(255,255,255,0.35) 1px, rgba(238,238,238,0.35) 1px, rgba(238,238,238,0.35) 3px), linear-gradient(to bottom, #efefef, #d3d3d3)'
+        }}
+      >
+        <div className="flex items-center gap-1 overflow-x-auto">
+          {tabs.map((tab) => (
+            <div
+              key={tab.id}
+              onClick={() => switchTab(tab.id)}
+              className={`min-w-0 max-w-[180px] flex items-center gap-2 px-2 py-[4px] rounded border cursor-pointer text-[12px] ${
+                tab.isActive
+                  ? 'bg-gradient-to-b from-white to-[#ececec] border-[#9f9f9f] text-[#222]'
+                  : 'bg-gradient-to-b from-[#f3f3f3] to-[#dddddd] border-[#b9b9b9] text-[#555]'
+              }`}
+              title={tab.title}
+            >
+              <span className="truncate">{tab.title || 'New Tab'}</span>
+              {tabs.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeTab(tab.id);
+                  }}
+                  className="w-4 h-4 rounded text-[11px] leading-none flex items-center justify-center hover:bg-[#d8d8d8]"
+                  aria-label="Close tab"
+                >
+                  x
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div
         className="border-b border-[#a7a7a7] px-2 py-1"
         style={{
           backgroundImage:
@@ -596,7 +676,7 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               className="flex-1 px-3 py-[5px] border border-[#9c9c9c] rounded-[16px] bg-white text-[13px] font-mono text-black shadow-[inset_0_1px_0_0_#ffffff,inset_0_0_6px_rgba(0,0,0,0.05)]"
-              placeholder="Enter URL"
+              placeholder="Search or enter URL"
               spellCheck={false}
             />
             <button 
@@ -604,6 +684,15 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
               className="ml-2 px-3 py-[5px] bg-gradient-to-b from-[#fafafa] to-[#e0e0e0] border border-[#999] rounded text-[13px] hover:from-[#f4f4f4] hover:to-[#dcdcdc] active:from-[#d8d8d8] active:to-[#c8c8c8]"
             >
               Go
+            </button>
+            <button
+              type="button"
+              onClick={() => createNewTab('https://www.bing.com')}
+              className="ml-2 px-3 py-[5px] bg-gradient-to-b from-[#fafafa] to-[#e0e0e0] border border-[#999] rounded text-[13px] hover:from-[#f4f4f4] hover:to-[#dcdcdc] active:from-[#d8d8d8] active:to-[#c8c8c8]"
+              aria-label="Open new tab"
+              title="Open new Bing tab"
+            >
+              +
             </button>
           </form>
         </div>
@@ -618,7 +707,7 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
         }}
       >
         <div className="flex items-center gap-2 overflow-x-auto">
-          {[{title: 'advay.ca', url: 'https://advay.ca'}, {title: 'github.com/advayc', url: 'https://github.com/advayc'}, {title: 'LinkedIn', url: 'https://www.linkedin.com/in/advay/'}].map((b) => (
+          {[{title: 'advay.ca', url: 'https://advay.ca'}, {title: 'github.com/advayc', url: 'https://github.com/advayc'}, {title: 'LinkedIn', url: 'https://www.linkedin.com'}].map((b) => (
             <button
               key={b.url}
               onClick={() => navigateToUrl(b.url)}
@@ -678,8 +767,8 @@ export function Internet({ onClose, onMinimize, onToggleMaximize, onDragHandlePo
               onLoad={handleIframeLoad}
               onError={handleIframeError}
               // Disallow top navigation to prevent frame-busting redirects
-              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-pointer-lock allow-modals"
-              allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
+              sandbox="allow-scripts allow-forms allow-popups allow-pointer-lock allow-modals"
+              allow="geolocation; microphone; camera; midi; accelerometer; gyroscope; payment; encrypted-media; usb"
             />
             {isLoading && (
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A90E2] animate-pulse"></div>
