@@ -20,10 +20,6 @@ export default function NotFound() {
   // Add missing states
   const [accentColor, setAccentColor] = useState<string>('#6366f1'); // default accent color
   const [fontFamily, setFontFamily] = useState<string>('Inter, sans-serif');
-  const [freeMoveMode, setFreeMoveMode] = useState<boolean>(false);
-
-  // Handler for free move toggle
-  const handleFreeMoveToggle = () => setFreeMoveMode((prev) => !prev);
 
   // load settings from localStorage
   useEffect(() => {
@@ -67,7 +63,7 @@ export default function NotFound() {
           <h1 className="text-4xl font-bold mb-4">error 404 - you aren&apos;t supposed to be here</h1>
           <p className="text-lg mb-6">
             looks like you&apos;ve wandered off the path.
-            head back to the <Link href="/">landing page</Link>
+            head back to the <a href="/" className="text-[accentColor] hover:underline">landing page</a>
           </p>
         </div>
       </div>
@@ -81,12 +77,10 @@ export default function NotFound() {
         setFontFamily={setFontFamily}
         setBgStyle={setBgStyle}
         setBgColor={setBgColor}
-        setFreeMoveMode={handleFreeMoveToggle}
         accentColor={accentColor}
         fontFamily={fontFamily}
         bgStyle={bgStyle}
         bgColor={bgColor}
-        freeMoveMode={freeMoveMode}
       />
     </motion.main>
   );
