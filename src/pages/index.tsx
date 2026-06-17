@@ -8,7 +8,6 @@ import { useTerminal } from "@/components/TerminalContext";
 import Link from '@/components/Link';
 import Head from 'next/head';
 import { fileManifest } from '@/lib/fileManifest';
-import { loadFontIfNeeded } from '@/lib/fonts';
 import { calculateAge } from '@/utils/age';
 
 const Terminal = dynamic(() => import("@/components/Terminal"), { ssr: false });
@@ -79,10 +78,6 @@ const structuredData = {
 
 const BIRTH_DATE = new Date(2008, 11, 16);
 const AGE = calculateAge(BIRTH_DATE);
-const DEFAULT_MONO_FONT =
-  '"Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
-const LEGACY_SF_MONO_FONT =
-  '"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
 
 export default function Home() {
   const { setIsTerminalOpen } = useTerminal();
@@ -92,7 +87,7 @@ export default function Home() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
-  const [fontFamily, setFontFamily] = useState<string>(DEFAULT_MONO_FONT);
+  const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
   const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('grid');
   const [bgColor, setBgColor] = useState<string>('#0a0a0a');
 
@@ -103,9 +98,7 @@ export default function Home() {
       const storedBg = localStorage.getItem('siteBgStyle');
       const storedBgColor = localStorage.getItem('siteBgColor');
       if (storedAccent) setAccentColor(storedAccent);
-      if (storedFont) {
-        setFontFamily(storedFont === LEGACY_SF_MONO_FONT ? DEFAULT_MONO_FONT : storedFont);
-      }
+      if (storedFont) setFontFamily(storedFont);
       if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
       if (storedBgColor) setBgColor(storedBgColor);
     } catch {}
@@ -144,7 +137,6 @@ export default function Home() {
   }, [accentColor]);
 
   useEffect(() => {
-    loadFontIfNeeded(fontFamily);
     try { localStorage.setItem('siteFontFamily', fontFamily); } catch {}
   }, [fontFamily]);
 
@@ -234,6 +226,33 @@ export default function Home() {
       <Head>
         <title>advay chandorkar</title>
         <link rel="shortcut icon" href="/favicon.png" />
+        {fontFamily.includes('Inter') && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+          </>
+        )}
+        {fontFamily.includes('Space Mono') && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+          </>
+        )}
+        {fontFamily.includes('SF Mono') && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
+          </>
+        )}
+        {fontFamily.includes('JetBrains Mono') && (
+          <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        )}
+        {fontFamily.includes('Roboto Mono') && (
+          <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

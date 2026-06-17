@@ -60,7 +60,7 @@ const Terminal: React.FC<TerminalProps> = ({
   const [position, setPosition] = useState({ x: 64, y: 64 });
   const [isMobile, setIsMobile] = useState(false);
   const [fontFamily, setFontFamily] = useState<string>(
-    '"Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'
+    '"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'
   );
   const dragControls = useDragControls();
 
