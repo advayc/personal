@@ -237,7 +237,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
                 {[
                   {label:'Inter', value:'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'},
                   {label:'JetBrains Mono', value:'"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'},
-                  {label:'SF Mono', value:'"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'},
+                  {label:'Source Code Pro', value:'"Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'},
                   {label:'Consolas', value:'Consolas, ui-monospace, SFMono-Regular, Menlo, "Liberation Mono", monospace'},
                   {label:'Menlo', value:'Menlo, ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace'},
                   {label:'Roboto Mono', value:'"Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'},

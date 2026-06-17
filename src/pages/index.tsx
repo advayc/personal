@@ -1,23 +1,39 @@
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import Terminal from "@/components/Terminal";
+import React, { useEffect, useState, useCallback, startTransition } from "react";
+import dynamic from "next/dynamic";
 import File from "@/components/File";
 import Footer from "@/components/Footer";
 import SelectionBox from "@/components/SelectionBox";
+import ShortcutHint from "@/components/ShortcutHint";
 import { useTerminal } from "@/components/TerminalContext";
 import Link from '@/components/Link';
 import Head from 'next/head';
-import {fileConfigs} from '@/lib/fileConfigs';
+import { fileManifest } from '@/lib/fileManifest';
+import { loadFontIfNeeded } from '@/lib/fonts';
 import { calculateAge } from '@/utils/age';
-import DrawTerminal from "@/components/DrawTerminal";
-import InternetTerminal from "@/components/InternetTerminal";
-import CommandPalette from "@/components/CommandPalette";
-import ShortcutHint from "@/components/ShortcutHint";
-import HitCounter from '@/components/HitCounter';
+
+const Terminal = dynamic(() => import("@/components/Terminal"), { ssr: false });
+const DrawTerminal = dynamic(() => import("@/components/DrawTerminal"), { ssr: false });
+const InternetTerminal = dynamic(() => import("@/components/InternetTerminal"), { ssr: false });
+const CommandPalette = dynamic(() => import("@/components/CommandPalette"), { ssr: false });
+const HitCounter = dynamic(() => import("@/components/HitCounter"), { ssr: false });
+
+const prefetchById: Record<string, () => void> = {
+  experience: () => {
+    void import('@/lib/fileConfigs');
+    void import('@/components/Terminal');
+  },
+  projects: () => {
+    void import('@/lib/fileConfigs');
+    void import('@/components/Terminal');
+  },
+  internet: () => void import('@/components/InternetTerminal'),
+  draw: () => void import('@/components/DrawTerminal'),
+};
 
 interface TerminalState {
   id: number;
-  position: { x: number; y: number };
+  stackOffset: number;
+  manualPosition?: { x: number; y: number };
   headerText: string;
   pathText: string;
   branchText: string;
@@ -61,200 +77,186 @@ const structuredData = {
   }
 };
 
-const BIRTH_DATE = new Date(2008, 12, 16);
+const BIRTH_DATE = new Date(2008, 11, 16);
 const AGE = calculateAge(BIRTH_DATE);
+const DEFAULT_MONO_FONT =
+  '"Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+const LEGACY_SF_MONO_FONT =
+  '"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
 
 export default function Home() {
-  const { isTerminalOpen, setIsTerminalOpen } = useTerminal();
+  const { setIsTerminalOpen } = useTerminal();
   const [terminals, setTerminals] = useState<TerminalState[]>([]);
   const [drawTerminalOpen, setDrawTerminalOpen] = useState(false);
   const [internetTerminalOpen, setInternetTerminalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  // persisted settings
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
-  const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
+  const [fontFamily, setFontFamily] = useState<string>(DEFAULT_MONO_FONT);
   const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('grid');
   const [bgColor, setBgColor] = useState<string>('#0a0a0a');
 
-  // load settings from localStorage
   useEffect(() => {
     try {
       const storedAccent = localStorage.getItem('siteAccentColor');
       const storedFont = localStorage.getItem('siteFontFamily');
       const storedBg = localStorage.getItem('siteBgStyle');
-    const storedBgColor = localStorage.getItem('siteBgColor');
+      const storedBgColor = localStorage.getItem('siteBgColor');
       if (storedAccent) setAccentColor(storedAccent);
-      if (storedFont) setFontFamily(storedFont);
-  if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
-    if (storedBgColor) setBgColor(storedBgColor);
+      if (storedFont) {
+        setFontFamily(storedFont === LEGACY_SF_MONO_FONT ? DEFAULT_MONO_FONT : storedFont);
+      }
+      if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
+      if (storedBgColor) setBgColor(storedBgColor);
     } catch {}
   }, []);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsPaletteOpen(true);
-      }
+    const schedule = () => {
+      void import('@/lib/fileConfigs');
+      void import('@/components/Terminal');
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(schedule, { timeout: 3000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(schedule, 1500);
+    return () => clearTimeout(id);
   }, []);
 
-  // track mobile viewport
   useEffect(() => {
-    const check = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 700);
+    const check = () => setIsMobile(window.innerWidth < 700);
     check();
-    window.addEventListener('resize', check);
+    window.addEventListener('resize', check, { passive: true });
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // apply accent color + font globally
   useEffect(() => {
     document.documentElement.style.setProperty('--accent-color', accentColor);
-    const rgb = accentColor.replace('#','');
+    const rgb = accentColor.replace('#', '');
     if (rgb.length === 6) {
-      const r = parseInt(rgb.slice(0,2),16), g=parseInt(rgb.slice(2,4),16), b=parseInt(rgb.slice(4,6),16);
+      const r = parseInt(rgb.slice(0, 2), 16);
+      const g = parseInt(rgb.slice(2, 4), 16);
+      const b = parseInt(rgb.slice(4, 6), 16);
       document.documentElement.style.setProperty('--accent-color-rgb', `${r}, ${g}, ${b}`);
     }
     try { localStorage.setItem('siteAccentColor', accentColor); } catch {}
   }, [accentColor]);
 
-  useEffect(() => { try { localStorage.setItem('siteFontFamily', fontFamily); } catch {} }, [fontFamily]);
+  useEffect(() => {
+    loadFontIfNeeded(fontFamily);
+    try { localStorage.setItem('siteFontFamily', fontFamily); } catch {}
+  }, [fontFamily]);
+
   useEffect(() => { try { localStorage.setItem('siteBgStyle', bgStyle); } catch {} }, [bgStyle]);
   useEffect(() => { try { localStorage.setItem('siteBgColor', bgColor); } catch {} }, [bgColor]);
 
-  useEffect(() => {
-    document.documentElement.classList.remove('dark');
-    document.documentElement.classList.add('light');
+  const openTerminal = useCallback((fileId: string) => {
+    const params = new URLSearchParams(window.location.search);
+    const manualX = params.get('tx');
+    const manualY = params.get('ty');
+    const parsedX = manualX !== null ? Number(manualX) : undefined;
+    const parsedY = manualY !== null ? Number(manualY) : undefined;
 
-    const favicon = document.querySelector('link[rel="shortcut icon"]');
-    if (favicon) {
-      favicon.setAttribute('href', '/favicon.png');
-    }
-  }, []);
-
-  const fadeIn = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.9 } }
-  };
-
-  const openTerminal = (fileId: string) => {
-  // Optional manual override via URL, e.g., ?tx=120&ty=200
-  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-  const overrideX = params.get('tx');
-  const overrideY = params.get('ty');
-  const manualX = overrideX !== null ? Number(overrideX) : undefined;
-  const manualY = overrideY !== null ? Number(overrideY) : undefined;
     if (fileId === 'draw') {
-      const existingDraw = document.querySelector('[data-draw-instance]');
-      if (!existingDraw) {
-        setDrawTerminalOpen(true);
-        setIsTerminalOpen(true);
+      if (!document.querySelector('[data-draw-instance]')) {
+        startTransition(() => {
+          setDrawTerminalOpen(true);
+          setIsTerminalOpen(true);
+        });
       }
       return;
     }
+
     if (fileId === 'internet') {
-      const existingInternet = document.querySelector('[data-internet-instance]');
-      if (!existingInternet) {
-        setInternetTerminalOpen(true);
-        setIsTerminalOpen(true);
+      if (!document.querySelector('[data-internet-instance]')) {
+        startTransition(() => {
+          setInternetTerminalOpen(true);
+          setIsTerminalOpen(true);
+        });
       }
       return;
     }
 
-    const fileConfig = fileConfigs.find(config => config.id === fileId);
-    if (fileConfig && fileConfig.terminalConfig) {
-    const newTerminal: TerminalState = {
-        id: terminals.length,
-        position: { 
-      x: typeof manualX === 'number' && !Number.isNaN(manualX) ? manualX : -185,
-      y: typeof manualY === 'number' && !Number.isNaN(manualY) ? manualY : -130 + (terminals.length * 80) 
-        },
-        headerText: fileConfig.terminalConfig.headerText,
-        pathText: fileConfig.terminalConfig.pathText,
-        branchText: fileConfig.terminalConfig.branchText,
-        infoText: fileConfig.terminalConfig.infoText,
-        projects: fileConfig.terminalConfig.projects,
-        workExperience: fileConfig.terminalConfig.workExperience,
-        startMaximized: fileId === 'projects'
-      };
-      setTerminals([...terminals, newTerminal]);
-      setIsTerminalOpen(true);
-    }
-  };
+    void (async () => {
+      const { fileConfigs } = await import('@/lib/fileConfigs');
+      const fileConfig = fileConfigs.find((config) => config.id === fileId);
+      if (!fileConfig?.terminalConfig) return;
 
-  const handleCloseDraw = () => { setDrawTerminalOpen(false); };
-  const handleCloseInternet = () => { setInternetTerminalOpen(false); };
+      startTransition(() => {
+        setTerminals((prev) => {
+          const hasManualPosition =
+            typeof parsedX === 'number' &&
+            !Number.isNaN(parsedX) &&
+            typeof parsedY === 'number' &&
+            !Number.isNaN(parsedY);
+
+          const newTerminal: TerminalState = {
+            id: prev.length,
+            stackOffset: prev.length * 32,
+            ...(hasManualPosition ? { manualPosition: { x: parsedX, y: parsedY } } : {}),
+            headerText: fileConfig.terminalConfig.headerText,
+            pathText: fileConfig.terminalConfig.pathText,
+            branchText: fileConfig.terminalConfig.branchText,
+            infoText: fileConfig.terminalConfig.infoText,
+            projects: fileConfig.terminalConfig.projects,
+            workExperience: fileConfig.terminalConfig.workExperience,
+            startMaximized: fileId === 'projects',
+          };
+          return [...prev, newTerminal];
+        });
+        setIsTerminalOpen(true);
+      });
+    })();
+  }, [setIsTerminalOpen]);
+
+  const backgroundStyle =
+    bgStyle === 'grid'
+      ? {
+          backgroundColor: bgColor,
+          backgroundImage:
+            'linear-gradient(rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+          fontFamily,
+        }
+      : bgStyle === 'dots'
+        ? {
+            backgroundColor: bgColor,
+            backgroundImage:
+              'radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.16) 1px, transparent 0)',
+            backgroundSize: '26px 26px',
+            fontFamily,
+          }
+        : { backgroundColor: bgColor, backgroundImage: 'none', fontFamily };
 
   return (
-    <motion.main 
-      className={`flex items-center justify-center min-h-screen`}
-      initial="hidden"
-      animate="visible"
-      variants={fadeIn}
-    >
+    <main className="flex items-center justify-center min-h-screen">
       <Head>
         <title>advay chandorkar</title>
         <link rel="shortcut icon" href="/favicon.png" />
-        {/* Preload & load selected fonts if they involve external families */}
-        {fontFamily.includes('Inter') && (
-          <>
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-          </>
-        )}
-        {fontFamily.includes('Space Mono') && (
-          <>
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-            <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-          </>
-        )}
-        {fontFamily.includes('SF Mono') && (
-          <>
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-            <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
-          </>
-        )}
-        {fontFamily.includes('JetBrains Mono') && (
-          <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        )}
-        {fontFamily.includes('Roboto Mono') && (
-          <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </Head>
-  
-  <div className="h-screen w-full relative flex items-center justify-center px-3 sm:px-0"
-        style={bgStyle === 'grid' ? { backgroundColor: bgColor, backgroundImage: `linear-gradient(rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px)`, backgroundSize: '40px 40px', fontFamily }
-          : bgStyle === 'dots' ? { backgroundColor: bgColor, backgroundImage: `radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.16) 1px, transparent 0)`, backgroundSize: '26px 26px', fontFamily }
-          : { backgroundColor: bgColor, backgroundImage: 'none', fontFamily }}>
-  <motion.div variants={fadeIn} className="relative w-full max-w-[1100px]">
-          <motion.h1 
-            className="text-3xl sm:text-5xl font-bold text-center text-white mb-4 sm:mb-6 tracking-tight"
-            variants={fadeIn}
-          >
+
+      <div
+        className="h-screen w-full relative flex items-center justify-center px-3 sm:px-0"
+        style={backgroundStyle}
+      >
+        <div className="relative w-full max-w-[1100px]">
+          <h1 className="text-3xl sm:text-5xl font-bold text-center text-white mb-4 sm:mb-6 tracking-tight">
             advay chandorkar
-          </motion.h1>
-          <motion.div 
-            className="flex flex-col items-center justify-center space-y-2"
-            variants={fadeIn}
-          >
-            <div className="flex flex-col leading-relaxed text-primary text-center text-[14px] sm:text-base px-1" style={{fontFamily}}>
+          </h1>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <div className="flex flex-col leading-relaxed text-primary text-center text-[14px] sm:text-base px-1" style={{ fontFamily }}>
               <p>
-                i&apos;m a {AGE} year old full-stack developer from <Link href={"https://www.google.com/maps/search/Toronto,%20Ontario,%20Canada"}>
-                  Toronto, ON</Link> and i like building things and solving problems
+                i&apos;m a {AGE} year old full-stack developer from{' '}
+                <Link href="https://www.google.com/maps/search/Toronto,%20Ontario,%20Canada">Toronto, ON</Link>{' '}
+                and i like building things and solving problems
               </p>
               <p className="mt-1">
-                right now, i&apos;m a grade 12 high school student and
-                i&apos;m working on <Link href="https://github.com/Seva-Eats">seva eats</Link>
+                right now, i&apos;m an incoming first year ce student @ <Link href="https://queensu.ca">queens university</Link> and i&apos;m working on <Link href="https://github.com/Seva-Eats">seva eats</Link>
               </p>
               <p className="mt-1">
                 to learn more about me, click the files - or view my resume <Link href="/resume.pdf">here</Link>.
@@ -263,70 +265,68 @@ export default function Home() {
                 <HitCounter id="home" variant="hero" fontFamily={fontFamily} />
               </div>
             </div>
-          </motion.div>
+          </div>
           <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-3 sm:gap-4 flex-wrap justify-center max-w-[92vw] px-2">
-            {fileConfigs.map((fileConfig) => (
+            {fileManifest.map((file, index) => (
               <File
-                key={fileConfig.id}
-                setWindowOpen={() => openTerminal(fileConfig.id)}
+                key={file.id}
+                setWindowOpen={() => openTerminal(file.id)}
                 className="px-1 sm:px-2"
-                filename={fileConfig.filename}
-                imageSrc={fileConfig.imageSrc}
-                id={fileConfig.id}
+                filename={file.filename}
+                imageSrc={file.imageSrc}
+                id={file.id}
+                eager={index < 2}
+                onPrefetch={() => prefetchById[file.id]?.()}
               />
             ))}
           </div>
-          {terminals.map((terminal) => (
-            <motion.div
-              key={terminal.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Terminal 
-                onClose={() => setTerminals(terminals.filter(t => t.id !== terminal.id))}
-                headerText={terminal.headerText}
-                pathText={terminal.pathText}
-                branchText={terminal.branchText}
-                infoText={terminal.infoText}
-                projects={terminal.projects}
-                workExperience={terminal.workExperience}
-                startMaximized={terminal.startMaximized}
-                initialX={isMobile ? undefined : terminal.position.x}
-                initialY={isMobile ? undefined : terminal.position.y}
-                />
-            </motion.div>
-          ))}
           {internetTerminalOpen && (
             <InternetTerminal
-              onClose={handleCloseInternet}
+              onClose={() => setInternetTerminalOpen(false)}
               headerText="advaychandorkar@personalsite: ~/internet/browser"
             />
           )}
           {drawTerminalOpen && (
             <DrawTerminal
-              onClose={handleCloseDraw}
+              onClose={() => setDrawTerminalOpen(false)}
               headerText="advaychandorkar@personalsite: ~/games/draw.exe"
             />
           )}
-        </motion.div>
+        </div>
+        {terminals.map((terminal) => (
+          <Terminal
+            key={terminal.id}
+            onClose={() => setTerminals((prev) => prev.filter((t) => t.id !== terminal.id))}
+            headerText={terminal.headerText}
+            pathText={terminal.pathText}
+            branchText={terminal.branchText}
+            infoText={terminal.infoText}
+            projects={terminal.projects}
+            workExperience={terminal.workExperience}
+            startMaximized={terminal.startMaximized}
+            stackOffset={isMobile ? 0 : terminal.stackOffset}
+            initialX={isMobile ? undefined : terminal.manualPosition?.x}
+            initialY={isMobile ? undefined : terminal.manualPosition?.y}
+          />
+        ))}
       </div>
       <Footer accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
       <SelectionBox />
       <ShortcutHint onOpen={() => setIsPaletteOpen(true)} />
-      <CommandPalette 
-        isOpen={isPaletteOpen} 
-        onClose={() => setIsPaletteOpen(false)}
-        setAccentColor={setAccentColor}
-        setFontFamily={setFontFamily}
-        setBgStyle={setBgStyle}
-        setBgColor={setBgColor}
-        accentColor={accentColor}
-        fontFamily={fontFamily}
-        bgStyle={bgStyle}
-        bgColor={bgColor}
-      />
-      
-    </motion.main>
+      {isPaletteOpen && (
+        <CommandPalette
+          isOpen={isPaletteOpen}
+          onClose={() => setIsPaletteOpen(false)}
+          setAccentColor={setAccentColor}
+          setFontFamily={setFontFamily}
+          setBgStyle={setBgStyle}
+          setBgColor={setBgColor}
+          accentColor={accentColor}
+          fontFamily={fontFamily}
+          bgStyle={bgStyle}
+          bgColor={bgColor}
+        />
+      )}
+    </main>
   );
 }

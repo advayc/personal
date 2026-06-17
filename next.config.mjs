@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  poweredByHeader: false,
+  allowedDevOrigins: ['10.0.0.225', 'localhost', '127.0.0.1'],
+  experimental: {
+    optimizePackageImports: ['framer-motion', 'react-icons'],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

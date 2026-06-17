@@ -4,9 +4,6 @@ import { FaXTwitter } from "react-icons/fa6";
 import { MdMail } from "react-icons/md";
 import { IoColorPaletteOutline } from "react-icons/io5";
 import Link from 'next/link';
-import { useSelectionBox, isElementInSelectionBox } from '@/components/SelectionContext';
-
-import HitCounter from './HitCounter';
 
 type ToggleOptionsType = 'light';
 
@@ -16,116 +13,62 @@ interface FooterProps {
     setAccentColorProp?: React.Dispatch<React.SetStateAction<string>>;
 }
 
+const hexToRgb = (hex: string) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+};
+
 const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp, setAccentColorProp }) => {
     const [internalSelected] = useState<ToggleOptionsType>('light');
-        const [internalAccentColor, setInternalAccentColor] = useState('#22D3EE');
+    const [internalAccentColor, setInternalAccentColor] = useState('#22D3EE');
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [currentTime, setCurrentTime] = useState('');
     const [currentDate, setCurrentDate] = useState('');
     const selected = propSelected ?? internalSelected;
-        const accentColor = accentColorProp ?? internalAccentColor;
-        const setAccentColor = setAccentColorProp ?? setInternalAccentColor;
-    const selectionBox = useSelectionBox();
-
-    const linkedInRef = useRef<HTMLAnchorElement>(null);
-    const xRef = useRef<HTMLAnchorElement>(null);
-    const githubRef = useRef<HTMLAnchorElement>(null);
-    const resumeRef = useRef<HTMLAnchorElement>(null);
-    const mailRef = useRef<HTMLAnchorElement>(null);
-    const colorPickerRef = useRef<HTMLButtonElement>(null);
-
-    const [isLinkedInSelected, setIsLinkedInSelected] = useState(false);
-    const [isXSelected, setIsXSelected] = useState(false);
-    const [isGithubSelected, setIsGithubSelected] = useState(false);
-    const [isResumeSelected, setIsResumeSelected] = useState(false);
-    const [isMailSelected, setIsMailSelected] = useState(false);
-    const [isColorPickerSelected, setIsColorPickerSelected] = useState(false);
+    const accentColor = accentColorProp ?? internalAccentColor;
+    const setAccentColor = setAccentColorProp ?? setInternalAccentColor;
 
     useEffect(() => {
       const updateDateTime = () => {
         const now = new Date();
         const estTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-        
-        const timeStr = estTime.toLocaleTimeString('en-US', {
+        setCurrentTime(estTime.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
-          hour12: true
-        });
-        
-        const dateStr = estTime.toISOString().split('T')[0];
-        
-        setCurrentTime(timeStr);
-        setCurrentDate(dateStr);
+          hour12: true,
+        }));
+        setCurrentDate(estTime.toISOString().split('T')[0]);
       };
 
       updateDateTime();
-      const interval = setInterval(updateDateTime, 1000);
+      const interval = setInterval(updateDateTime, 30000);
       return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
       document.documentElement.classList.remove('dark');
       document.documentElement.classList.add('light');
-      
       document.documentElement.style.setProperty('--accent-color', accentColor);
-      document.documentElement.style.setProperty('--accent-color-rgb', hexToRgb(accentColor));
+      const rgb = hexToRgb(accentColor);
+      if (rgb) document.documentElement.style.setProperty('--accent-color-rgb', rgb);
     }, [selected, accentColor]);
 
     useEffect(() => {
-      if (linkedInRef.current) {
-        setIsLinkedInSelected(isElementInSelectionBox(linkedInRef.current, selectionBox));
-      }
-      if (xRef.current) {
-        setIsXSelected(isElementInSelectionBox(xRef.current, selectionBox));
-      }
-      if (githubRef.current) {
-        setIsGithubSelected(isElementInSelectionBox(githubRef.current, selectionBox));
-      }
-      if (resumeRef.current) {
-        setIsResumeSelected(isElementInSelectionBox(resumeRef.current, selectionBox));
-      }
-      if (mailRef.current) {
-        setIsMailSelected(isElementInSelectionBox(mailRef.current, selectionBox));
-      }
-      if (colorPickerRef.current) {
-        setIsColorPickerSelected(isElementInSelectionBox(colorPickerRef.current, selectionBox));
-      }
-    }, [selectionBox]);
-
-    useEffect(() => {
       const handleEscKey = (event: KeyboardEvent) => {
-        if (event.key === 'Escape' && showColorPicker) {
-          setShowColorPicker(false);
-        }
+        if (event.key === 'Escape' && showColorPicker) setShowColorPicker(false);
       };
-
       window.addEventListener('keydown', handleEscKey);
       return () => window.removeEventListener('keydown', handleEscKey);
     }, [showColorPicker]);
 
-    const hexToRgb = (hex: string) => {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
-    };
-
     return (
-        <div 
-            className="fixed bottom-0 left-0 right-0 border-t border-white/5 py-2 sm:py-[9px]"
-            style={{
-                backgroundColor: ``,
-                backdropFilter: 'blur(2px)'
-            }}
-        >
-            
-                        <div className="flex items-center justify-between h-12 px-2 sm:px-0">
-                            <div className="w-[120px] sm:w-[200px]" />
-                
+        <div className="fixed bottom-0 left-0 right-0 border-t border-white/5 py-2 sm:py-[9px] backdrop-blur-[2px]">
+            <div className="flex items-center justify-between h-12 px-2 sm:px-0">
+                <div className="w-[120px] sm:w-[200px]" />
+
                 <div className="flex items-center gap-1 sm:gap-1">
                     <Link
-                        ref={linkedInRef}
-                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
-                            isLinkedInSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
-                        }`}
+                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-white/70 hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="https://www.linkedin.com/in/advay/"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -133,10 +76,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
                         <FaLinkedin className="w-6 h-6 sm:w-7 sm:h-7" />
                     </Link>
                     <Link
-                        ref={xRef}
-                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
-                            isXSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
-                        }`}
+                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-white/70 hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="https://x.com/advay_c"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -144,10 +84,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
                         <FaXTwitter className="w-6 h-6 sm:w-7 sm:h-7" />
                     </Link>
                     <Link
-                        ref={githubRef}
-                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
-                            isGithubSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
-                        }`}
+                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-white/70 hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="https://www.github.com/advayc/"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -155,10 +92,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
                         <FaGithub className="w-6 h-6 sm:w-7 sm:h-7" />
                     </Link>
                     <Link
-                        ref={resumeRef}
-                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
-                            isResumeSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
-                        }`}
+                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-white/70 hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="/resume.pdf"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -167,21 +101,15 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
                         <FaFileAlt className="w-6 h-6 sm:w-7 sm:h-7" />
                     </Link>
                     <Link
-                        ref={mailRef}
-                        className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] ${
-                            isMailSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
-                        }`}
+                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-white/70 hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="mailto:advay.chandorkar@gmail.com"
                     >
                         <MdMail className="w-6 h-6 sm:w-7 sm:h-7" />
                     </Link>
                     <div className="relative">
                         <button
-                            ref={colorPickerRef}
                             onClick={() => setShowColorPicker(!showColorPicker)}
-                            className={`transition-all duration-300 rounded-md p-2 sm:p-[15px] hover:bg-[var(--accent-color-hover)] outline-none ${
-                                isColorPickerSelected ? 'text-[var(--accent-color)]' : 'text-white/70 hover:text-[var(--accent-color)]'
-                            }`}
+                            className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-white/70 hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] outline-none"
                         >
                             <IoColorPaletteOutline className="w-6 h-6 sm:w-7 sm:h-7" />
                         </button>
@@ -204,9 +132,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
                                                 value={accentColor.toUpperCase()}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
-                                                    if (/^#[0-9A-F]{0,6}$/i.test(value)) {
-                                                        setAccentColor(value);
-                                                    }
+                                                    if (/^#[0-9A-F]{0,6}$/i.test(value)) setAccentColor(value);
                                                 }}
                                                 className="w-full bg-transparent text-white border-none outline-none text-sm"
                                                 maxLength={7}
@@ -228,7 +154,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
                         )}
                     </div>
                 </div>
-                
+
                 <div className="w-[120px] sm:w-[200px] flex justify-end pr-2 sm:pr-3">
                     <div className="flex flex-col items-end gap-0.5 sm:gap-1">
                         <span className="font-medium text-xs sm:text-sm text-white/80">{currentTime}</span>

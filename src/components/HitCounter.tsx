@@ -8,6 +8,35 @@ interface HitCounterProps {
   fontFamily?: string;
 }
 
+const inflight = new Map<string, Promise<number | null>>();
+
+async function resolveHits(id: string, increment: boolean): Promise<number | null> {
+  const cacheKey = `${id}:${increment ? 'hit' : 'count'}`;
+  const existing = inflight.get(cacheKey);
+  if (existing) return existing;
+
+  const request = (async () => {
+    try {
+      const endpoint = increment ? `/api/hit?id=${encodeURIComponent(id)}` : `/api/count?id=${encodeURIComponent(id)}`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return typeof json.hits === 'number' ? json.hits : null;
+    } catch {
+      return null;
+    } finally {
+      inflight.delete(cacheKey);
+    }
+  })();
+
+  inflight.set(cacheKey, request);
+  return request;
+}
+
 const useAnimatedNumber = (target: number | null, duration = 800) => {
   const [display, setDisplay] = useState(0);
   const prevTargetRef = useRef<number | null>(null);
@@ -30,71 +59,46 @@ const useAnimatedNumber = (target: number | null, duration = 800) => {
     return () => cancelAnimationFrame(frame);
   }, [target, duration]);
 
-  const formatNumber = (num: number) => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
-
-  return target == null ? null : formatNumber(display);
+  return target == null ? null : display.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
 const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFetchOnly = false, variant = 'default', fontFamily }) => {
   const [hits, setHits] = useState<number | null>(null);
-  const incrementedRef = useRef(false);
 
   useEffect(() => {
-    if (incrementedRef.current) return;
-    
-    // First, increment the count
-    const incrementCount = async () => {
-      try {
-        if (!initiallyFetchOnly) {
-          const res = await fetch(`/api/hit?id=${encodeURIComponent(id)}`, { 
-            method: 'GET', // Use GET for simplicity with the API
-            cache: 'no-store',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-          });
-          
-          if (res.ok) {
-            const json = await res.json();
-            if (typeof json.hits === 'number') {
-              setHits(json.hits);
-              incrementedRef.current = true;
-              return;
-            }
-          }
-          console.error('Failed to increment hit count:', await res.text());
-        }
-      } catch (e) {
-        console.error('Failed to increment hit count:', e);
+    let cancelled = false;
+    const sessionKey = `hit-recorded-${id}`;
+
+    const load = async () => {
+      let value: number | null = null;
+
+      if (!initiallyFetchOnly && !sessionStorage.getItem(sessionKey)) {
+        value = await resolveHits(id, true);
+        if (value != null) sessionStorage.setItem(sessionKey, '1');
       }
-      
-      // If increment fails or initiallyFetchOnly is true, just fetch the count
-      fetchCount();
-    };
-    
-    // Fetch the count without incrementing
-    const fetchCount = async () => {
-      try {
-        const res = await fetch(`/api/count?id=${encodeURIComponent(id)}`, { 
-          cache: 'no-store',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        
-        if (res.ok) {
-          const json = await res.json();
-          if (typeof json.hits === 'number') {
-            setHits(json.hits);
-            incrementedRef.current = true;
-            return;
-          }
-        }
-        console.error('Failed to fetch hit count:', await res.text());
-      } catch (e) {
-        console.error('Failed to fetch hit count:', e);
+
+      if (value == null) {
+        value = await resolveHits(id, false);
       }
+
+      if (!cancelled && value != null) setHits(value);
     };
-    
-    incrementCount();
+
+    const schedule = () => { if (!cancelled) void load(); };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      const idleId = window.requestIdleCallback(schedule, { timeout: 2000 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(idleId);
+      };
+    }
+
+    const timeoutId = setTimeout(schedule, 100);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, [id, initiallyFetchOnly]);
 
   const animated = useAnimatedNumber(hits);
@@ -102,7 +106,7 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
   if (variant === 'hero') {
     return (
       <div
-        className={`select-none flex items-center justify-center gap-2 mt-0 mx-auto w-fit` + (className ? ` ${className}` : '')}
+        className={`select-none flex items-center justify-center gap-2 mt-0 mx-auto w-fit${className ? ` ${className}` : ''}`}
         aria-label={hits == null ? 'Loading view count' : `Page viewed ${hits} times`}
         style={fontFamily ? { fontFamily } : undefined}
       >
@@ -113,7 +117,7 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
             color: 'var(--accent-color)',
             textDecorationColor: 'var(--accent-color)',
             textDecorationStyle: 'dotted',
-            textUnderlineOffset: '3px'
+            textUnderlineOffset: '3px',
           }}
         >
           {animated == null ? '…' : animated}
@@ -121,6 +125,7 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
       </div>
     );
   }
+
   return (
     <div
       className={`select-none inline-flex items-center gap-2 text-xs font-mono tracking-wide ${className}`}
@@ -134,7 +139,7 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
           color: 'var(--accent-color)',
           textDecorationColor: 'var(--accent-color)',
           textDecorationStyle: 'dotted',
-          textUnderlineOffset: '3px'
+          textUnderlineOffset: '3px',
         }}
       >
         {animated == null ? '…' : animated}

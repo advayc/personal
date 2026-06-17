@@ -33,6 +33,7 @@ interface TerminalProps {
   startMaximized?: boolean;
   initialX?: number;
   initialY?: number;
+  stackOffset?: number;
 }
 
 const Terminal: React.FC<TerminalProps> = ({
@@ -45,7 +46,8 @@ const Terminal: React.FC<TerminalProps> = ({
   workExperience,
   startMaximized,
   initialX,
-  initialY
+  initialY,
+  stackOffset = 0,
 }) => {
   const [isMaximized, setIsMaximized] = useState(Boolean(startMaximized));
   const [isMinimized, setIsMinimized] = useState(false);
@@ -58,7 +60,7 @@ const Terminal: React.FC<TerminalProps> = ({
   const [position, setPosition] = useState({ x: 64, y: 64 });
   const [isMobile, setIsMobile] = useState(false);
   const [fontFamily, setFontFamily] = useState<string>(
-    '"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'
+    '"Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'
   );
   const dragControls = useDragControls();
 
@@ -168,17 +170,28 @@ const Terminal: React.FC<TerminalProps> = ({
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const hasManual = typeof initialX === 'number' && typeof initialY === 'number' && initialX! >= 0 && initialY! >= 0;
+    const hasManual =
+      typeof initialX === 'number' &&
+      typeof initialY === 'number' &&
+      !Number.isNaN(initialX) &&
+      !Number.isNaN(initialY) &&
+      initialX >= 0 &&
+      initialY >= 0;
+
+    const mobile = window.innerWidth < 700;
+    const terminalWidth = mobile ? window.innerWidth * 0.75 : (isMaximized ? 862 : 600);
+    const terminalHeight = mobile ? window.innerHeight * 0.4 : (isMaximized ? 700 : 400);
+
     if (hasManual) {
-      setPosition({ x: initialX as number, y: initialY as number });
-    } else {
-      const mobile = window.innerWidth < 700;
-      const terminalWidth = mobile ? window.innerWidth * 0.75 : (isMaximized ? 862 : 600);
-      const terminalHeight = mobile ? window.innerHeight * 0.4 : (isMaximized ? 700 : 400);
-      const baseX = Math.max(0, (window.innerWidth - terminalWidth) / 2);
-      const baseY = Math.max(24, (window.innerHeight - terminalHeight) / 2);
-      setPosition({ x: baseX, y: baseY });
+      setPosition({ x: initialX, y: initialY });
+      return;
     }
+
+    const baseX = Math.max(0, (window.innerWidth - terminalWidth) / 2 + stackOffset);
+    const baseY = Math.max(24, (window.innerHeight - terminalHeight) / 2 + stackOffset);
+    setPosition({ x: baseX, y: baseY });
+  // Position once on mount; isMaximized reflects startMaximized on first render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const selectedLineStyle = { backgroundColor: 'rgba(0, 255, 247, 0.175)' };
