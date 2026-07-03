@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import QueensWebring from './QueensWebring';
 
 interface ShortcutHintProps {
   onOpen: () => void;
@@ -26,14 +27,17 @@ const ShortcutHint: React.FC<ShortcutHintProps> = ({ onOpen }) => {
   }, [onOpen]);
 
   return (
-    <button
-      onClick={onOpen}
-      className="fixed bottom-4 left-4 z-50 flex items-center gap-0.5 px-2 py-1 rounded-md bg-[#141414]/80 border border-white/10 backdrop-blur-sm text-white/60 hover:text-white hover:border-white/20 transition-all text-xs font-mono"
-      aria-label="Open command palette"
-    >
-      <span className={`transition-opacity ${isMetaDown ? 'opacity-0' : 'opacity-100'}`}>⌘ </span>
-      <span className="text-xs">+ K</span>
-    </button>
+    <div className="fixed bottom-4 left-4 z-50 flex items-center gap-3">
+      <button
+        onClick={onOpen}
+        className="flex items-center gap-0.5 px-2 py-1 rounded-md bg-[#141414]/80 border border-white/10 backdrop-blur-sm text-white/60 hover:text-white hover:border-white/20 transition-all text-xs font-mono"
+        aria-label="Open command palette"
+      >
+        <span className={`transition-opacity ${isMetaDown ? 'opacity-0' : 'opacity-100'}`}>⌘ </span>
+        <span className="text-xs">+ K</span>
+      </button>
+      <QueensWebring site="advay.ca" />
+    </div>
   );
 };
 
