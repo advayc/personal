@@ -4,6 +4,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { MdMail } from "react-icons/md";
 import { IoColorPaletteOutline } from "react-icons/io5";
 import Link from 'next/link';
+import QueensWebring from './QueensWebring';
 
 type ToggleOptionsType = 'light';
 
@@ -64,7 +65,9 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
     return (
         <div className="fixed bottom-0 left-0 right-0 border-t border-white/5 py-2 sm:py-[9px] backdrop-blur-[2px]">
             <div className="flex items-center justify-between h-12 px-2 sm:px-0">
-                <div className="w-[120px] sm:w-[200px]" />
+                <div className="w-[120px] sm:w-[200px] pl-2 sm:pl-3">
+                    <QueensWebring site="advay.ca" />
+                </div>
 
                 <div className="flex items-center gap-1 sm:gap-1">
                     <Link
