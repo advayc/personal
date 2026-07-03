@@ -23,7 +23,7 @@ export const fileConfigs = [
           company: "Glenforest Computer Science Club",
           duration: "Sept 2024 - Jun 2026",
           description: "wrote and managed region wide programming contests (gfsshc25!) and organized events for my high school computer science club. led competitive programming and html workshops working with hackclub, & managing finances",
-          link: "https://github.com/GFSSCompSci/",
+          link: "https://github.com/glenforestss",
           imageSrc: "/experiences/gfsscsclub.png",
           technologies: "Leadership, Collaboration, Teamwork"
         },
