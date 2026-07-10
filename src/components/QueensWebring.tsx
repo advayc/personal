@@ -16,15 +16,15 @@ const QueensWebring: React.FC<QueensWebringProps> = ({ site, className = '' }) =
       <a
         href={`${webringUrl}?nav=prev`}
         className="text-white/70 hover:text-[var(--accent-color)] transition-colors text-base leading-none"
-        aria-label="Previous site in Queen's Computing Webring"
-      >
+        aria-label="Previous site in Queen's Webring"
+        >
         ←
       </a>
       <a
         href={webringUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Queen's Computing Webring"
+        aria-label="Queen's Webring"
         className="group block leading-none"
       >
         <span
@@ -45,7 +45,7 @@ const QueensWebring: React.FC<QueensWebringProps> = ({ site, className = '' }) =
       <a
         href={`${webringUrl}?nav=next`}
         className="text-white/70 hover:text-[var(--accent-color)] transition-colors text-base leading-none"
-        aria-label="Next site in Queen's Computing Webring"
+        aria-label="Next site in Queen's Webring"
       >
         →
       </a>
