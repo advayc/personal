@@ -52,32 +52,32 @@ const previous = [
 
 const projects = [
   {
-    title: "- wrapped",
+    title: "· wrapped",
     detail: "spotify wrapped for messages",
     href: "https://github.com/advayc/wrapped",
   },
   {
-    title: "- gfss calendar",
+    title: "· gfss calendar",
     detail: "school events tracker · 1k+ mau",
     href: "https://clubs.advay.ca/",
   },
   {
-    title: "- sitemaker",
-    detail: "resume-to-website generator",
+    title: "· sitemaker",
+    detail: "generate a website from your resume",
     href: "https://sitemaker.advay.ca/",
   },
   {
-    title: "- nums",
+    title: "· nums",
     detail: "page-view counter api",
     href: "https://docs.advay.ca/",
   },
   {
-    title: "- spy",
+    title: "· spy",
     detail: "open-source party game, shipped to the app store",
     href: "https://spy.advay.ca/",
   },
   {
-    title: "- gq planets",
+    title: "· gq planets",
     detail: "won a nasa hackathon",
     href: "https://github.com/DeadUser123/Space-APPS-Hackathon",
   },
