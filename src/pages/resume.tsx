@@ -12,13 +12,13 @@ const current = [
     title: "computer engineering at queen's university",
     detail: "incoming student · kingston, on",
     href: "https://www.queensu.ca/engineering/",
-    imageSrc: "/experiences/neurotechuoft.png",
+    imageSrc: "/experiences/queenseng.png",
   },
   {
     title: "seva eats",
     detail: "connecting gurdwara meals with families in need",
     href: "https://sevaeats.vercel.app/",
-    imageSrc: "/experiences/futuremd.png",
+    imageSrc: "/projects/seva-eats.png",
   },
 ];
 

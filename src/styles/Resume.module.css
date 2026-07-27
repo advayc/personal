@@ -116,9 +116,9 @@
 
 .section a {
   display: grid;
-  grid-template-columns: 20px minmax(240px, 1fr) minmax(220px, 0.9fr) 16px;
+  grid-template-columns: 26px minmax(240px, 1fr) minmax(220px, 0.9fr) 16px;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
   min-height: 44px;
   margin: 0 -14px;
   padding: 8px 14px;
@@ -130,8 +130,8 @@
 
 .itemIcon,
 .itemIconPlaceholder {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   color: var(--muted);
   transition: color 150ms ease;
 }
@@ -416,7 +416,7 @@
 
   .itemIcon,
   .itemIconPlaceholder {
-    flex: 0 0 16px;
+    flex: 0 0 24px;
     margin-right: 2px;
   }
 
