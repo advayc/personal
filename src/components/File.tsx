@@ -39,7 +39,7 @@ export default function File({
       data-file-id={id}
       className={clsx(
         "cursor-pointer pt-2 border border-dotted border-transparent transition-colors duration-200",
-        "hover:bg-[rgba(var(--accent-color-rgb),0.21)] hover:border-[var(--accent-color)] text-white"
+        "hover:bg-[rgba(var(--accent-color-rgb),0.21)] hover:border-[var(--accent-color)] text-foreground"
       )}
       onMouseEnter={onPrefetch}
     >

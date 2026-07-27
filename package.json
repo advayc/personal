@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf .next",
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -12,10 +12,12 @@
   },
   "packageManager": "yarn@1.22.22",
   "dependencies": {
+    "@next/mdx": "^16.2.12",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.28",
+    "mdx": "^0.3.1",
     "next": "15.5.9",
     "react": "^18",
     "react-dom": "^18",

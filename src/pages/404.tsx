@@ -13,15 +13,30 @@ export default function NotFound() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [accentColor, setAccentColor] = useState<string>('#6366f1');
   const [fontFamily, setFontFamily] = useState<string>('Inter, sans-serif');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
     try {
       const storedBg = localStorage.getItem('siteBgStyle');
       const storedBgColor = localStorage.getItem('siteBgColor');
+      const storedTheme = localStorage.getItem('siteTheme');
       if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
       if (storedBgColor) setBgColor(storedBgColor);
+      if (storedTheme === 'light' || storedTheme === 'dark') setTheme(storedTheme);
     } catch {}
   }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    }
+    try { localStorage.setItem('siteTheme', theme); } catch {}
+  }, [theme]);
 
   useEffect(() => { try { localStorage.setItem('siteBgStyle', bgStyle); } catch {} }, [bgStyle]);
   useEffect(() => { try { localStorage.setItem('siteBgColor', bgColor); } catch {} }, [bgColor]);
@@ -54,16 +69,16 @@ export default function NotFound() {
         className="h-screen w-full relative flex items-center justify-center px-3 sm:px-0"
         style={backgroundStyle}
       >
-        <div className="text-center text-white relative z-10">
+        <div className="text-center relative z-10" style={{ color: 'rgb(var(--text-rgb))' }}>
           <h1 className="text-4xl font-bold mb-4">error 404 - you aren&apos;t supposed to be here</h1>
           <p className="text-lg mb-6">
             looks like you&apos;ve wandered off the path.
-            head back to the <a href="/" className="text-[accentColor] hover:underline">landing page</a>
+            head back to the <a href="/" className="hover:underline" style={{ color: 'var(--accent-color)' }}>landing page</a>
           </p>
         </div>
       </div>
       <SelectionBox />
-      <Footer accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
+      <Footer accentColorProp={accentColor} setAccentColorProp={setAccentColor} theme={theme} setThemeProp={setTheme} />
       <ShortcutHint onOpen={() => setIsPaletteOpen(true)} />
       <CommandPalette
         isOpen={isPaletteOpen}
@@ -72,10 +87,12 @@ export default function NotFound() {
         setFontFamily={setFontFamily}
         setBgStyle={setBgStyle}
         setBgColor={setBgColor}
+        setTheme={setTheme}
         accentColor={accentColor}
         fontFamily={fontFamily}
         bgStyle={bgStyle}
         bgColor={bgColor}
+        theme={theme}
       />
     </main>
   );

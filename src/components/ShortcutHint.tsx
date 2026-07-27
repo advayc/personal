@@ -30,7 +30,7 @@ const ShortcutHint: React.FC<ShortcutHintProps> = ({ onOpen }) => {
     <div className="fixed bottom-4 left-4 z-50 flex items-center gap-3">
       <button
         onClick={onOpen}
-        className="flex items-center gap-0.5 px-2 py-1 rounded-md bg-[#141414]/80 border border-white/10 backdrop-blur-sm text-white/60 hover:text-white hover:border-white/20 transition-all text-xs font-mono"
+        className="flex items-center gap-0.5 px-2 py-1 rounded-md bg-[#141414]/80 border border-[rgba(var(--text-rgb),0.1)] backdrop-blur-sm text-[rgba(var(--text-rgb),0.6)] hover:text-[rgba(var(--text-rgb))] hover:border-[rgba(var(--text-rgb),0.2)] transition-all text-xs font-mono"
         aria-label="Open command palette"
       >
         <span className={`transition-opacity ${isMetaDown ? 'opacity-0' : 'opacity-100'}`}>⌘ </span>

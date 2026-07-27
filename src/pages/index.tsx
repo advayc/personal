@@ -90,6 +90,7 @@ export default function Home() {
   const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
   const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('grid');
   const [bgColor, setBgColor] = useState<string>('#0a0a0a');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
     try {
@@ -97,12 +98,26 @@ export default function Home() {
       const storedFont = localStorage.getItem('siteFontFamily');
       const storedBg = localStorage.getItem('siteBgStyle');
       const storedBgColor = localStorage.getItem('siteBgColor');
+      const storedTheme = localStorage.getItem('siteTheme');
       if (storedAccent) setAccentColor(storedAccent);
       if (storedFont) setFontFamily(storedFont);
       if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
       if (storedBgColor) setBgColor(storedBgColor);
+      if (storedTheme === 'light' || storedTheme === 'dark') setTheme(storedTheme);
     } catch {}
   }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    }
+    try { localStorage.setItem('siteTheme', theme); } catch {}
+  }, [theme]);
 
   useEffect(() => {
     const schedule = () => {
@@ -264,7 +279,7 @@ export default function Home() {
         style={backgroundStyle}
       >
         <div className="relative w-full max-w-[1100px]">
-          <h1 className="text-3xl sm:text-5xl font-bold text-center text-white mb-4 sm:mb-6 tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-bold text-center text-foreground mb-4 sm:mb-6 tracking-tight">
             advay chandorkar
           </h1>
           <div className="flex flex-col items-center justify-center space-y-2">
@@ -278,7 +293,7 @@ export default function Home() {
                 right now, i&apos;m an incoming first year ce student @ <Link href="https://queensu.ca">queens university</Link> and i&apos;m working on <Link href="https://github.com/Seva-Eats">seva eats</Link>
               </p>
               <p className="mt-1">
-                to learn more about me, click the files - or view my resume <Link href="/resume.pdf">here</Link>.
+                to learn more about me, click the files - or view my resume <Link href="/resume.pdf">here</Link> or browse <Link href="/resume">resume</Link>.
               </p>
               <div className="mt-2">
                 <HitCounter id="home" variant="hero" fontFamily={fontFamily} />
@@ -329,7 +344,7 @@ export default function Home() {
           />
         ))}
       </div>
-      <Footer accentColorProp={accentColor} setAccentColorProp={setAccentColor} />
+      <Footer accentColorProp={accentColor} setAccentColorProp={setAccentColor} theme={theme} setThemeProp={setTheme} />
       <SelectionBox />
       <ShortcutHint onOpen={() => setIsPaletteOpen(true)} />
       {isPaletteOpen && (
@@ -340,10 +355,12 @@ export default function Home() {
           setFontFamily={setFontFamily}
           setBgStyle={setBgStyle}
           setBgColor={setBgColor}
+          setTheme={setTheme}
           accentColor={accentColor}
           fontFamily={fontFamily}
           bgStyle={bgStyle}
           bgColor={bgColor}
+          theme={theme}
         />
       )}
     </main>

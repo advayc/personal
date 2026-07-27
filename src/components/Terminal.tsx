@@ -89,6 +89,13 @@ const Terminal: React.FC<TerminalProps> = ({
   };
   const handleMaximize = () => setIsMaximized(!isMaximized);
 
+  const getTextColor = (opacity: number) => `rgba(var(--text-rgb), ${opacity})`;
+  const textPrimary = getTextColor(1);
+  const textSecondary = getTextColor(0.65);
+  const textTertiary = getTextColor(0.55);
+  const textQuaternary = getTextColor(0.35);
+  const textGhost = getTextColor(0.95);
+
   const calculateTotalLines = () => {
     const baseLines = 2;
     const itemCount = projects ? projects.length : (workExperience ? workExperience.length : 0);
@@ -205,7 +212,7 @@ const Terminal: React.FC<TerminalProps> = ({
     return (
       <motion.article
         key={`${project.title}-${index}`}
-        className="group rounded-[8px] px-1 py-1 text-white transition duration-200"
+        className="group rounded-[8px] px-1 py-1 text-foreground transition duration-200"
         style={isSelected ? { boxShadow: 'inset 0 0 0 1px rgba(var(--accent-color-rgb), 0.22)' } : undefined}
         whileHover={{ y: -1 }}
         transition={{ type: 'spring', stiffness: 220, damping: 24 }}
@@ -252,12 +259,12 @@ const Terminal: React.FC<TerminalProps> = ({
                 (event.currentTarget as HTMLAnchorElement).click();
               }
             }}
-            className="inline-block rounded-[3px] px-1 text-[19px] font-semibold leading-tight tracking-tight text-white/95 transition duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-            style={{ backgroundColor: 'var(--accent-color-hover)' }}
+            className="inline-block rounded-[3px] px-1 text-[19px] font-semibold leading-tight tracking-tight transition duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+            style={{ color: textGhost, backgroundColor: 'var(--accent-color-hover)' }}
           >
             {project.title}
           </a>
-          <p className="mt-1 text-[13px] leading-6 text-white/65">
+          <p className="mt-1 text-[13px] leading-6" style={{ color: textSecondary }}>
             {project.description}
           </p>
         </div>
@@ -288,7 +295,7 @@ const Terminal: React.FC<TerminalProps> = ({
               (event.currentTarget as HTMLAnchorElement).click();
             }
           }}
-          className={`group relative flex items-start gap-2 rounded-[6px] px-1 py-1 text-white transition duration-200 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${isSelected ? 'bg-white/5' : ''}`}
+          className={`group relative flex items-start gap-2 rounded-[6px] px-1 py-1 transition duration-200 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${isSelected ? 'bg-white/5' : ''}`}
         >
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-3">
@@ -303,17 +310,17 @@ const Terminal: React.FC<TerminalProps> = ({
                   />
                 </div>
                 <div className="min-w-0">
-                  <div className={`${titleSizeClass} whitespace-nowrap font-semibold leading-tight tracking-tight text-white/95`}>
+                  <div className={`${titleSizeClass} whitespace-nowrap font-semibold leading-tight tracking-tight`} style={{ color: textGhost }}>
                     {experience.title}
                   </div>
-                  <div className={`mt-0 ${companySizeClass} text-white/55 whitespace-normal break-words`}>{experience.company}</div>
-                  <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-white/35 whitespace-normal break-words leading-[1.15]">
+                  <div className={`mt-0 ${companySizeClass}`} style={{ color: textTertiary }}>{experience.company}</div>
+                  <div className="mt-1 text-[10px] uppercase tracking-[0.22em] whitespace-normal break-words leading-[1.15]" style={{ color: textQuaternary }}>
                     {experience.duration}
                   </div>
                 </div>
               </div>
             </div>
-            <p className="mt-2 text-[12px] leading-5 text-white/60 w-full whitespace-normal break-words">
+            <p className="mt-2 text-[12px] leading-5 w-full whitespace-normal break-words" style={{ color: textSecondary }}>
               {experience.description}
             </p>
           </div>

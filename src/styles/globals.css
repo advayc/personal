@@ -2,30 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --foreground-rgb: 255, 255, 255;
+  --text-rgb: 255, 255, 255;
+  --text-secondary-rgb: 200, 200, 200;
+  --text-tertiary-rgb: 150, 150, 150;
   --background-start-rgb: 10, 10, 10;
   --background-end-rgb: 10, 10, 10;
   --accent-color: #22D3EE;
   --accent-color-rgb: 34, 211, 238;
   --accent-color-hover: rgba(var(--accent-color-rgb), 0.1);
+  color-scheme: dark;
+}
+
+.light {
+  --foreground-rgb: 30, 30, 30;
+  --text-rgb: 30, 30, 30;
+  --text-secondary-rgb: 100, 100, 100;
+  --text-tertiary-rgb: 140, 140, 140;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+  color-scheme: light;
 }
 
 html {
-  background-color: #0a0a0a;
-  color-scheme: dark;
+  background-color: rgb(var(--background-start-rgb));
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background-color: #0a0a0a;
+  background-color: rgb(var(--background-start-rgb));
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-}
+  .text-foreground {
+    color: rgb(var(--text-rgb));
+  }
+ }
 
 @keyframes fadeIn {
   from {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaHouse, FaXTwitter, FaLinkedin, FaGithub, FaFile, FaEnvelope, FaCode, FaCheck } from 'react-icons/fa6';
+import { FaHouse, FaXTwitter, FaLinkedin, FaGithub, FaFile, FaEnvelope, FaCode, FaCheck, FaSun, FaMoon } from 'react-icons/fa6';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -8,10 +8,12 @@ interface CommandPaletteProps {
   setFontFamily?: (f: string) => void;
   setBgStyle?: (s: 'grid' | 'dots' | 'none') => void;
   setBgColor?: (c: string) => void;
+  setTheme?: (t: 'light' | 'dark') => void;
   accentColor?: string;
   fontFamily?: string;
   bgStyle?: 'grid' | 'dots' | 'none';
   bgColor?: string;
+  theme?: 'light' | 'dark';
 }
 
 interface ActionItem {
@@ -22,7 +24,7 @@ interface ActionItem {
   onSelect: () => void;
 }
 
-const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAccentColor, setFontFamily, setBgStyle, setBgColor, accentColor, fontFamily, bgStyle, bgColor }) => {
+const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAccentColor, setFontFamily, setBgStyle, setBgColor, setTheme, accentColor, fontFamily, bgStyle, bgColor, theme }) => {
   const [query, setQuery] = useState('');
   const [highlighted, setHighlighted] = useState(0);
   const [activeTab, setActiveTab] = useState<'nav' | 'settings'>('nav');
@@ -172,6 +174,22 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
         )}
         {activeTab==='settings' && (
           <div className="flex-1 overflow-y-auto py-4 space-y-6 px-5 text-xs text-white/80">
+            <section>
+              <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Theme</h4>
+              <div className="flex flex-wrap gap-2">
+                {(['light','dark'] as const).map(t => (
+                  <button
+                    key={t}
+                    onClick={() => setTheme && setTheme(t)}
+                    className={`px-4 py-1.5 rounded-md border border-white/10 font-mono text-[10px] tracking-wide hover:bg-white/5 transition relative flex items-center gap-2 ${theme===t?'bg-[var(--accent-color)]/15 text-white border-[var(--accent-color)]/40':''}`}
+                  >
+                    {t==='dark' ? <FaMoon /> : <FaSun />}
+                    <span className="capitalize">{t}</span>
+                    {theme===t && <FaCheck className="absolute -top-2 -right-2 text-[9px] text-[var(--accent-color)] bg-black/60 rounded-full p-[2px]" />}
+                  </button>
+                ))}
+              </div>
+            </section>
             <section>
               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Accent Color</h4>
               <div className="flex flex-wrap gap-2 items-center">

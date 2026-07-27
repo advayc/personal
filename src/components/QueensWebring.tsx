@@ -15,7 +15,7 @@ const QueensWebring: React.FC<QueensWebringProps> = ({ site, className = '' }) =
     <div className={`flex items-center gap-2 ${className}`}>
       <a
         href={`${webringUrl}?nav=prev`}
-        className="text-white/70 hover:text-[var(--accent-color)] transition-colors text-base leading-none"
+        className="text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] transition-colors text-base leading-none"
         aria-label="Previous site in Queen's Webring"
         >
         ←
@@ -44,7 +44,7 @@ const QueensWebring: React.FC<QueensWebringProps> = ({ site, className = '' }) =
       </a>
       <a
         href={`${webringUrl}?nav=next`}
-        className="text-white/70 hover:text-[var(--accent-color)] transition-colors text-base leading-none"
+        className="text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] transition-colors text-base leading-none"
         aria-label="Next site in Queen's Webring"
       >
         →

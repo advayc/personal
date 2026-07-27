@@ -310,7 +310,7 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
               <button
                 key={tool}
                 onClick={() => setActiveTool(tool)}
-                className={`px-2 py-1 rounded text-xs font-semibold transition ${activeTool===tool? 'bg-[var(--accent-color)] text-black':'bg-zinc-800/80 text-white/80 hover:bg-zinc-700'}`}
+                className={`px-2 py-1 rounded text-xs font-semibold transition ${activeTool===tool? 'bg-[var(--accent-color)] text-black':'bg-zinc-800/80 text-[rgba(var(--text-rgb),0.8)] hover:bg-zinc-700'}`}
               >{tool}</button>
             ))}
           </div>
@@ -333,7 +333,7 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
             </label>
           </div>
           <div className="flex items-center ml-4 gap-2">
-            <label className="text-xs text-white/60">size</label>
+            <label className="text-xs text-[rgba(var(--text-rgb),0.6)]">size</label>
             <input
               type="range"
               min={1}
@@ -344,21 +344,21 @@ const DrawTerminal: React.FC<{ onClose: () => void; headerText: string; }> = ({ 
               aria-label="Brush size"
               title="Brush size"
             />
-            <span className="text-xs text-white/70 w-6">{brushSize}</span>
+            <span className="text-xs text-[rgba(var(--text-rgb),0.7)] w-6">{brushSize}</span>
           </div>
           {mode==='draw' && (
             <div className="flex items-center ml-4 gap-2">
-              <label className="text-xs text-white/60">bg</label>
+              <label className="text-xs text-[rgba(var(--text-rgb),0.6)]">bg</label>
               <select
                 value={backgroundColor}
                 onChange={e => { setBackgroundColor(e.target.value); setCustomBg(e.target.value); }}
-                className="bg-zinc-800 text-white text-xs rounded px-1 py-1"
+                className="bg-zinc-800 text-[rgba(var(--text-rgb))] text-xs rounded px-1 py-1"
                 aria-label="Background color"
                 title="Background color"
               >
                 {BG_PRESETS.map(bg => <option key={bg} value={bg}>{bg}</option>)}
               </select>
-              <button onClick={cycleBackground} className="text-[10px] px-2 py-1 rounded bg-zinc-700 hover:bg-zinc-600 text-white/80">cycle</button>
+              <button onClick={cycleBackground} className="text-[10px] px-2 py-1 rounded bg-zinc-700 hover:bg-zinc-600 text-[rgba(var(--text-rgb),0.8)]">cycle</button>
               <label className="w-6 h-6 rounded overflow-hidden border border-white/20 flex items-center justify-center bg-zinc-800 cursor-pointer" title="Custom background color">
                 <input
                   type="color"
