@@ -15,10 +15,10 @@ const current = [
     imageSrc: "/experiences/queenseng.png",
   },
   {
-    title: "seva eats",
+    title: "building seva eats",
     detail: "connecting gurdwara meals with families in need",
     href: "https://sevaeats.vercel.app/",
-    imageSrc: "/projects/seva-eats.png",
+    imageSrc: "/experiences/seva.png",
   },
 ];
 
