@@ -24,27 +24,27 @@ const current = [
 const previous = [
   {
     title: "software developer at neurotechuoft",
-    detail: "building tools for neurotechnology research",
+    detail: "built tools for neurotechnology research",
     href: "https://neurotechuoft.ca/",
     imageSrc: "/experiences/neurotechuoft.png",
   },
   {
-    title: "glenforest computer science club",
-    detail: "president · contests, workshops, and community",
+    title: "president of glenforest computer science club",
+    detail: "organized coding contests, workshops and events",
     href: "https://github.com/glenforestss",
     imageSrc: "/experiences/gfsscsclub.png",
-  },
-  {
-    title: "futuremd",
-    detail: "vice president · web development and outreach",
-    href: "https://futuremd.net/",
-    imageSrc: "/experiences/futuremd.png",
   },
   {
     title: "vex robotics 31331",
     detail: "team lead · built and coded autonomus robots",
     href: "https://github.com/advayc/31331B-VRC-High-Stakes",
     imageSrc: "/experiences/vex.png",
+  },
+  {
+    title: "vice president of futuremd",
+    detail: "coded websites and led outreach",
+    href: "https://futuremd.net/",
+    imageSrc: "/experiences/futuremd.png",
   },
 ];
 
