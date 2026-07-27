@@ -159,16 +159,23 @@ export default function Resume() {
   return (
     <main className="min-h-screen [--accent:#ff3908] [--paper:#171717] [--ink:#f1efed] [--muted:#aaa5a2] bg-[var(--paper)] font-[Helvetica Neue,Helvetica,ui-sans-serif,sans-serif] text-[var(--ink)] motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor } as CSSProperties}>
       <Head>
-        <title>about advay chandorkar</title>
+        <title>AC</title>
         <meta
           name="description"
           content="A short summary of Advay Chandorkar: developer, computer engineering student, and builder from Toronto."
         />
         <meta name="theme-color" content="#171717" />
+        <meta property="og:title" content="Advay Chandorkar" />
+        <meta property="og:description" content="A short summary of Advay Chandorkar: developer, computer engineering student, and builder from Toronto." />
+        <meta property="og:image" content="/rmeta.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Advay Chandorkar" />
+        <meta name="twitter:description" content="A short summary of Advay Chandorkar: developer, computer engineering student, and builder from Toronto." />
+        <meta name="twitter:image" content="/rmeta.png" />
       </Head>
 
       <div className="mx-auto w-[min(calc(100%_-_48px),1080px)] py-[56px] pb-[40px] max-[700px]:w-[min(calc(100%_-_36px),1080px)] max-[700px]:py-8 max-[700px]:pb-7">
-       <header className="mb-[22px] grid grid-cols-[1fr_auto] items-start justify-between gap-9 pr-4 max-[700px]:mb-4 max-[700px]:grid-cols-[minmax(0,1fr)_52px] max-[700px]:gap-[14px]">
+       <header className="mb-[22px] grid grid-cols-[1fr_auto] items-start justify-between gap-9 pr-4 max-[700px]:mb-4 max-[700px]:grid-cols-[minmax(0,1fr)_84px] max-[700px]:gap-[14px]">
           <div>
             <p className="mb-0 mt-0 text-[18px] tracking-[-0.02em] text-[var(--muted)]">hello, i&apos;m</p>
             <h1 className="m-0 text-[clamp(56px,7.2vw,88px)] font-normal leading-[0.98] tracking-[-0.065em]">advay.</h1>
