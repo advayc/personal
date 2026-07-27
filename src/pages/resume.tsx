@@ -128,10 +128,10 @@ export default function Resume() {
   const [textTransform, setTextTransform] = useState<'normal' | 'uppercase' | 'lowercase'>('normal');
 
   useEffect(() => {
-    const storedAccent = window.localStorage.getItem("siteAccentColor") ?? window.localStorage.getItem("resumeAccentColor");
+    const storedAccent = window.localStorage.getItem("resumeAccentColor") ?? window.localStorage.getItem("siteAccentColor");
     const storedTheme = window.localStorage.getItem("siteTheme");
-    const storedBgStyle = window.localStorage.getItem("siteBgStyle");
-    const storedSiteBg = window.localStorage.getItem("siteBgColor");
+    const storedBgStyle = window.localStorage.getItem("resumeBgStyle");
+    const storedSiteBg = window.localStorage.getItem("resumeBgColor");
     if (storedAccent) setAccentColor(storedAccent);
     if (storedTheme === 'light' || storedTheme === 'dark') setTheme(storedTheme);
     if (storedBgStyle === 'grid' || storedBgStyle === 'dots' || storedBgStyle === 'none') setBgStyle(storedBgStyle);
@@ -158,13 +158,12 @@ export default function Resume() {
     }
 
     try {
-      window.localStorage.setItem("siteAccentColor", accentColor);
-      window.localStorage.removeItem("resumeAccentColor");
+      window.localStorage.setItem("resumeAccentColor", accentColor);
     } catch {}
   }, [accentColor]);
 
   useEffect(() => {
-    const storedFont = window.localStorage.getItem("siteFontFamily") ?? window.localStorage.getItem("resumeFontFamily");
+    const storedFont = window.localStorage.getItem("resumeFontFamily") ?? window.localStorage.getItem("siteFontFamily");
     if (storedFont) setFontFamily(storedFont);
     const storedBg = window.localStorage.getItem("resumeBgColor");
     if (storedBg) setBgColor(storedBg);
@@ -181,7 +180,7 @@ export default function Resume() {
   }, [bgColor]);
 
   useEffect(() => {
-    try { window.localStorage.setItem("siteBgStyle", bgStyle); } catch {}
+    try { window.localStorage.setItem("resumeBgStyle", bgStyle); } catch {}
   }, [bgStyle]);
 
   useEffect(() => {
@@ -210,7 +209,7 @@ export default function Resume() {
     setTheme('dark');
     setTextTransform('normal');
     try {
-      ["siteAccentColor", "resumeAccentColor", "siteFontFamily", "resumeFontFamily", "siteBgStyle", "siteBgColor", "resumeBgColor", "siteTheme", "resumeTextTransform"].forEach((key) => window.localStorage.removeItem(key));
+      ["resumeAccentColor", "resumeFontFamily", "resumeBgStyle", "resumeBgColor", "resumeTextTransform"].forEach((key) => window.localStorage.removeItem(key));
     } catch {}
   };
 

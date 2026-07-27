@@ -94,7 +94,7 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      const storedAccent = localStorage.getItem('siteAccentColor') ?? localStorage.getItem('resumeAccentColor');
+      const storedAccent = localStorage.getItem('siteAccentColor');
       const storedFont = localStorage.getItem('siteFontFamily');
       const storedBg = localStorage.getItem('siteBgStyle');
       const storedBgColor = localStorage.getItem('siteBgColor');
