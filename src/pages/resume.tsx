@@ -12,11 +12,13 @@ const current = [
     title: "computer engineering at queen's university",
     detail: "incoming student · kingston, on",
     href: "https://www.queensu.ca/engineering/",
+    imageSrc: "/experiences/neurotechuoft.png",
   },
   {
     title: "seva eats",
     detail: "connecting gurdwara meals with families in need",
     href: "https://sevaeats.vercel.app/",
+    imageSrc: "/experiences/futuremd.png",
   },
 ];
 
@@ -25,21 +27,25 @@ const previous = [
     title: "software developer at neurotechuoft",
     detail: "building tools for neurotechnology research",
     href: "https://neurotechuoft.ca/",
+    imageSrc: "/experiences/neurotechuoft.png",
   },
   {
     title: "glenforest computer science club",
     detail: "president · contests, workshops, and community",
     href: "https://github.com/glenforestss",
+    imageSrc: "/experiences/gfsscsclub.png",
   },
   {
     title: "futuremd",
     detail: "vice president · web development and outreach",
     href: "https://futuremd.net/",
+    imageSrc: "/experiences/futuremd.png",
   },
   {
     title: "vex robotics 31331b",
     detail: "team lead · ontario provincial championship",
     href: "https://github.com/advayc/31331B-VRC-High-Stakes",
+    imageSrc: "/experiences/vex.png",
   },
 ];
 
@@ -78,7 +84,12 @@ const projects = [
 
 const accentColors = ["#ff3908", "#22D3EE", "#F472B6", "#A78BFA", "#34D399", "#F59E0B"];
 
-type Item = (typeof current)[number];
+type Item = {
+  title: string;
+  detail: string;
+  href: string;
+  imageSrc?: string;
+};
 
 function ResumeSection({ title, items }: { title: string; items: Item[] }) {
   return (
@@ -88,6 +99,11 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
         {items.map((item) => (
           <li key={item.title}>
             <Link href={item.href} target="_blank" rel="noopener noreferrer">
+              {item.imageSrc ? (
+                <Image className={styles.itemIcon} src={item.imageSrc} alt="" width={24} height={24} />
+              ) : (
+                <span className={styles.itemIconPlaceholder} aria-hidden="true" />
+              )}
               <span className={styles.itemTitle}>{item.title}</span>
               <span className={styles.itemDetail}>{item.detail}</span>
               <FaArrowUpRightFromSquare className={styles.arrow} aria-hidden="true" />

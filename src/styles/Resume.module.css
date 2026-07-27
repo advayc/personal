@@ -116,7 +116,7 @@
 
 .section a {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(240px, 0.9fr) 16px;
+  grid-template-columns: 20px minmax(240px, 1fr) minmax(220px, 0.9fr) 16px;
   align-items: center;
   gap: 20px;
   min-height: 44px;
@@ -128,12 +128,29 @@
   transition: color 150ms ease, background-color 150ms ease, padding 150ms ease;
 }
 
+.itemIcon,
+.itemIconPlaceholder {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  transition: color 150ms ease;
+}
+
+.itemIconPlaceholder {
+  visibility: hidden;
+}
+
 .section a:hover,
 .section a:focus-visible {
   padding-left: 17px;
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 18%, transparent);
   outline: none;
+}
+
+.section a:hover .itemIcon,
+.section a:focus-visible .itemIcon {
+  color: var(--accent);
 }
 
 .itemTitle {
@@ -395,6 +412,12 @@
     padding: 9px 10px;
     flex-wrap: wrap;
     gap: 3px 8px;
+  }
+
+  .itemIcon,
+  .itemIconPlaceholder {
+    flex: 0 0 16px;
+    margin-right: 2px;
   }
 
   .section ul {
