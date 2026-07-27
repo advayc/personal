@@ -84,50 +84,59 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
 
                 <div className="flex items-center gap-1 sm:gap-1">
                     <Link
-                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
+                        className="transition-colors duration-200 rounded-md p-1.5 sm:p-2 text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="https://www.linkedin.com/in/advay/"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        <FaLinkedin className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <FaLinkedin className="w-5 h-5 sm:w-5 sm:h-5" />
                     </Link>
                     <Link
-                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
+                        className="transition-colors duration-200 rounded-md p-1.5 sm:p-2 text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="https://x.com/advay_c"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        <FaXTwitter className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <FaXTwitter className="w-5 h-5 sm:w-5 sm:h-5" />
                     </Link>
                     <Link
-                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
+                        className="transition-colors duration-200 rounded-md p-1.5 sm:p-2 text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="https://www.github.com/advayc/"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        <FaGithub className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <FaGithub className="w-5 h-5 sm:w-5 sm:h-5" />
                     </Link>
                     <Link
-                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
+                        className="transition-colors duration-200 rounded-md p-1.5 sm:p-2 text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="/resume.pdf"
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Resume PDF"
                     >
-                        <FaFileAlt className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <FaFileAlt className="w-5 h-5 sm:w-5 sm:h-5" />
                     </Link>
                     <Link
-                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
+                        className="transition-colors duration-200 rounded-md p-1.5 sm:p-2 text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
                         href="mailto:advay.chandorkar@gmail.com"
                     >
-                        <MdMail className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <MdMail className="w-5 h-5 sm:w-5 sm:h-5" />
                     </Link>
                     <div className="relative">
                         <button
-                            onClick={() => setShowColorPicker(!showColorPicker)}
-                            className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] outline-none"
+                            onClick={toggleTheme}
+                            className="transition-colors duration-200 rounded-md p-1.5 sm:p-2 text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] outline-none"
+                            aria-label={`Switch to ${currentTheme === 'dark' ? 'light' : 'dark'} mode`}
                         >
-                            <IoColorPaletteOutline className="w-6 h-6 sm:w-7 sm:h-7" />
+                            {currentTheme === 'dark' ? <FaSun className="w-5 h-5 sm:w-5 sm:h-5" /> : <FaMoon className="w-5 h-5 sm:w-5 sm:h-5" />}
+                        </button>
+                    </div>
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowColorPicker(!showColorPicker)}
+                            className="transition-colors duration-200 rounded-md p-1.5 sm:p-2 text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] outline-none"
+                        >
+                            <IoColorPaletteOutline className="w-5 h-5 sm:w-5 sm:h-5" />
                         </button>
                         {showColorPicker && (
                             <div className="absolute bottom-full right-0 mb-2 p-3 sm:p-4 bg-[#1E1E1E] rounded-lg border border-[#383838] shadow-2xl">

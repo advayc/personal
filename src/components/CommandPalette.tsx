@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaHouse, FaXTwitter, FaLinkedin, FaGithub, FaFile, FaEnvelope, FaCode, FaCheck, FaSun, FaMoon } from 'react-icons/fa6';
+import { FaHouse, FaXTwitter, FaLinkedin, FaGithub, FaFile, FaEnvelope, FaCode, FaCheck, FaSun, FaMoon, FaRotateLeft } from 'react-icons/fa6';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -9,11 +9,14 @@ interface CommandPaletteProps {
   setBgStyle?: (s: 'grid' | 'dots' | 'none') => void;
   setBgColor?: (c: string) => void;
   setTheme?: (t: 'light' | 'dark') => void;
+  onReset?: () => void;
+  setTextTransform?: (t: 'normal' | 'uppercase' | 'lowercase') => void;
   accentColor?: string;
   fontFamily?: string;
   bgStyle?: 'grid' | 'dots' | 'none';
   bgColor?: string;
   theme?: 'light' | 'dark';
+  textTransform?: 'normal' | 'uppercase' | 'lowercase';
 }
 
 interface ActionItem {
@@ -24,7 +27,7 @@ interface ActionItem {
   onSelect: () => void;
 }
 
-const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAccentColor, setFontFamily, setBgStyle, setBgColor, setTheme, accentColor, fontFamily, bgStyle, bgColor, theme }) => {
+const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAccentColor, setFontFamily, setBgStyle, setBgColor, setTheme, onReset, setTextTransform, accentColor, fontFamily, bgStyle, bgColor, theme, textTransform }) => {
   const [query, setQuery] = useState('');
   const [highlighted, setHighlighted] = useState(0);
   const [activeTab, setActiveTab] = useState<'nav' | 'settings'>('nav');
@@ -272,9 +275,50 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
                   </button>
                 ))}
               </div>
-            </section>
-          </div>
-        )}
+             </section>
+             <section>
+               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Theme</h4>
+               <div className="grid grid-cols-2 gap-2">
+                 {(['dark', 'light'] as const).map(t => (
+                   <button
+                     key={t}
+                     onClick={() => setTheme && setTheme(t)}
+                     className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-white/10 text-left hover:bg-white/5 transition ${theme===t?'bg-[var(--accent-color)]/15 text-white border-[var(--accent-color)]/40':''}`}
+                   >
+                     {t === 'dark' ? <FaMoon aria-hidden="true" /> : <FaSun aria-hidden="true" />}
+                     <span className="capitalize">{t}</span>
+                     {theme===t && <FaCheck className="ml-auto text-[var(--accent-color)]" />}
+                   </button>
+                 ))}
+               </div>
+             </section>
+             <section>
+               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Text Transform</h4>
+               <div className="flex flex-wrap gap-2">
+                 {(['normal','uppercase','lowercase'] as const).map(t => (
+                   <button
+                     key={t}
+                     onClick={() => setTextTransform && setTextTransform(t)}
+                     className={`px-4 py-1.5 rounded-md border border-white/10 font-mono text-[10px] tracking-wide hover:bg-white/5 transition relative ${textTransform===t?'bg-[var(--accent-color)]/15 text-white border-[var(--accent-color)]/40':''}`}
+                   >
+                     <span className="capitalize">{t}</span>
+                     {textTransform===t && <FaCheck className="absolute -top-2 -right-2 text-[9px] text-[var(--accent-color)] bg-black/60 rounded-full p-[2px]" />}
+                   </button>
+                 ))}
+               </div>
+              </section>
+              <section className="border-t border-white/10 pt-4">
+                <button
+                  type="button"
+                  onClick={() => { onReset?.(); onClose(); }}
+                  className="flex w-full items-center justify-center gap-2 rounded-md border border-white/10 px-3 py-2 text-left text-white/70 transition hover:border-red-300/30 hover:bg-red-400/10 hover:text-red-200"
+                >
+                  <FaRotateLeft aria-hidden="true" />
+                  Reset appearance
+                </button>
+              </section>
+            </div>
+         )}
   <div className="px-4 py-2 text-[9px] text-white/30 flex items-center justify-between border-t border-white/10 bg-[#101010]">
           <div className="space-x-1 hidden sm:block"><span>Enter ↵</span><span>↑↓</span></div>
           <div className="flex items-center gap-2 text-white/40"><span className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-[8px]">ESC</span><span>close</span></div>

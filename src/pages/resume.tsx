@@ -3,14 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
-import { FaArrowUpRightFromSquare, FaFilePdf, FaXTwitter } from "react-icons/fa6";
+import { FaArrowUpRightFromSquare, FaFilePdf, FaXTwitter, FaGear } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import HitCounter from "@/components/HitCounter";
+import CommandPalette from "@/components/CommandPalette";
 
 const current = [
   {
-    title: "computer engineering at queen's university",
-    detail: "incoming student · kingston, on",
+    title: "studying computer engineering at queen's university",
+    detail: "incoming student · kingston, on 📍",
     href: "https://www.queensu.ca/engineering/",
     imageSrc: "/experiences/queenseng.png",
   },
@@ -51,32 +52,32 @@ const previous = [
 
 const projects = [
   {
-    title: "wrapped",
+    title: "- wrapped",
     detail: "spotify wrapped for messages",
     href: "https://github.com/advayc/wrapped",
   },
   {
-    title: "gfss calendar",
+    title: "- gfss calendar",
     detail: "school events tracker · 1k+ mau",
     href: "https://clubs.advay.ca/",
   },
   {
-    title: "sitemaker",
+    title: "- sitemaker",
     detail: "resume-to-website generator",
     href: "https://sitemaker.advay.ca/",
   },
   {
-    title: "nums",
+    title: "- nums",
     detail: "page-view counter api",
     href: "https://docs.advay.ca/",
   },
   {
-    title: "spy",
+    title: "- spy",
     detail: "open-source party game, shipped to the app store",
     href: "https://spy.advay.ca/",
   },
   {
-    title: "gq planets",
+    title: "- gq planets",
     detail: "won a nasa hackathon",
     href: "https://github.com/DeadUser123/Space-APPS-Hackathon",
   },
@@ -119,11 +120,31 @@ export default function Resume() {
   const [accentColor, setAccentColor] = useState("#F59E0B");
   const [isAccentPickerOpen, setIsAccentPickerOpen] = useState(false);
   const accentPickerRef = useRef<HTMLDivElement>(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [fontFamily, setFontFamily] = useState("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
+  const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('none');
+  const [bgColor, setBgColor] = useState("#171717");
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [textTransform, setTextTransform] = useState<'normal' | 'uppercase' | 'lowercase'>('normal');
 
   useEffect(() => {
     const storedAccent = window.localStorage.getItem("siteAccentColor") ?? window.localStorage.getItem("resumeAccentColor");
+    const storedTheme = window.localStorage.getItem("siteTheme");
+    const storedBgStyle = window.localStorage.getItem("siteBgStyle");
+    const storedSiteBg = window.localStorage.getItem("siteBgColor");
     if (storedAccent) setAccentColor(storedAccent);
+    if (storedTheme === 'light' || storedTheme === 'dark') setTheme(storedTheme);
+    if (storedBgStyle === 'grid' || storedBgStyle === 'dots' || storedBgStyle === 'none') setBgStyle(storedBgStyle);
+    if (storedSiteBg) setBgColor(storedSiteBg);
   }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('light', theme === 'light');
+    root.classList.toggle('dark', theme === 'dark');
+    root.style.colorScheme = theme;
+    try { window.localStorage.setItem("siteTheme", theme); } catch {}
+  }, [theme]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -143,6 +164,31 @@ export default function Resume() {
   }, [accentColor]);
 
   useEffect(() => {
+    const storedFont = window.localStorage.getItem("siteFontFamily") ?? window.localStorage.getItem("resumeFontFamily");
+    if (storedFont) setFontFamily(storedFont);
+    const storedBg = window.localStorage.getItem("resumeBgColor");
+    if (storedBg) setBgColor(storedBg);
+    const storedTransform = window.localStorage.getItem("resumeTextTransform") as 'normal' | 'uppercase' | 'lowercase' | null;
+    if (storedTransform && ['normal','uppercase','lowercase'].includes(storedTransform)) setTextTransform(storedTransform);
+  }, []);
+
+  useEffect(() => {
+    try { window.localStorage.setItem("resumeFontFamily", fontFamily); } catch {}
+  }, [fontFamily]);
+
+  useEffect(() => {
+    try { window.localStorage.setItem("resumeBgColor", bgColor); } catch {}
+  }, [bgColor]);
+
+  useEffect(() => {
+    try { window.localStorage.setItem("siteBgStyle", bgStyle); } catch {}
+  }, [bgStyle]);
+
+  useEffect(() => {
+    try { window.localStorage.setItem("resumeTextTransform", textTransform); } catch {}
+  }, [textTransform]);
+
+  useEffect(() => {
     const closePicker = (event: MouseEvent) => {
       if (accentPickerRef.current && !accentPickerRef.current.contains(event.target as Node)) {
         setIsAccentPickerOpen(false);
@@ -156,8 +202,31 @@ export default function Resume() {
     setAccentColor(color);
   };
 
+  const resetAppearance = () => {
+    setAccentColor("#F59E0B");
+    setFontFamily("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
+    setBgStyle('none');
+    setBgColor("#171717");
+    setTheme('dark');
+    setTextTransform('normal');
+    try {
+      ["siteAccentColor", "resumeAccentColor", "siteFontFamily", "resumeFontFamily", "siteBgStyle", "siteBgColor", "resumeBgColor", "siteTheme", "resumeTextTransform"].forEach((key) => window.localStorage.removeItem(key));
+    } catch {}
+  };
+
+  const effectiveBgColor = theme === 'light' ? '#eeeeee' : bgColor;
+  const backgroundImage = bgStyle === 'grid'
+    ? 'linear-gradient(rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px)'
+    : bgStyle === 'dots'
+      ? 'radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.17) 1px, transparent 0)'
+      : 'none';
+  const backgroundSize = bgStyle === 'grid' ? '40px 40px' : bgStyle === 'dots' ? '26px 26px' : undefined;
+  const themeColors = theme === 'light'
+    ? { paper: effectiveBgColor, ink: '#1b1917', muted: '#625d59' }
+    : { paper: effectiveBgColor, ink: '#f1efed', muted: '#aaa5a2' };
+
   return (
-    <main className="min-h-screen [--accent:#ff3908] [--paper:#171717] [--ink:#f1efed] [--muted:#aaa5a2] bg-[var(--paper)] font-[Helvetica Neue,Helvetica,ui-sans-serif,sans-serif] text-[var(--ink)] motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor } as CSSProperties}>
+    <main className="min-h-screen [--accent:#ff3908] bg-[var(--paper)] text-[var(--ink)] transition-[background-color,color] duration-200 motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor, "--paper": themeColors.paper, "--ink": themeColors.ink, "--muted": themeColors.muted, fontFamily, backgroundColor: effectiveBgColor, backgroundImage, backgroundSize, textTransform: textTransform === 'normal' ? undefined : textTransform } as CSSProperties}>
       <Head>
         <title>AC</title>
         <meta
@@ -190,24 +259,27 @@ export default function Resume() {
           </Link>
         </header>
 
-        <ResumeSection title="currently" items={current} />
-        <ResumeSection title="prev" items={previous} />
-        <ResumeSection title="things i made" items={projects} />
+        <ResumeSection title="what im doing" items={current} />
+        <ResumeSection title="things ive done" items={previous} />
+        <ResumeSection title="things ive made" items={projects} />
 
         <footer className="mt-[42px] flex items-end justify-between gap-6 max-[700px]:mt-9 max-[700px]:items-center">
           <nav className="flex gap-2" aria-label="Social links">
             <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="mailto:advay.chandorkar@gmail.com" aria-label="Email Advay">
-              <MdEmail />
+              <FaLinkedinIn />
             </Link>
             <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://www.linkedin.com/in/advay/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-              <FaLinkedinIn />
+              <FaXTwitter />
             </Link>
             <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://github.com/advayc" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
               <FaGithub />
             </Link>
             <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://x.com/advay_c" target="_blank" rel="noopener noreferrer" aria-label="X">
-              <FaXTwitter />
+              <MdEmail />
             </Link>
+            <button className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" type="button" onClick={() => setIsCommandPaletteOpen((open) => !open)} aria-label="Settings">
+              <FaGear />
+            </button>
           </nav>
           <div className="flex items-center gap-4 max-[700px]:gap-[6px]">
             <HitCounter id="home" showLabel={false} className="text-[13px]" />
@@ -271,8 +343,25 @@ export default function Resume() {
               <FaFilePdf aria-hidden="true"/>
             </Link>
           </div>
-        </footer>
-      </div>
-    </main>
+         </footer>
+       </div>
+       <CommandPalette
+         isOpen={isCommandPaletteOpen}
+         onClose={() => setIsCommandPaletteOpen(false)}
+         setAccentColor={setAccentColor}
+          setFontFamily={setFontFamily}
+          setBgStyle={setBgStyle}
+          setBgColor={setBgColor}
+          setTheme={setTheme}
+          onReset={resetAppearance}
+         setTextTransform={setTextTransform}
+         accentColor={accentColor}
+          fontFamily={fontFamily}
+          bgStyle={bgStyle}
+          bgColor={bgColor}
+          theme={theme}
+         textTransform={textTransform}
+       />
+     </main>
   );
 }
