@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
 import { FaArrowUpRightFromSquare, FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
@@ -13,11 +14,6 @@ const current = [
     href: "https://www.queensu.ca/engineering/",
   },
   {
-    title: "software developer at neurotechuoft",
-    detail: "building tools for neurotechnology research",
-    href: "https://neurotechuoft.ca/",
-  },
-  {
     title: "seva eats",
     detail: "connecting gurdwara meals with families who need them",
     href: "https://sevaeats.vercel.app/",
@@ -25,6 +21,11 @@ const current = [
 ];
 
 const previous = [
+  {
+    title: "software developer at neurotechuoft",
+    detail: "building tools for neurotechnology research",
+    href: "https://neurotechuoft.ca/",
+  },
   {
     title: "glenforest computer science club",
     detail: "president · contests, workshops, and community",
@@ -44,9 +45,24 @@ const previous = [
 
 const projects = [
   {
+    title: "wrapped",
+    detail: "spotify wrapped for messages",
+    href: "https://github.com/advayc/wrapped",
+  },
+  {
+    title: "gfss calendar",
+    detail: "school events tracker · 1k+ peak mau",
+    href: "https://clubs.advay.ca/",
+  },
+  {
     title: "sitemaker",
     detail: "resume-to-website generator",
     href: "https://sitemaker.advay.ca/",
+  },
+  {
+    title: "nums",
+    detail: "page-view counter api",
+    href: "https://docs.advay.ca/",
   },
   {
     title: "spy",
@@ -54,21 +70,13 @@ const projects = [
     href: "https://spy.advay.ca/",
   },
   {
-    title: "gfss calendar",
-    detail: "school events platform · 1k+ monthly users",
-    href: "https://clubs.advay.ca/",
-  },
-  {
     title: "gq planets",
-    detail: "nasa space apps global nominee",
+    detail: "nasa hackathon winner",
     href: "https://github.com/DeadUser123/Space-APPS-Hackathon",
   },
-  {
-    title: "nums",
-    detail: "tiny page-view counter written in go",
-    href: "https://docs.advay.ca/",
-  },
 ];
+
+const accentColors = ["#ff3908", "#22D3EE", "#F472B6", "#A78BFA", "#34D399", "#F59E0B"];
 
 type Item = (typeof current)[number];
 
@@ -92,8 +100,32 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
 }
 
 export default function Resume() {
+  const [accentColor, setAccentColor] = useState("#ff3908");
+  const [isAccentPickerOpen, setIsAccentPickerOpen] = useState(false);
+  const accentPickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const storedAccent = window.localStorage.getItem("resumeAccentColor");
+    if (storedAccent) setAccentColor(storedAccent);
+  }, []);
+
+  useEffect(() => {
+    const closePicker = (event: MouseEvent) => {
+      if (accentPickerRef.current && !accentPickerRef.current.contains(event.target as Node)) {
+        setIsAccentPickerOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", closePicker);
+    return () => document.removeEventListener("mousedown", closePicker);
+  }, []);
+
+  const updateAccentColor = (color: string) => {
+    setAccentColor(color);
+    window.localStorage.setItem("resumeAccentColor", color);
+  };
+
   return (
-    <main className={styles.page}>
+    <main className={styles.page} style={{ "--accent": accentColor } as CSSProperties}>
       <Head>
         <title>about advay chandorkar</title>
         <meta
@@ -109,8 +141,7 @@ export default function Resume() {
             <p className={styles.eyebrow}>hello, i&apos;m</p>
             <h1>advay.</h1>
             <p className={styles.intro}>
-              a developer and incoming computer engineering student from toronto. i like
-              turning small observations into useful things for real people.
+              i build things
             </p>
           </div>
           <Link className={styles.avatar} href="/" aria-label="Back to home">
@@ -120,8 +151,8 @@ export default function Resume() {
         </header>
 
         <ResumeSection title="currently" items={current} />
-        <ResumeSection title="previously" items={previous} />
-        <ResumeSection title="selected projects" items={projects} />
+        <ResumeSection title="prev" items={previous} />
+        <ResumeSection title="things i made" items={projects} />
 
         <footer className={styles.footer}>
           <nav aria-label="Social links">
@@ -138,10 +169,45 @@ export default function Resume() {
               <FaXTwitter />
             </Link>
           </nav>
-          <Link className={styles.pdfLink} href="/resume.pdf" target="_blank" aria-label="Open resume PDF">
-            <span>full résumé</span>
-            <i aria-hidden="true" />
-          </Link>
+          <div className={styles.footerActions}>
+            <div className={styles.accentPicker} ref={accentPickerRef}>
+              <button
+                className={styles.accentButton}
+                type="button"
+                onClick={() => setIsAccentPickerOpen((open) => !open)}
+                aria-expanded={isAccentPickerOpen}
+                aria-label="Change accent color"
+              >
+                <i style={{ backgroundColor: accentColor }} aria-hidden="true" />
+                <span>accent</span>
+              </button>
+              {isAccentPickerOpen && (
+                <div className={styles.accentMenu} role="menu" aria-label="Accent colors">
+                  <span>choose a color</span>
+                  <div className={styles.swatches}>
+                    {accentColors.map((color) => (
+                      <button
+                        key={color}
+                        className={`${styles.swatch} ${accentColor === color ? styles.selectedSwatch : ""}`}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          updateAccentColor(color);
+                          setIsAccentPickerOpen(false);
+                        }}
+                        style={{ backgroundColor: color }}
+                        aria-label={`Use ${color} accent`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <Link className={styles.pdfLink} href="/resume.pdf" target="_blank" aria-label="Open resume PDF">
+              <span>full résumé</span>
+              <i aria-hidden="true" />
+            </Link>
+          </div>
         </footer>
       </div>
     </main>

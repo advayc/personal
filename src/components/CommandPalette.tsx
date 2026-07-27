@@ -175,22 +175,6 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
         {activeTab==='settings' && (
           <div className="flex-1 overflow-y-auto py-4 space-y-6 px-5 text-xs text-white/80">
             <section>
-              <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Theme</h4>
-              <div className="flex flex-wrap gap-2">
-                {(['light','dark'] as const).map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setTheme && setTheme(t)}
-                    className={`px-4 py-1.5 rounded-md border border-white/10 font-mono text-[10px] tracking-wide hover:bg-white/5 transition relative flex items-center gap-2 ${theme===t?'bg-[var(--accent-color)]/15 text-white border-[var(--accent-color)]/40':''}`}
-                  >
-                    {t==='dark' ? <FaMoon /> : <FaSun />}
-                    <span className="capitalize">{t}</span>
-                    {theme===t && <FaCheck className="absolute -top-2 -right-2 text-[9px] text-[var(--accent-color)] bg-black/60 rounded-full p-[2px]" />}
-                  </button>
-                ))}
-              </div>
-            </section>
-            <section>
               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Accent Color</h4>
               <div className="flex flex-wrap gap-2 items-center">
                 {['#22D3EE','#F472B6','#A78BFA','#34D399','#F59E0B','#F87171','#4ADE80','#38BDF8','#E879F9','#FB923C'].map(c => (

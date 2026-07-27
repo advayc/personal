@@ -169,13 +169,6 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
                             </div>
                         )}
                     </div>
-                    <button
-                        onClick={toggleTheme}
-                        className="transition-colors duration-200 rounded-md p-2 sm:p-[15px] text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] outline-none"
-                        aria-label="Toggle theme"
-                    >
-                        {currentTheme === 'dark' ? <FaSun className="w-6 h-6 sm:w-7 sm:h-7" /> : <FaMoon className="w-6 h-6 sm:w-7 sm:h-7" />}
-                    </button>
                 </div>
 
                 <div className="w-[120px] sm:w-[200px] flex justify-end pr-2 sm:pr-3">
