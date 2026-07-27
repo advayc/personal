@@ -293,7 +293,7 @@ export default function Home() {
                 right now, i&apos;m an incoming first year ce student @ <Link href="https://queensu.ca">queens university</Link> and i&apos;m working on <Link href="https://github.com/Seva-Eats">seva eats</Link>
               </p>
               <p className="mt-1">
-                to learn more about me, click the files - or view my resume <Link href="/resume.pdf">here</Link> or browse <Link href="/resume">resume</Link>.
+                to learn more about me, click the files - or view my resume <Link href="/resume.pdf">here</Link> or browse <Link target="_blank" href="/resume">resume</Link>.
               </p>
               <div className="mt-2">
                 <HitCounter id="home" variant="hero" fontFamily={fontFamily} />

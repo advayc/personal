@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
-import { FaArrowUpRightFromSquare, FaXTwitter } from "react-icons/fa6";
+import { FaArrowUpRightFromSquare, FaFilePdf, FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import styles from "@/styles/Resume.module.css";
 
@@ -15,7 +15,7 @@ const current = [
   },
   {
     title: "seva eats",
-    detail: "connecting gurdwara meals with families who need them",
+    detail: "connecting gurdwara meals with families in need",
     href: "https://sevaeats.vercel.app/",
   },
 ];
@@ -51,7 +51,7 @@ const projects = [
   },
   {
     title: "gfss calendar",
-    detail: "school events tracker · 1k+ peak mau",
+    detail: "school events tracker · 1k+ mau",
     href: "https://clubs.advay.ca/",
   },
   {
@@ -200,12 +200,27 @@ export default function Resume() {
                       />
                     ))}
                   </div>
+                  <label className={styles.customColor}>
+                    <span>custom hex</span>
+                    <input
+                      type="text"
+                      value={accentColor}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        if (/^#[0-9a-f]{0,6}$/i.test(value)) updateAccentColor(value);
+                      }}
+                      maxLength={7}
+                      placeholder="#ff3908"
+                      spellCheck={false}
+                      aria-label="Custom accent hex color"
+                    />
+                  </label>
                 </div>
               )}
             </div>
             <Link className={styles.pdfLink} href="/resume.pdf" target="_blank" aria-label="Open resume PDF">
               <span>full résumé</span>
-              <i aria-hidden="true" />
+              <FaFilePdf aria-hidden="true" />
             </Link>
           </div>
         </footer>
