@@ -23,14 +23,14 @@ const current = [
 
 const previous = [
   {
-    title: "software developer at neurotechuoft",
-    detail: "built tools for neurotechnology research",
+    title: "neurotechuoft",
+    detail: "developer · built tools for neurotechnology research",
     href: "https://neurotechuoft.ca/",
     imageSrc: "/experiences/neurotechuoft.png",
   },
   {
-    title: "president of glenforest computer science club",
-    detail: "organized coding contests, workshops and events",
+    title: "glenforest computer science club",
+    detail: "president · organized coding contests, workshops and events",
     href: "https://github.com/glenforestss",
     imageSrc: "/experiences/gfsscsclub.png",
   },
@@ -41,8 +41,8 @@ const previous = [
     imageSrc: "/experiences/vex.png",
   },
   {
-    title: "vice president of futuremd",
-    detail: "coded websites and led outreach",
+    title: "futuremd",
+    detail: "vice president · coded websites and led outreach",
     href: "https://futuremd.net/",
     imageSrc: "/experiences/futuremd.png",
   },
@@ -76,12 +76,12 @@ const projects = [
   },
   {
     title: "gq planets",
-    detail: "nasa hackathon winner",
+    detail: "won a nasa hackathon",
     href: "https://github.com/DeadUser123/Space-APPS-Hackathon",
   },
 ];
 
-const accentColors = ["#ff3908", "#22D3EE", "#F472B6", "#A78BFA", "#34D399", "#F59E0B"];
+const accentColors = ["#F59E0B", "#ff3908", "#22D3EE", "#F472B6", "#A78BFA", "#34D399"];
 
 type Item = {
   title: string;
@@ -97,15 +97,15 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
       <ul className="m-0 ml-[14px] list-none p-0 max-[700px]:ml-[10px]">
         {items.map((item) => (
           <li className="[&+li]:mt-[3px]" key={item.title}>
-            <Link className="group mx-[-14px] grid min-h-[44px] grid-cols-[34px_minmax(240px,1fr)_minmax(220px,0.9fr)_16px] items-center gap-[10px] rounded-[11px] px-[14px] py-2 text-[var(--muted)] no-underline transition-[color,background-color,padding] duration-[150ms] ease-[ease] hover:pl-[17px] hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] focus-visible:pl-[17px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:mx-[-10px] max-[700px]:flex max-[700px]:min-h-0 max-[700px]:flex-wrap max-[700px]:gap-x-2 max-[700px]:gap-y-[3px] max-[700px]:px-[10px] max-[700px]:py-[9px] max-[700px]:hover:pl-[13px] max-[700px]:focus-visible:pl-[13px]" href={item.href} target="_blank" rel="noopener noreferrer">
+            <Link className={`group mx-[-14px] grid min-h-[44px] grid-cols-[34px_minmax(240px,1fr)_minmax(220px,0.9fr)_16px] items-center gap-[10px] rounded-[11px] px-[14px] py-2 text-[var(--muted)] no-underline transition-[color,background-color,padding] duration-[150ms] ease-[ease] hover:pl-[17px] hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] focus-visible:pl-[17px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:mx-[-10px] max-[700px]:min-h-0 max-[700px]:px-[10px] max-[700px]:py-[9px] max-[700px]:hover:pl-[13px] max-[700px]:focus-visible:pl-[13px] ${item.imageSrc ? "max-[700px]:grid-cols-[88px_minmax(0,1fr)_16px] max-[700px]:items-center max-[700px]:gap-x-3 max-[700px]:gap-y-1" : "max-[700px]:flex max-[700px]:flex-wrap max-[700px]:gap-x-2 max-[700px]:gap-y-[3px]"}`} href={item.href} target="_blank" rel="noopener noreferrer">
               {item.imageSrc ? (
-                <Image className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:mr-0.5 max-[700px]:basis-6" src={item.imageSrc} alt="" width={32} height={32} />
+                <Image className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:row-span-2 max-[700px]:size-[84px]" src={item.imageSrc} alt="" width={84} height={84} />
               ) : (
                 <span className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:mr-0.5 max-[700px]:basis-6" aria-hidden="true" />
               )}
-              <span className="text-[clamp(17px,1.6vw,20px)] font-[550] leading-[1.25] tracking-[-0.025em] max-[700px]:w-[calc(100%_-_24px)] max-[700px]:text-[17px]">{item.title}</span>
-              <span className="text-right text-[15px] leading-[1.35] opacity-[0.72] transition-[opacity] duration-[150ms] ease-[ease] group-hover:opacity-100 group-focus-visible:opacity-100 max-[700px]:w-full max-[700px]:text-left max-[700px]:text-[14px]">{item.detail}</span>
-              <FaArrowUpRightFromSquare className="size-3 -translate-x-1 translate-y-1 opacity-0 transition-[opacity,transform] duration-[150ms] ease-[ease] group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 max-[700px]:ml-auto" aria-hidden="true" />
+              <span className={`text-[clamp(17px,1.6vw,20px)] font-[550] leading-[1.25] tracking-[-0.025em] max-[700px]:text-[17px] ${item.imageSrc ? "max-[700px]:col-start-2 max-[700px]:row-start-1 max-[700px]:w-auto" : "max-[700px]:w-[calc(100%_-_24px)]"}`}>{item.title}</span>
+              <span className={`text-right text-[15px] leading-[1.35] opacity-[0.72] transition-[opacity] duration-[150ms] ease-[ease] group-hover:opacity-100 group-focus-visible:opacity-100 max-[700px]:text-[14px] ${item.imageSrc ? "max-[700px]:col-start-2 max-[700px]:row-start-2 max-[700px]:w-auto max-[700px]:text-left" : "max-[700px]:w-full max-[700px]:text-left"}`}>{item.detail}</span>
+              <FaArrowUpRightFromSquare className={`size-3 -translate-x-1 translate-y-1 opacity-0 transition-[opacity,transform] duration-[150ms] ease-[ease] group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 max-[700px]:ml-auto ${item.imageSrc ? "max-[700px]:col-start-3 max-[700px]:row-span-2 max-[700px]:row-start-1" : ""}`} aria-hidden="true" />
             </Link>
           </li>
         ))}
@@ -167,17 +167,17 @@ export default function Resume() {
       </Head>
 
       <div className="mx-auto w-[min(calc(100%_-_48px),1080px)] py-[56px] pb-[40px] max-[700px]:w-[min(calc(100%_-_36px),1080px)] max-[700px]:py-8 max-[700px]:pb-7">
-        <header className="mb-[22px] grid grid-cols-[minmax(0,760px)_auto] items-start justify-between gap-9 max-[700px]:mb-4 max-[700px]:grid-cols-[minmax(0,1fr)_52px] max-[700px]:gap-[14px]">
-          <div>
-            <p className="mb-0 mt-0 text-[18px] tracking-[-0.02em] text-[var(--muted)]">hello, i&apos;m</p>
-            <h1 className="m-0 text-[clamp(56px,7.2vw,88px)] font-normal leading-[0.98] tracking-[-0.065em]">advay.</h1>
-            <p className="col-span-full mb-0 mt-[10px] max-w-[680px] text-[clamp(18px,1.8vw,23px)] font-medium leading-[1.38] tracking-[-0.025em] text-[var(--muted)] max-[700px]:col-span-full">
-              i build things
-            </p>
-          </div>
-          <Link className="group relative mt-3 block size-[72px] overflow-hidden bg-[#efece8] outline-0 outline-[color-mix(in_srgb,var(--accent)_22%,transparent)] transition-[outline-width,transform] duration-[180ms] ease-[ease] hover:rotate-[2deg] hover:outline-[7px] focus-visible:rotate-[2deg] focus-visible:outline-[7px] max-[700px]:mt-[7px] max-[700px]:size-[52px]" href="/" aria-label="Back to home">
-            <Image className="absolute inset-0 size-full object-cover [image-rendering:pixelated] transition-[opacity,transform] duration-[700ms] ease-[ease] group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100" src="/icons/me-asci.png" alt="" width={72} height={72} priority />
-            <Image className="absolute inset-0 size-full scale-100 object-cover [image-rendering:auto] opacity-100 transition-[opacity,transform] duration-[700ms] ease-[ease] group-hover:scale-[0.96] group-hover:opacity-0 group-focus-visible:scale-[0.96] group-focus-visible:opacity-0" src="/icons/me.png" alt="" width={72} height={72} priority />
+         <header className="mb-[22px] grid grid-cols-[1fr_auto] items-start justify-between gap-9 max-[700px]:mb-4 max-[700px]:grid-cols-[minmax(0,1fr)_52px] max-[700px]:gap-[14px]">
+           <div>
+             <p className="mb-0 mt-0 text-[18px] tracking-[-0.02em] text-[var(--muted)]">hello, i&apos;m</p>
+             <h1 className="m-0 text-[clamp(56px,7.2vw,88px)] font-normal leading-[0.98] tracking-[-0.065em]">advay.</h1>
+             <p className="col-span-full mb-0 mt-[10px] max-w-[680px] text-[clamp(18px,1.8vw,23px)] font-medium leading-[1.38] tracking-[-0.025em] text-[var(--muted)] max-[700px]:col-span-full">
+               i build things
+             </p>
+           </div>
+           <Link className="group relative block size-[100px] overflow-hidden bg-[#efece8] outline-0 outline-[color-mix(in_srgb,var(--accent)_22%,transparent)] transition-[outline-width,transform] duration-[180ms] ease-[ease] hover:rotate-[2deg] hover:outline-[7px] focus-visible:rotate-[2deg] focus-visible:outline-[7px] max-[700px]:mt-[7px] max-[700px]:size-[72px]" href="/" aria-label="Back to home">
+            <Image className="absolute inset-0 size-full object-cover [image-rendering:pixelated] transition-[opacity,transform] duration-[500ms] ease-[ease] opacity-0 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100" src="/icons/me-asci.png" alt="" width={100} height={100} priority />
+            <Image className="absolute inset-0 size-full scale-100 object-cover [image-rendering:auto] opacity-100 transition-[opacity,transform] duration-[500ms] ease-[ease] group-hover:scale-[0.96] group-hover:opacity-0 group-focus-visible:scale-[0.96] group-focus-visible:opacity-0" src="/icons/me.png" alt="" width={100} height={100} priority />
             <span className="absolute inset-x-0 bottom-0 translate-y-full bg-[var(--accent)] p-1 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--paper)] transition-transform duration-[180ms] ease-[ease] group-hover:translate-y-0 group-focus-visible:translate-y-0">home</span>
           </Link>
         </header>
