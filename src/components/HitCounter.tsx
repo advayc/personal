@@ -6,6 +6,7 @@ interface HitCounterProps {
   initiallyFetchOnly?: boolean;
   variant?: 'default' | 'hero';
   fontFamily?: string;
+  showLabel?: boolean;
 }
 
 const inflight = new Map<string, Promise<number | null>>();
@@ -62,7 +63,7 @@ const useAnimatedNumber = (target: number | null, duration = 800) => {
   return target == null ? null : display.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
-const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFetchOnly = false, variant = 'default', fontFamily }) => {
+const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFetchOnly = false, variant = 'default', fontFamily, showLabel = true }) => {
   const [hits, setHits] = useState<number | null>(null);
 
   useEffect(() => {
@@ -106,7 +107,7 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
   if (variant === 'hero') {
     return (
       <div
-        className={`select-none flex items-center justify-center gap-2 mt-0 mx-auto w-fit${className ? ` ${className}` : ''}`}
+        className={`select-none cursor-pointer flex items-center justify-center gap-2 mt-0 mx-auto w-fit${className ? ` ${className}` : ''}`}
         aria-label={hits == null ? 'Loading view count' : `Page viewed ${hits} times`}
         style={fontFamily ? { fontFamily } : undefined}
       >
@@ -128,11 +129,11 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
 
   return (
     <div
-      className={`select-none inline-flex items-center gap-2 text-xs font-mono tracking-wide ${className}`}
+      className={`select-none cursor-pointer inline-flex items-center gap-2 text-xs font-mono tracking-wide ${className}`}
       aria-label={hits == null ? 'Loading view count' : `Page viewed ${hits} times`}
       style={fontFamily ? { fontFamily } : undefined}
     >
-      <span className="opacity-70">views</span>
+      {showLabel && <span className="opacity-70">views</span>}
       <span
         className="tabular-nums font-semibold transition duration-200 hover:underline"
         style={{

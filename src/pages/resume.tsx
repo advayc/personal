@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
 import { FaArrowUpRightFromSquare, FaFilePdf, FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
+import HitCounter from "@/components/HitCounter";
 
 const current = [
   {
@@ -97,9 +98,9 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
       <ul className="m-0 ml-[14px] list-none p-0 max-[700px]:ml-[10px]">
         {items.map((item) => (
           <li className="[&+li]:mt-[3px]" key={item.title}>
-            <Link className={`group mx-[-14px] grid min-h-[44px] grid-cols-[34px_minmax(240px,1fr)_minmax(220px,0.9fr)_16px] items-center gap-[10px] rounded-[11px] px-[14px] py-2 text-[var(--muted)] no-underline transition-[color,background-color,padding] duration-[150ms] ease-[ease] hover:pl-[17px] hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] focus-visible:pl-[17px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:mx-[-10px] max-[700px]:min-h-0 max-[700px]:px-[10px] max-[700px]:py-[9px] max-[700px]:hover:pl-[13px] max-[700px]:focus-visible:pl-[13px] ${item.imageSrc ? "max-[700px]:grid-cols-[88px_minmax(0,1fr)_16px] max-[700px]:items-center max-[700px]:gap-x-3 max-[700px]:gap-y-1" : "max-[700px]:flex max-[700px]:flex-wrap max-[700px]:gap-x-2 max-[700px]:gap-y-[3px]"}`} href={item.href} target="_blank" rel="noopener noreferrer">
+            <Link className={`group mx-[-14px] grid min-h-[44px] grid-cols-[34px_minmax(240px,1fr)_minmax(220px,0.9fr)_16px] items-center gap-[10px] rounded-[11px] px-[14px] py-2 text-[var(--muted)] no-underline transition-[color,background-color,padding] duration-[150ms] ease-[ease] hover:pl-[17px] hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] focus-visible:pl-[17px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:mx-[-10px] max-[700px]:min-h-0 max-[700px]:px-[10px] max-[700px]:py-[9px] max-[700px]:hover:pl-[13px] max-[700px]:focus-visible:pl-[13px] ${item.imageSrc ? "max-[700px]:grid-cols-[72px_minmax(0,1fr)_16px] max-[700px]:items-center max-[700px]:gap-x-3 max-[700px]:gap-y-1" : "max-[700px]:flex max-[700px]:flex-wrap max-[700px]:gap-x-2 max-[700px]:gap-y-[3px]"}`} href={item.href} target="_blank" rel="noopener noreferrer">
               {item.imageSrc ? (
-                <Image className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:row-span-2 max-[700px]:size-[84px]" src={item.imageSrc} alt="" width={84} height={84} />
+                <Image className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:row-span-2 max-[700px]:size-[56px]" src={item.imageSrc} alt="" width={56} height={56} />
               ) : (
                 <span className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:mr-0.5 max-[700px]:basis-6" aria-hidden="true" />
               )}
@@ -167,15 +168,15 @@ export default function Resume() {
       </Head>
 
       <div className="mx-auto w-[min(calc(100%_-_48px),1080px)] py-[56px] pb-[40px] max-[700px]:w-[min(calc(100%_-_36px),1080px)] max-[700px]:py-8 max-[700px]:pb-7">
-         <header className="mb-[22px] grid grid-cols-[1fr_auto] items-start justify-between gap-9 max-[700px]:mb-4 max-[700px]:grid-cols-[minmax(0,1fr)_52px] max-[700px]:gap-[14px]">
-           <div>
-             <p className="mb-0 mt-0 text-[18px] tracking-[-0.02em] text-[var(--muted)]">hello, i&apos;m</p>
-             <h1 className="m-0 text-[clamp(56px,7.2vw,88px)] font-normal leading-[0.98] tracking-[-0.065em]">advay.</h1>
-             <p className="col-span-full mb-0 mt-[10px] max-w-[680px] text-[clamp(18px,1.8vw,23px)] font-medium leading-[1.38] tracking-[-0.025em] text-[var(--muted)] max-[700px]:col-span-full">
-               i build things
-             </p>
-           </div>
-           <Link className="group relative block size-[100px] overflow-hidden bg-[#efece8] outline-0 outline-[color-mix(in_srgb,var(--accent)_22%,transparent)] transition-[outline-width,transform] duration-[180ms] ease-[ease] hover:rotate-[2deg] hover:outline-[7px] focus-visible:rotate-[2deg] focus-visible:outline-[7px] max-[700px]:mt-[7px] max-[700px]:size-[72px]" href="/" aria-label="Back to home">
+       <header className="mb-[22px] grid grid-cols-[1fr_auto] items-start justify-between gap-9 pr-4 max-[700px]:mb-4 max-[700px]:grid-cols-[minmax(0,1fr)_52px] max-[700px]:gap-[14px]">
+          <div>
+            <p className="mb-0 mt-0 text-[18px] tracking-[-0.02em] text-[var(--muted)]">hello, i&apos;m</p>
+            <h1 className="m-0 text-[clamp(56px,7.2vw,88px)] font-normal leading-[0.98] tracking-[-0.065em]">advay.</h1>
+            <p className="col-span-full mb-0 mt-[10px] max-w-[680px] text-[clamp(18px,1.8vw,23px)] font-medium leading-[1.38] tracking-[-0.025em] text-[var(--muted)] max-[700px]:col-span-full">
+              i build things
+            </p>
+          </div>
+          <Link className="group relative block size-[100px] overflow-hidden bg-[#efece8] outline-0 outline-[color-mix(in_srgb,var(--accent)_22%,transparent)] transition-[outline-width,transform] duration-[180ms] ease-[ease] hover:rotate-[2deg] hover:outline-[7px] focus-visible:rotate-[2deg] focus-visible:outline-[7px] max-[700px]:mt-[7px] max-[700px]:size-[84px]" href="/" aria-label="Back to home">
             <Image className="absolute inset-0 size-full object-cover [image-rendering:pixelated] transition-[opacity,transform] duration-[500ms] ease-[ease] opacity-0 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100" src="/icons/me-asci.png" alt="" width={100} height={100} priority />
             <Image className="absolute inset-0 size-full scale-100 object-cover [image-rendering:auto] opacity-100 transition-[opacity,transform] duration-[500ms] ease-[ease] group-hover:scale-[0.96] group-hover:opacity-0 group-focus-visible:scale-[0.96] group-focus-visible:opacity-0" src="/icons/me.png" alt="" width={100} height={100} priority />
             <span className="absolute inset-x-0 bottom-0 translate-y-full bg-[var(--accent)] p-1 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--paper)] transition-transform duration-[180ms] ease-[ease] group-hover:translate-y-0 group-focus-visible:translate-y-0">home</span>
@@ -188,20 +189,21 @@ export default function Resume() {
 
         <footer className="mt-[42px] flex items-end justify-between gap-6 max-[700px]:mt-9 max-[700px]:items-center">
           <nav className="flex gap-2" aria-label="Social links">
-            <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none" href="mailto:advay.chandorkar@gmail.com" aria-label="Email Advay">
+            <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="mailto:advay.chandorkar@gmail.com" aria-label="Email Advay">
               <MdEmail />
             </Link>
-            <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none" href="https://www.linkedin.com/in/advay/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://www.linkedin.com/in/advay/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
               <FaLinkedinIn />
             </Link>
-            <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none" href="https://github.com/advayc" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://github.com/advayc" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
               <FaGithub />
             </Link>
-            <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none" href="https://x.com/advay_c" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://x.com/advay_c" target="_blank" rel="noopener noreferrer" aria-label="X">
               <FaXTwitter />
             </Link>
           </nav>
           <div className="flex items-center gap-4 max-[700px]:gap-[6px]">
+            <HitCounter id="home" showLabel={false} className="text-[13px]" />
             <div className="relative" ref={accentPickerRef}>
               <button
                 className="flex cursor-pointer items-center gap-[9px] rounded-lg border-0 bg-transparent px-[10px] py-[7px] font-inherit text-[12px] uppercase tracking-[0.08em] text-[var(--muted)] transition-[color,background-color] duration-[150ms] ease-[ease] hover:bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:[&>span]:hidden"
