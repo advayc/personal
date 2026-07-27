@@ -81,7 +81,7 @@ export const fileConfigs = [
           description: "Connects gurdwara meals to families in need with simple listings, requests, and pickup details.",
           projectLink: "https://sevaeats.vercel.app/",
           repoUrl: "https://github.com/Seva-Eats/seva-eats",
-          imageSrc: "/projects/seva-eats.png",
+          imageSrc: "/projects/seva.png",
           technologies: "react native, typescript"
         },
         {

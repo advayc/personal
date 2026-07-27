@@ -92,15 +92,17 @@ type Item = {
 };
 
 function ResumeSection({ title, items }: { title: string; items: Item[] }) {
+  const showDot = title === "things i made";
+
   return (
-    <section className={styles.section} aria-labelledby={`${title}-heading`}>
+    <section className={`${styles.section} ${showDot ? styles.sectionWithDot : ""}`} aria-labelledby={`${title}-heading`}>
       <h2 id={`${title}-heading`}>{title}</h2>
       <ul>
         {items.map((item) => (
           <li key={item.title}>
             <Link href={item.href} target="_blank" rel="noopener noreferrer">
               {item.imageSrc ? (
-                <Image className={styles.itemIcon} src={item.imageSrc} alt="" width={24} height={24} />
+                <Image className={styles.itemIcon} src={item.imageSrc} alt="" width={32} height={32} />
               ) : (
                 <span className={styles.itemIconPlaceholder} aria-hidden="true" />
               )}
@@ -116,14 +118,31 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
 }
 
 export default function Resume() {
-  const [accentColor, setAccentColor] = useState("#ff3908");
+  const [accentColor, setAccentColor] = useState("#F59E0B");
   const [isAccentPickerOpen, setIsAccentPickerOpen] = useState(false);
   const accentPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const storedAccent = window.localStorage.getItem("resumeAccentColor");
+    const storedAccent = window.localStorage.getItem("siteAccentColor") ?? window.localStorage.getItem("resumeAccentColor");
     if (storedAccent) setAccentColor(storedAccent);
   }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--accent-color", accentColor);
+    const rgb = accentColor.replace("#", "");
+    if (rgb.length === 6) {
+      const r = parseInt(rgb.slice(0, 2), 16);
+      const g = parseInt(rgb.slice(2, 4), 16);
+      const b = parseInt(rgb.slice(4, 6), 16);
+      root.style.setProperty("--accent-color-rgb", `${r}, ${g}, ${b}`);
+    }
+
+    try {
+      window.localStorage.setItem("siteAccentColor", accentColor);
+      window.localStorage.removeItem("resumeAccentColor");
+    } catch {}
+  }, [accentColor]);
 
   useEffect(() => {
     const closePicker = (event: MouseEvent) => {
@@ -137,7 +156,6 @@ export default function Resume() {
 
   const updateAccentColor = (color: string) => {
     setAccentColor(color);
-    window.localStorage.setItem("resumeAccentColor", color);
   };
 
   return (
@@ -161,7 +179,8 @@ export default function Resume() {
             </p>
           </div>
           <Link className={styles.avatar} href="/" aria-label="Back to home">
-            <Image src="/favicon.png" alt="" width={72} height={72} priority />
+            <Image className={styles.asciiAvatar} src="/icons/me-asci.png" alt="" width={72} height={72} priority />
+            <Image className={styles.normalAvatar} src="/icons/me.png" alt="" width={72} height={72} priority />
             <span>home</span>
           </Link>
         </header>
@@ -217,26 +236,32 @@ export default function Resume() {
                     ))}
                   </div>
                   <label className={styles.customColor}>
-                    <span>custom hex</span>
-                    <input
-                      type="text"
-                      value={accentColor}
-                      onChange={(event) => {
-                        const value = event.target.value;
-                        if (/^#[0-9a-f]{0,6}$/i.test(value)) updateAccentColor(value);
-                      }}
-                      maxLength={7}
-                      placeholder="#ff3908"
-                      spellCheck={false}
-                      aria-label="Custom accent hex color"
-                    />
+                    <span className={styles.customLabel}>
+                      <i style={{ backgroundColor: accentColor }} aria-hidden="true" />
+                      custom color
+                    </span>
+                    <span className={styles.hexField}>
+                      <span>#</span>
+                      <input
+                        type="text"
+                        value={accentColor.replace(/^#/, "")}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          if (/^[0-9a-f]{0,6}$/i.test(value)) updateAccentColor(`#${value}`);
+                        }}
+                        maxLength={6}
+                        placeholder="ff3908"
+                        spellCheck={false}
+                        aria-label="Custom accent hex color"
+                      />
+                    </span>
                   </label>
                 </div>
               )}
             </div>
-            <Link className={styles.pdfLink} href="/resume.pdf" target="_blank" aria-label="Open resume PDF">
+            <Link className={styles.pdfLink} href="/resume.pdf"  target="_blank" aria-label="Open resume PDF">
               <span>full résumé</span>
-              <FaFilePdf aria-hidden="true" />
+              <FaFilePdf aria-hidden="true"/>
             </Link>
           </div>
         </footer>

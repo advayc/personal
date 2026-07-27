@@ -62,9 +62,35 @@
 }
 
 .avatar img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   image-rendering: pixelated;
+  object-fit: cover;
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+.asciiAvatar {
+  opacity: 1;
+}
+
+.normalAvatar {
+  opacity: 0;
+  transform: scale(1.04);
+  image-rendering: auto;
+}
+
+.avatar:hover .asciiAvatar,
+.avatar:focus-visible .asciiAvatar {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.avatar:hover .normalAvatar,
+.avatar:focus-visible .normalAvatar {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .avatar span {
@@ -97,6 +123,24 @@
   margin-top: 22px;
 }
 
+.sectionWithDot li {
+  position: relative;
+  padding-left: 0;
+  margin-left: 10px;
+}
+
+.sectionWithDot li::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: translateY(-50%);
+}
+
 .section h2 {
   margin: 0 0 10px;
   font-size: 27px;
@@ -116,7 +160,7 @@
 
 .section a {
   display: grid;
-  grid-template-columns: 26px minmax(240px, 1fr) minmax(220px, 0.9fr) 16px;
+  grid-template-columns: 34px minmax(240px, 1fr) minmax(220px, 0.9fr) 16px;
   align-items: center;
   gap: 10px;
   min-height: 44px;
@@ -130,14 +174,14 @@
 
 .itemIcon,
 .itemIconPlaceholder {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
+  font-size: 22px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
   color: var(--muted);
   transition: color 150ms ease;
-}
-
-.itemIconPlaceholder {
-  visibility: hidden;
 }
 
 .section a:hover,
@@ -286,34 +330,60 @@
 }
 
 .customColor {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: block;
   margin-top: 13px;
   padding-top: 11px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.customColor span {
+.customLabel {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
   color: var(--muted);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.customColor input {
-  width: 69px;
-  padding: 4px 5px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 5px;
-  color: var(--ink);
-  background: #171717;
-  font: inherit;
-  font-size: 11px;
+.customLabel i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
 
-.customColor input:focus {
+.hexField {
+  display: flex;
+  align-items: center;
+  height: 29px;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 5px;
+  background: #171717;
+  color: var(--muted);
+  font-size: 12px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.hexField:focus-within {
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.hexField input {
+  width: 100%;
+  min-width: 0;
+  padding: 0 0 0 2px;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+}
+
+.hexField input:focus {
   outline: none;
 }
 
@@ -351,6 +421,7 @@
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  padding: 7px;
 }
 
 .pdfLink i {
@@ -363,6 +434,8 @@
 
 .pdfLink:hover,
 .pdfLink:focus-visible {
+  border-radius: 5px;
+  padding: 7px;
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 18%, transparent);
   outline: none;
