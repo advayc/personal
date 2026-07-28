@@ -260,7 +260,7 @@ export default function Resume() {
 
         <ResumeSection title="what im doing" items={current} />
         <ResumeSection title="things ive done" items={previous} />
-        <ResumeSection title="things ive made" items={projects} />
+        <ResumeSection title="things ive built" items={projects} />
 
         <footer className="mt-[42px] flex items-end justify-between gap-6 max-[700px]:mt-9 max-[700px]:items-center">
           <nav className="flex gap-2" aria-label="Social links">
