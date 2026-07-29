@@ -85,7 +85,7 @@ const projects = [
 
 const accentColors = ["#F59E0B", "#ff3908", "#22D3EE", "#F472B6", "#A78BFA", "#34D399"];
 const bgColors = ["#171717", "#0a0a0a", "#1f1f1f", "#2a2a2a", "#121212", "#222222", "#1a1a1a", "#0d0d0d"];
-type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond' | 'waves';
+type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond';
 const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
   grid: {
     image: 'linear-gradient(rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px)',
@@ -108,10 +108,6 @@ const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
   },
   diamond: {
     image: 'repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.05) 16px, rgba(var(--accent-color-rgb),0.05) 17px), repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.05) 16px, rgba(var(--accent-color-rgb),0.05) 17px)'
-  },
-  waves: {
-    image: 'radial-gradient(ellipse 100% 50% at 50% 0%, rgba(var(--accent-color-rgb),0.1) 0%, transparent 100%), radial-gradient(ellipse 100% 50% at 50% 100%, rgba(var(--accent-color-rgb),0.04) 0%, transparent 100%)',
-    size: '100% 40px'
   },
 };
 

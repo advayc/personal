@@ -10,7 +10,7 @@ import Head from 'next/head';
 import { fileManifest } from '@/lib/fileManifest';
 import { calculateAge } from '@/utils/age';
 
-type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond' | 'waves';
+type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond';
 
 const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
   grid: {
@@ -34,10 +34,6 @@ const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
   },
   diamond: {
     image: 'repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.04) 16px, rgba(var(--accent-color-rgb),0.04) 17px), repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.04) 16px, rgba(var(--accent-color-rgb),0.04) 17px)'
-  },
-  waves: {
-    image: 'radial-gradient(ellipse 100% 50% at 50% 0%, rgba(var(--accent-color-rgb),0.08) 0%, transparent 100%), radial-gradient(ellipse 100% 50% at 50% 100%, rgba(var(--accent-color-rgb),0.03) 0%, transparent 100%)',
-    size: '100% 40px'
   },
 };
 

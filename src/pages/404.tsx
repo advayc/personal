@@ -7,7 +7,7 @@ const SelectionBox = dynamic(() => import("@/components/SelectionBox"), { ssr: f
 const CommandPalette = dynamic(() => import("@/components/CommandPalette"), { ssr: false });
 const ShortcutHint = dynamic(() => import("@/components/ShortcutHint"), { ssr: false });
 
-type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond' | 'waves';
+type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond';
 
 const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
   grid: {
@@ -31,10 +31,6 @@ const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
   },
   diamond: {
     image: 'repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(255,255,255,0.04) 16px, rgba(255,255,255,0.04) 17px), repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(255,255,255,0.04) 16px, rgba(255,255,255,0.04) 17px)'
-  },
-  waves: {
-    image: 'radial-gradient(ellipse 100% 50% at 50% 0%, rgba(255,255,255,0.08) 0%, transparent 100%), radial-gradient(ellipse 100% 50% at 50% 100%, rgba(255,255,255,0.03) 0%, transparent 100%)',
-    size: '100% 40px'
   },
 };
 
