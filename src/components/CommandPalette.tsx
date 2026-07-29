@@ -6,14 +6,14 @@ interface CommandPaletteProps {
   onClose: () => void;
   setAccentColor?: (c: string) => void;
   setFontFamily?: (f: string) => void;
-  setBgStyle?: (s: 'grid' | 'dots' | 'none') => void;
+  setBgStyle?: (s: string) => void;
   setBgColor?: (c: string) => void;
   setTheme?: (t: 'light' | 'dark') => void;
   onReset?: () => void;
   setTextTransform?: (t: 'normal' | 'uppercase' | 'lowercase') => void;
   accentColor?: string;
   fontFamily?: string;
-  bgStyle?: 'grid' | 'dots' | 'none';
+  bgStyle?: string;
   bgColor?: string;
   theme?: 'light' | 'dark';
   textTransform?: 'normal' | 'uppercase' | 'lowercase';
@@ -264,7 +264,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
             <section>
               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Background Style</h4>
               <div className="flex flex-wrap gap-3">
-                {(['grid','dots','none'] as const).map(s => (
+                {['grid','dots','none','stripes','crosshatch','polka','diamond','waves'].map(s => (
                   <button
                     key={s}
                     onClick={() => setBgStyle && setBgStyle(s)}

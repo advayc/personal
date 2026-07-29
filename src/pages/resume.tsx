@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
 import { FaArrowUpRightFromSquare, FaFilePdf, FaXTwitter, FaGear } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
@@ -84,10 +84,36 @@ const projects = [
 ];
 
 const accentColors = ["#F59E0B", "#ff3908", "#22D3EE", "#F472B6", "#A78BFA", "#34D399"];
-const bgStyles = ['grid', 'dots', 'none'] as const;
-const combinations = accentColors.flatMap(color =>
-  bgStyles.map(bgStyle => ({ bgStyle, accentColor: color }))
-);
+const bgColors = ["#171717", "#0a0a0a", "#1f1f1f", "#2a2a2a", "#121212", "#222222", "#1a1a1a", "#0d0d0d"];
+type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond' | 'waves';
+const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
+  grid: {
+    image: 'linear-gradient(rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px)',
+    size: '40px 40px'
+  },
+  dots: {
+    image: 'radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.17) 1px, transparent 0)',
+    size: '26px 26px'
+  },
+  none: { image: 'none' },
+  stripes: {
+    image: 'repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(var(--accent-color-rgb),0.08) 12px, rgba(var(--accent-color-rgb),0.08) 13px)'
+  },
+  crosshatch: {
+    image: 'repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(var(--accent-color-rgb),0.06) 12px, rgba(var(--accent-color-rgb),0.06) 13px), repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(var(--accent-color-rgb),0.06) 12px, rgba(var(--accent-color-rgb),0.06) 13px)'
+  },
+  polka: {
+    image: 'radial-gradient(circle at 30% 30%, rgba(var(--accent-color-rgb),0.12) 2px, transparent 2px), radial-gradient(circle at 80% 80%, rgba(var(--accent-color-rgb),0.12) 2px, transparent 2px)',
+    size: '30px 30px'
+  },
+  diamond: {
+    image: 'repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.05) 16px, rgba(var(--accent-color-rgb),0.05) 17px), repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.05) 16px, rgba(var(--accent-color-rgb),0.05) 17px)'
+  },
+  waves: {
+    image: 'radial-gradient(ellipse 100% 50% at 50% 0%, rgba(var(--accent-color-rgb),0.1) 0%, transparent 100%), radial-gradient(ellipse 100% 50% at 50% 100%, rgba(var(--accent-color-rgb),0.04) 0%, transparent 100%)',
+    size: '100% 40px'
+  },
+};
 
 type Item = {
   title: string;
@@ -126,11 +152,24 @@ export default function Resume() {
   const accentPickerRef = useRef<HTMLDivElement>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [fontFamily, setFontFamily] = useState("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
-  const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('none');
+  const [bgStyle, setBgStyle] = useState<BgStyle>('none');
   const [bgColor, setBgColor] = useState("#171717");
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [textTransform, setTextTransform] = useState<'normal' | 'uppercase' | 'lowercase'>('normal');
   const [showComboIndicator, setShowComboIndicator] = useState(false);
+
+  const combinations = useMemo(() => {
+    const all = accentColors.flatMap(color =>
+      (Object.keys(bgStyleConfig) as BgStyle[]).flatMap(style =>
+        bgColors.map(bgColor => ({ bgStyle: style, accentColor: color, bgColor }))
+      )
+    );
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    return all.slice(0, 30);
+  }, []);
 
   useEffect(() => {
     const storedAccent = window.localStorage.getItem("resumeAccentColor") ?? window.localStorage.getItem("siteAccentColor");
@@ -139,7 +178,7 @@ export default function Resume() {
     const storedSiteBg = window.localStorage.getItem("resumeBgColor");
     if (storedAccent) setAccentColor(storedAccent);
     if (storedTheme === 'light' || storedTheme === 'dark') setTheme(storedTheme);
-    if (storedBgStyle === 'grid' || storedBgStyle === 'dots' || storedBgStyle === 'none') setBgStyle(storedBgStyle);
+    if (storedBgStyle && storedBgStyle in bgStyleConfig) setBgStyle(storedBgStyle as BgStyle);
     if (storedSiteBg) setBgColor(storedSiteBg);
   }, []);
 
@@ -214,7 +253,7 @@ export default function Resume() {
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         e.preventDefault();
         const currentIdx = combinations.findIndex(
-          c => c.bgStyle === bgStyle && c.accentColor === accentColor
+          c => c.bgStyle === bgStyle && c.accentColor === accentColor && c.bgColor === bgColor
         );
         const base = currentIdx === -1 ? 0 : currentIdx;
         const nextIdx = e.key === 'ArrowRight'
@@ -223,6 +262,7 @@ export default function Resume() {
         const combo = combinations[nextIdx];
         setBgStyle(combo.bgStyle);
         setAccentColor(combo.accentColor);
+        setBgColor(combo.bgColor);
         setShowComboIndicator(true);
       } else if (e.key === 'Escape') {
         resetRef.current();
@@ -252,12 +292,9 @@ export default function Resume() {
   resetRef.current = resetAppearance;
 
   const effectiveBgColor = theme === 'light' ? '#eeeeee' : bgColor;
-  const backgroundImage = bgStyle === 'grid'
-    ? 'linear-gradient(rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px)'
-    : bgStyle === 'dots'
-      ? 'radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.17) 1px, transparent 0)'
-      : 'none';
-  const backgroundSize = bgStyle === 'grid' ? '40px 40px' : bgStyle === 'dots' ? '26px 26px' : undefined;
+  const bgConfig = bgStyleConfig[bgStyle] ?? bgStyleConfig.none;
+  const backgroundImage = bgConfig.image;
+  const backgroundSize = bgConfig.size;
   const themeColors = theme === 'light'
     ? { paper: effectiveBgColor, ink: '#1b1917', muted: '#625d59' }
     : { paper: effectiveBgColor, ink: '#f1efed', muted: '#aaa5a2' };
@@ -384,7 +421,7 @@ export default function Resume() {
         </div>
        {showComboIndicator && (
           <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full border border-[rgba(255,255,255,0.08)] bg-[#222] px-4 py-2 text-[12px] text-[var(--muted)] shadow-lg">
-            style {combinations.findIndex(c => c.bgStyle === bgStyle && c.accentColor === accentColor) + 1}/{combinations.length}
+            style {combinations.findIndex(c => c.bgStyle === bgStyle && c.accentColor === accentColor && c.bgColor === bgColor) + 1}/{combinations.length}
           </div>
         )}
        <CommandPalette
