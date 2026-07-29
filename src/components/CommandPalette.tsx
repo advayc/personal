@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { FaHouse, FaXTwitter, FaLinkedin, FaGithub, FaFile, FaEnvelope, FaCode, FaCheck, FaSun, FaMoon, FaRotateLeft } from 'react-icons/fa6';
 
+type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond' | 'waves';
+
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   setAccentColor?: (c: string) => void;
   setFontFamily?: (f: string) => void;
-  setBgStyle?: (s: string) => void;
+  setBgStyle?: (s: BgStyle) => void;
   setBgColor?: (c: string) => void;
   setTheme?: (t: 'light' | 'dark') => void;
   onReset?: () => void;
   setTextTransform?: (t: 'normal' | 'uppercase' | 'lowercase') => void;
   accentColor?: string;
   fontFamily?: string;
-  bgStyle?: string;
+  bgStyle?: BgStyle;
   bgColor?: string;
   theme?: 'light' | 'dark';
   textTransform?: 'normal' | 'uppercase' | 'lowercase';
@@ -264,7 +266,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
             <section>
               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Background Style</h4>
               <div className="flex flex-wrap gap-3">
-                {['grid','dots','none','stripes','crosshatch','polka','diamond','waves'].map(s => (
+                {(['grid','dots','none','stripes','crosshatch','polka','diamond','waves'] as BgStyle[]).map(s => (
                   <button
                     key={s}
                     onClick={() => setBgStyle && setBgStyle(s)}
