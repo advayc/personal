@@ -7,8 +7,39 @@ const SelectionBox = dynamic(() => import("@/components/SelectionBox"), { ssr: f
 const CommandPalette = dynamic(() => import("@/components/CommandPalette"), { ssr: false });
 const ShortcutHint = dynamic(() => import("@/components/ShortcutHint"), { ssr: false });
 
+type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond' | 'waves';
+
+const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
+  grid: {
+    image: 'linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)',
+    size: '40px 40px'
+  },
+  dots: {
+    image: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.16) 1px, transparent 0)',
+    size: '26px 26px'
+  },
+  none: { image: 'none' },
+  stripes: {
+    image: 'repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(255,255,255,0.07) 12px, rgba(255,255,255,0.07) 13px)'
+  },
+  crosshatch: {
+    image: 'repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(255,255,255,0.05) 12px, rgba(255,255,255,0.05) 13px), repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(255,255,255,0.05) 12px, rgba(255,255,255,0.05) 13px)'
+  },
+  polka: {
+    image: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 2px, transparent 2px), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 2px, transparent 2px)',
+    size: '30px 30px'
+  },
+  diamond: {
+    image: 'repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(255,255,255,0.04) 16px, rgba(255,255,255,0.04) 17px), repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(255,255,255,0.04) 16px, rgba(255,255,255,0.04) 17px)'
+  },
+  waves: {
+    image: 'radial-gradient(ellipse 100% 50% at 50% 0%, rgba(255,255,255,0.08) 0%, transparent 100%), radial-gradient(ellipse 100% 50% at 50% 100%, rgba(255,255,255,0.03) 0%, transparent 100%)',
+    size: '100% 40px'
+  },
+};
+
 export default function NotFound() {
-  const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('grid');
+  const [bgStyle, setBgStyle] = useState<BgStyle>('grid');
   const [bgColor, setBgColor] = useState<string>('#0a0a0a');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [accentColor, setAccentColor] = useState<string>('#6366f1');
@@ -20,7 +51,7 @@ export default function NotFound() {
       const storedBg = localStorage.getItem('siteBgStyle');
       const storedBgColor = localStorage.getItem('siteBgColor');
       const storedTheme = localStorage.getItem('siteTheme');
-      if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
+      if (storedBg && storedBg in bgStyleConfig) setBgStyle(storedBg as BgStyle);
       if (storedBgColor) setBgColor(storedBgColor);
       if (storedTheme === 'light' || storedTheme === 'dark') setTheme(storedTheme);
     } catch {}
@@ -41,22 +72,8 @@ export default function NotFound() {
   useEffect(() => { try { localStorage.setItem('siteBgStyle', bgStyle); } catch {} }, [bgStyle]);
   useEffect(() => { try { localStorage.setItem('siteBgColor', bgColor); } catch {} }, [bgColor]);
 
-  const backgroundStyle =
-    bgStyle === 'grid'
-      ? {
-          backgroundColor: bgColor,
-          backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-        }
-      : bgStyle === 'dots'
-        ? {
-            backgroundColor: bgColor,
-            backgroundImage:
-              'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.16) 1px, transparent 0)',
-            backgroundSize: '26px 26px',
-          }
-        : { backgroundColor: bgColor, backgroundImage: 'none' };
+  const cfg = bgStyleConfig[bgStyle] ?? bgStyleConfig.none;
+  const backgroundStyle = { backgroundColor: bgColor, backgroundImage: cfg.image, backgroundSize: cfg.size };
 
   return (
     <main className="flex items-center justify-center min-h-screen">

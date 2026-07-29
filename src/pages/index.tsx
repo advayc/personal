@@ -10,6 +10,37 @@ import Head from 'next/head';
 import { fileManifest } from '@/lib/fileManifest';
 import { calculateAge } from '@/utils/age';
 
+type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond' | 'waves';
+
+const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
+  grid: {
+    image: 'linear-gradient(rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px)',
+    size: '40px 40px'
+  },
+  dots: {
+    image: 'radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.16) 1px, transparent 0)',
+    size: '26px 26px'
+  },
+  none: { image: 'none' },
+  stripes: {
+    image: 'repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(var(--accent-color-rgb),0.07) 12px, rgba(var(--accent-color-rgb),0.07) 13px)'
+  },
+  crosshatch: {
+    image: 'repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(var(--accent-color-rgb),0.05) 12px, rgba(var(--accent-color-rgb),0.05) 13px), repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(var(--accent-color-rgb),0.05) 12px, rgba(var(--accent-color-rgb),0.05) 13px)'
+  },
+  polka: {
+    image: 'radial-gradient(circle at 30% 30%, rgba(var(--accent-color-rgb),0.1) 2px, transparent 2px), radial-gradient(circle at 80% 80%, rgba(var(--accent-color-rgb),0.1) 2px, transparent 2px)',
+    size: '30px 30px'
+  },
+  diamond: {
+    image: 'repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.04) 16px, rgba(var(--accent-color-rgb),0.04) 17px), repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.04) 16px, rgba(var(--accent-color-rgb),0.04) 17px)'
+  },
+  waves: {
+    image: 'radial-gradient(ellipse 100% 50% at 50% 0%, rgba(var(--accent-color-rgb),0.08) 0%, transparent 100%), radial-gradient(ellipse 100% 50% at 50% 100%, rgba(var(--accent-color-rgb),0.03) 0%, transparent 100%)',
+    size: '100% 40px'
+  },
+};
+
 const Terminal = dynamic(() => import("@/components/Terminal"), { ssr: false });
 const DrawTerminal = dynamic(() => import("@/components/DrawTerminal"), { ssr: false });
 const InternetTerminal = dynamic(() => import("@/components/InternetTerminal"), { ssr: false });
@@ -88,7 +119,7 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const [accentColor, setAccentColor] = useState<string>('#22D3EE');
   const [fontFamily, setFontFamily] = useState<string>('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
-  const [bgStyle, setBgStyle] = useState<'grid' | 'dots' | 'none'>('grid');
+  const [bgStyle, setBgStyle] = useState<BgStyle>('grid');
   const [bgColor, setBgColor] = useState<string>('#0a0a0a');
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
@@ -101,7 +132,7 @@ export default function Home() {
       const storedTheme = localStorage.getItem('siteTheme');
       if (storedAccent) setAccentColor(storedAccent);
       if (storedFont) setFontFamily(storedFont);
-      if (storedBg === 'grid' || storedBg === 'dots' || storedBg === 'none') setBgStyle(storedBg);
+      if (storedBg && storedBg in bgStyleConfig) setBgStyle(storedBg as BgStyle);
       if (storedBgColor) setBgColor(storedBgColor);
       if (storedTheme === 'light' || storedTheme === 'dark') setTheme(storedTheme);
     } catch {}
@@ -217,24 +248,8 @@ export default function Home() {
     })();
   }, [setIsTerminalOpen]);
 
-  const backgroundStyle =
-    bgStyle === 'grid'
-      ? {
-          backgroundColor: bgColor,
-          backgroundImage:
-            'linear-gradient(rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.06) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-          fontFamily,
-        }
-      : bgStyle === 'dots'
-        ? {
-            backgroundColor: bgColor,
-            backgroundImage:
-              'radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.16) 1px, transparent 0)',
-            backgroundSize: '26px 26px',
-            fontFamily,
-          }
-        : { backgroundColor: bgColor, backgroundImage: 'none', fontFamily };
+  const bgCfg = bgStyleConfig[bgStyle] ?? bgStyleConfig.none;
+  const backgroundStyle = { backgroundColor: bgColor, backgroundImage: bgCfg.image, backgroundSize: bgCfg.size, fontFamily };
 
   return (
     <main className="flex items-center justify-center min-h-screen">
