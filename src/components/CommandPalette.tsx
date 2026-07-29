@@ -99,7 +99,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
           <div className="flex items-center justify-between">
             <div className="text-white font-medium text-lg flex items-center gap-2">
               <span className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-white/5 text-[var(--accent-color)] text-base">⌘</span>
-              Command Center
+              command center
             </div>
             <div className="flex gap-1 text-[11px] font-mono bg-white/5 rounded-md p-1">
               <button onClick={() => setActiveTab('nav')} className={`px-2 py-0.5 rounded-md transition ${activeTab==='nav'?'bg-[var(--accent-color)]/25 text-white':'text-white/50 hover:text-white hover:bg-white/10'}`}>Nav</button>

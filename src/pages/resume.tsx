@@ -84,6 +84,10 @@ const projects = [
 ];
 
 const accentColors = ["#F59E0B", "#ff3908", "#22D3EE", "#F472B6", "#A78BFA", "#34D399"];
+const bgStyles = ['grid', 'dots', 'none'] as const;
+const combinations = accentColors.flatMap(color =>
+  bgStyles.map(bgStyle => ({ bgStyle, accentColor: color }))
+);
 
 type Item = {
   title: string;
@@ -126,6 +130,7 @@ export default function Resume() {
   const [bgColor, setBgColor] = useState("#171717");
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [textTransform, setTextTransform] = useState<'normal' | 'uppercase' | 'lowercase'>('normal');
+  const [showComboIndicator, setShowComboIndicator] = useState(false);
 
   useEffect(() => {
     const storedAccent = window.localStorage.getItem("resumeAccentColor") ?? window.localStorage.getItem("siteAccentColor");
@@ -197,6 +202,37 @@ export default function Resume() {
     return () => document.removeEventListener("mousedown", closePicker);
   }, []);
 
+  useEffect(() => {
+    if (!showComboIndicator) return;
+    const timer = setTimeout(() => setShowComboIndicator(false), 2000);
+    return () => clearTimeout(timer);
+  }, [showComboIndicator]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isCommandPaletteOpen || isAccentPickerOpen) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const currentIdx = combinations.findIndex(
+          c => c.bgStyle === bgStyle && c.accentColor === accentColor
+        );
+        const base = currentIdx === -1 ? 0 : currentIdx;
+        const nextIdx = e.key === 'ArrowRight'
+          ? (base + 1) % combinations.length
+          : (base - 1 + combinations.length) % combinations.length;
+        const combo = combinations[nextIdx];
+        setBgStyle(combo.bgStyle);
+        setAccentColor(combo.accentColor);
+        setShowComboIndicator(true);
+      } else if (e.key === 'Escape') {
+        resetRef.current();
+        setShowComboIndicator(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCommandPaletteOpen, isAccentPickerOpen, bgStyle, accentColor]);
+
   const updateAccentColor = (color: string) => {
     setAccentColor(color);
   };
@@ -212,6 +248,8 @@ export default function Resume() {
       ["resumeAccentColor", "resumeFontFamily", "resumeBgStyle", "resumeBgColor", "resumeTextTransform"].forEach((key) => window.localStorage.removeItem(key));
     } catch {}
   };
+  const resetRef = useRef(resetAppearance);
+  resetRef.current = resetAppearance;
 
   const effectiveBgColor = theme === 'light' ? '#eeeeee' : bgColor;
   const backgroundImage = bgStyle === 'grid'
@@ -343,7 +381,12 @@ export default function Resume() {
             </Link>
           </div>
          </footer>
-       </div>
+        </div>
+       {showComboIndicator && (
+          <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full border border-[rgba(255,255,255,0.08)] bg-[#222] px-4 py-2 text-[12px] text-[var(--muted)] shadow-lg">
+            style {combinations.findIndex(c => c.bgStyle === bgStyle && c.accentColor === accentColor) + 1}/{combinations.length}
+          </div>
+        )}
        <CommandPalette
          isOpen={isCommandPaletteOpen}
          onClose={() => setIsCommandPaletteOpen(false)}
