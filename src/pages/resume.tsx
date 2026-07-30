@@ -143,7 +143,7 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
 }
 
 export default function Resume() {
-  const [accentColor, setAccentColor] = useState("#22D3EE");
+  const [accentColor, setAccentColor] = useState("#F59E0B");
   const [isAccentPickerOpen, setIsAccentPickerOpen] = useState(false);
   const accentPickerRef = useRef<HTMLDivElement>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -154,6 +154,7 @@ export default function Resume() {
   const [textTransform, setTextTransform] = useState<'normal' | 'uppercase' | 'lowercase'>('normal');
   const [showComboIndicator, setShowComboIndicator] = useState(false);
   const [comboIndex, setComboIndex] = useState(0);
+  const hasLoadedPrefs = useRef(false);
 
   const combinations = useMemo(() => {
     const all = accentColors.flatMap(color =>
@@ -173,13 +174,23 @@ export default function Resume() {
     const storedTheme = window.localStorage.getItem("siteTheme");
     const storedBgStyle = window.localStorage.getItem("resumeBgStyle");
     const storedSiteBg = window.localStorage.getItem("resumeBgColor");
-    if (storedAccent) setAccentColor(storedAccent);
-    if (storedTheme === 'light' || storedTheme === 'dark') setTheme(storedTheme);
-    if (storedBgStyle && storedBgStyle in bgStyleConfig) setBgStyle(storedBgStyle as BgStyle);
-    if (storedSiteBg) setBgColor(storedSiteBg);
+    let loaded = false;
+    if (storedAccent) { setAccentColor(storedAccent); loaded = true; }
+    if (storedTheme === 'light' || storedTheme === 'dark') { setTheme(storedTheme); loaded = true; }
+    if (storedBgStyle && storedBgStyle in bgStyleConfig) { setBgStyle(storedBgStyle as BgStyle); loaded = true; }
+    if (storedSiteBg) { setBgColor(storedSiteBg); loaded = true; }
+    hasLoadedPrefs.current = loaded;
   }, []);
 
   useEffect(() => {
+    if (!hasLoadedPrefs.current && combinations.length > 0) {
+      const combo = combinations[0];
+      setBgStyle(combo.bgStyle);
+      setAccentColor(combo.accentColor);
+      setBgColor(combo.bgColor);
+      setComboIndex(0);
+      return;
+    }
     const idx = combinations.findIndex(
       c => c.bgStyle === bgStyle && c.accentColor === accentColor && c.bgColor === bgColor
     );
@@ -284,13 +295,20 @@ export default function Resume() {
   };
 
   const resetAppearance = () => {
-    setAccentColor("#22D3EE");
+    setAccentColor("#F59E0B");
     setFontFamily("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
     setBgStyle('grid');
     setBgColor("#171717");
     setTheme('dark');
     setTextTransform('normal');
-    setComboIndex(0);
+    hasLoadedPrefs.current = false;
+    if (combinations.length > 0) {
+      const combo = combinations[0];
+      setBgStyle(combo.bgStyle);
+      setAccentColor(combo.accentColor);
+      setBgColor(combo.bgColor);
+      setComboIndex(0);
+    }
     try {
       ["resumeAccentColor", "resumeFontFamily", "resumeBgStyle", "resumeBgColor", "resumeTextTransform"].forEach((key) => window.localStorage.removeItem(key));
     } catch {}
@@ -307,7 +325,7 @@ export default function Resume() {
     : { paper: effectiveBgColor, ink: '#f1efed', muted: '#aaa5a2' };
 
   return (
-    <main className="min-h-screen [--accent:#ff3908] bg-[var(--paper)] text-[var(--ink)] transition-[background-color,color] duration-200 motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor, "--paper": themeColors.paper, "--ink": themeColors.ink, "--muted": themeColors.muted, fontFamily, backgroundColor: effectiveBgColor, backgroundImage, backgroundSize, textTransform: textTransform === 'normal' ? undefined : textTransform } as CSSProperties}>
+    <main className="min-h-screen [--accent:#ff3908] bg-[var(--paper)] text-[var(--ink)] transition-[background-color,color,background-size] duration-500 ease-in-out motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor, "--paper": themeColors.paper, "--ink": themeColors.ink, "--muted": themeColors.muted, fontFamily, backgroundColor: effectiveBgColor, backgroundImage, backgroundSize, textTransform: textTransform === 'normal' ? undefined : textTransform } as CSSProperties}>
       <Head>
         <title>AC</title>
         <meta
@@ -427,7 +445,7 @@ export default function Resume() {
          </footer>
         </div>
        {showComboIndicator && (
-          <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full border border-[rgba(255,255,255,0.08)] bg-[#222] px-4 py-2 text-[12px] text-[var(--muted)] shadow-lg">
+          <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 animate-[fadeIn_0.25s_ease-out] rounded-full border border-[rgba(255,255,255,0.08)] bg-[#222] px-4 py-2 text-[12px] text-[var(--muted)] shadow-lg">
             style {comboIndex + 1}/{combinations.length}
           </div>
         )}
