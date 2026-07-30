@@ -301,14 +301,8 @@ export default function Resume() {
     setBgColor("#171717");
     setTheme('dark');
     setTextTransform('normal');
-    hasLoadedPrefs.current = false;
-    if (combinations.length > 0) {
-      const combo = combinations[0];
-      setBgStyle(combo.bgStyle);
-      setAccentColor(combo.accentColor);
-      setBgColor(combo.bgColor);
-      setComboIndex(0);
-    }
+    hasLoadedPrefs.current = true;
+    setComboIndex(0);
     try {
       ["resumeAccentColor", "resumeFontFamily", "resumeBgStyle", "resumeBgColor", "resumeTextTransform"].forEach((key) => window.localStorage.removeItem(key));
     } catch {}
