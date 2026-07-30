@@ -143,16 +143,17 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
 }
 
 export default function Resume() {
-  const [accentColor, setAccentColor] = useState("#F59E0B");
+  const [accentColor, setAccentColor] = useState("#22D3EE");
   const [isAccentPickerOpen, setIsAccentPickerOpen] = useState(false);
   const accentPickerRef = useRef<HTMLDivElement>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [fontFamily, setFontFamily] = useState("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
-  const [bgStyle, setBgStyle] = useState<BgStyle>('none');
+  const [bgStyle, setBgStyle] = useState<BgStyle>('grid');
   const [bgColor, setBgColor] = useState("#171717");
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [textTransform, setTextTransform] = useState<'normal' | 'uppercase' | 'lowercase'>('normal');
   const [showComboIndicator, setShowComboIndicator] = useState(false);
+  const [comboIndex, setComboIndex] = useState(0);
 
   const combinations = useMemo(() => {
     const all = accentColors.flatMap(color =>
@@ -177,6 +178,13 @@ export default function Resume() {
     if (storedBgStyle && storedBgStyle in bgStyleConfig) setBgStyle(storedBgStyle as BgStyle);
     if (storedSiteBg) setBgColor(storedSiteBg);
   }, []);
+
+  useEffect(() => {
+    const idx = combinations.findIndex(
+      c => c.bgStyle === bgStyle && c.accentColor === accentColor && c.bgColor === bgColor
+    );
+    setComboIndex(idx !== -1 ? idx : 0);
+  }, [combinations, bgStyle, accentColor, bgColor]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -246,16 +254,18 @@ export default function Resume() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isCommandPaletteOpen || isAccentPickerOpen) return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(true);
+        return;
+      }
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         e.preventDefault();
-        const currentIdx = combinations.findIndex(
-          c => c.bgStyle === bgStyle && c.accentColor === accentColor && c.bgColor === bgColor
-        );
-        const base = currentIdx === -1 ? 0 : currentIdx;
         const nextIdx = e.key === 'ArrowRight'
-          ? (base + 1) % combinations.length
-          : (base - 1 + combinations.length) % combinations.length;
+          ? (comboIndex + 1) % combinations.length
+          : (comboIndex - 1 + combinations.length) % combinations.length;
         const combo = combinations[nextIdx];
+        setComboIndex(nextIdx);
         setBgStyle(combo.bgStyle);
         setAccentColor(combo.accentColor);
         setBgColor(combo.bgColor);
@@ -267,19 +277,20 @@ export default function Resume() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isCommandPaletteOpen, isAccentPickerOpen, bgStyle, accentColor]);
+  }, [isCommandPaletteOpen, isAccentPickerOpen, comboIndex, combinations]);
 
   const updateAccentColor = (color: string) => {
     setAccentColor(color);
   };
 
   const resetAppearance = () => {
-    setAccentColor("#F59E0B");
+    setAccentColor("#22D3EE");
     setFontFamily("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
-    setBgStyle('none');
+    setBgStyle('grid');
     setBgColor("#171717");
     setTheme('dark');
     setTextTransform('normal');
+    setComboIndex(0);
     try {
       ["resumeAccentColor", "resumeFontFamily", "resumeBgStyle", "resumeBgColor", "resumeTextTransform"].forEach((key) => window.localStorage.removeItem(key));
     } catch {}
@@ -417,7 +428,7 @@ export default function Resume() {
         </div>
        {showComboIndicator && (
           <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full border border-[rgba(255,255,255,0.08)] bg-[#222] px-4 py-2 text-[12px] text-[var(--muted)] shadow-lg">
-            style {combinations.findIndex(c => c.bgStyle === bgStyle && c.accentColor === accentColor && c.bgColor === bgColor) + 1}/{combinations.length}
+            style {comboIndex + 1}/{combinations.length}
           </div>
         )}
        <CommandPalette

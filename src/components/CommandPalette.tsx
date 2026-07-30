@@ -211,7 +211,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
             <section>
               <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Background Color</h4>
               <div className="flex flex-wrap gap-2 items-center">
-                {['#0a0a0a','#1b1917','#201c1c','#101010','#111827','#0f172a','#0b1020','#000000'].map(c => (
+                {['#171717','#0a0a0a','#1b1917','#201c1c','#101010','#111827','#0f172a','#0b1020','#000000'].map(c => (
                   <button
                     key={c}
                     onClick={() => setBgColor && setBgColor(c)}
