@@ -321,19 +321,39 @@ export default function Resume() {
   return (
     <main className="min-h-screen [--accent:#ff3908] bg-[var(--paper)] text-[var(--ink)] transition-[background-color,color,background-size] duration-500 ease-in-out motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor, "--paper": themeColors.paper, "--ink": themeColors.ink, "--muted": themeColors.muted, fontFamily, backgroundColor: effectiveBgColor, backgroundImage, backgroundSize, textTransform: textTransform === 'normal' ? undefined : textTransform } as CSSProperties}>
       <Head>
-        <title>AC</title>
+        <title>Advay Chandorkar — Resume</title>
+        <meta name="title" content="Advay Chandorkar — Resume" />
         <meta
           name="description"
-          content="A short summary of Advay Chandorkar: developer, computer engineering student, and builder from Toronto."
+          content="Resume of Advay Chandorkar — full-stack developer and computer engineering student at Queen's University in Kingston, ON. Builder of seva eats, neurotechuoft, and other projects."
         />
+        <meta
+          name="keywords"
+          content="Advay Chandorkar, Resume, Full Stack Developer, Computer Engineering, Queen's University, Toronto, Kingston, Canada, Seva Eats, NeurotechUofT, VEX Robotics"
+        />
+        <meta name="author" content="Advay Chandorkar" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://advayc.ca/resume" />
+        <link rel="icon" href="/favicon.png" />
         <meta name="theme-color" content="#171717" />
-        <meta property="og:title" content="Advay Chandorkar" />
-        <meta property="og:description" content="A short summary of Advay Chandorkar: developer, computer engineering student, and builder from Toronto." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://advayc.ca/resume" />
+        <meta property="og:title" content="Advay Chandorkar — Resume" />
+        <meta
+          property="og:description"
+          content="Resume of Advay Chandorkar — full-stack developer and computer engineering student at Queen's University in Kingston, ON. Builder of seva eats, neurotechuoft, and other projects."
+        />
         <meta property="og:image" content="/rmeta.png" />
+        <meta property="og:site_name" content="Advay Chandorkar Portfolio" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Advay Chandorkar" />
-        <meta name="twitter:description" content="A short summary of Advay Chandorkar: developer, computer engineering student, and builder from Toronto." />
+        <meta name="twitter:url" content="https://advayc.ca/resume" />
+        <meta name="twitter:title" content="Advay Chandorkar — Resume" />
+        <meta
+          name="twitter:description"
+          content="Resume of Advay Chandorkar — full-stack developer and computer engineering student at Queen's University in Kingston, ON. Builder of seva eats, neurotechuoft, and other projects."
+        />
         <meta name="twitter:image" content="/rmeta.png" />
+        <meta name="twitter:site" content="@advayc" />
       </Head>
 
       <div className="mx-auto w-[min(calc(100%_-_48px),1080px)] py-[56px] pb-[40px] max-[700px]:w-[min(calc(100%_-_36px),1080px)] max-[700px]:py-8 max-[700px]:pb-7">
