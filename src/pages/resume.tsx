@@ -222,7 +222,7 @@ export default function Resume() {
   }, [accentColor]);
 
   useEffect(() => {
-    const storedFont = window.localStorage.getItem("resumeFontFamily") ?? window.localStorage.getItem("siteFontFamily");
+    const storedFont = window.localStorage.getItem("resumeFontFamily");
     if (storedFont) setFontFamily(storedFont);
     const storedBg = window.localStorage.getItem("resumeBgColor");
     if (storedBg) setBgColor(storedBg);
