@@ -85,7 +85,7 @@ const projects = [
 
 const accentColors = ["#F59E0B", "#ff3908", "#22D3EE", "#F472B6", "#A78BFA", "#34D399"];
 const bgColors = ["#171717", "#0a0a0a", "#1f1f1f", "#2a2a2a", "#121212", "#222222", "#1a1a1a", "#0d0d0d"];
-type BgStyle = 'grid' | 'dots' | 'none' | 'stripes' | 'crosshatch' | 'polka' | 'diamond';
+type BgStyle = 'grid' | 'dots' | 'stripes' | 'crosshatch' | 'polka' | 'diamond' | 'none';
 const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
   grid: {
     image: 'linear-gradient(rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-color-rgb),0.07) 1px, transparent 1px)',
