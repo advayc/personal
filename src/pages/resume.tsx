@@ -95,7 +95,6 @@ const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
     image: 'radial-gradient(circle at 1px 1px, rgba(var(--accent-color-rgb),0.17) 1px, transparent 0)',
     size: '26px 26px'
   },
-  none: { image: 'none' },
   stripes: {
     image: 'repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(var(--accent-color-rgb),0.08) 12px, rgba(var(--accent-color-rgb),0.08) 13px)'
   },
@@ -109,6 +108,7 @@ const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
   diamond: {
     image: 'repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.05) 16px, rgba(var(--accent-color-rgb),0.05) 17px), repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(var(--accent-color-rgb),0.05) 16px, rgba(var(--accent-color-rgb),0.05) 17px)'
   },
+  none: { image: 'none' },
 };
 
 type Item = {
@@ -148,7 +148,7 @@ export default function Resume() {
   const accentPickerRef = useRef<HTMLDivElement>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [fontFamily, setFontFamily] = useState("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
-  const [bgStyle, setBgStyle] = useState<BgStyle>('grid');
+  const [bgStyle, setBgStyle] = useState<BgStyle>('none');
   const [bgColor, setBgColor] = useState("#171717");
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [textTransform, setTextTransform] = useState<'normal' | 'uppercase' | 'lowercase'>('normal');
