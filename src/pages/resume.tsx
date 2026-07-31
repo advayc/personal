@@ -25,6 +25,12 @@ const current = [
 
 const previous = [
   {
+    title: "obotz",
+    detail: "teaching assistant · taught robotics to kids aged 8-14",
+    href: "https://obotz.ca/",
+    imageSrc: "/experiences/obotz_robotics_coding_logo.png",
+  },
+  {
     title: "neurotechuoft",
     detail: "developer · built tools for neurotechnology research",
     href: "https://neurotechuoft.ca/",

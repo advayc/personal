@@ -10,9 +10,18 @@ export const fileConfigs = [
       infoText: "previously: engineering, leadership, and community roles that shaped how i build.",
       workExperience: [
         {
+          title: "Teaching Assistant",
+          company: "Obotz",
+          duration: "Dec 2025 - May 2026",
+          description: "taught robotics and programming to kids aged 8-14 (arduino and electronics)",
+          link: "https://obotz.ca/",
+          imageSrc: "/experiences/obotz_robotics_coding_logo.png",
+          technologies: "arduino"
+        },
+        {
           title: "Software Developer",
           company: "NeurotechUoft",
-          duration: "Jun 2025 - Present",
+          duration: "Jun 2025 - Jun 2026",
           description: "built website and internal tools for a research club at the university of toronto that focuses on neurotechnology research",
           link: "https://neurotechuoft.ca/",
           imageSrc: "/experiences/neurotechuoft.png",
@@ -77,6 +86,16 @@ export const fileConfigs = [
           markerColor: "blue"
         },
         {
+          title: "GFSS Calendar",
+          description: "full stack calendar app for clubs to present meetings/events on a simple calendar (1k+ mau)",
+          projectLink: "https://clubs.advay.ca/",
+          repoUrl: "https://github.com/advayc/gfsscalender",
+          imageSrc: "/projects/gfss-calendar.png",
+          technologies: "nextjs, Typescript",
+          markerText: "(1k monthly users)",
+          markerColor: "red"
+        },
+        {
           title: "Seva Eats",
           description: "Connects gurdwara meals to families in need with simple listings, requests, and pickup details.",
           projectLink: "https://sevaeats.vercel.app/",
@@ -86,21 +105,11 @@ export const fileConfigs = [
         },
         {
           title: "Spy",
-          description: "i saw that every guess the imposter party game app had adds and low customizability for free users. so i built my own app with no ads, open source code, and a simple interface that allows you to customize the game to your liking. built with react native and typescript and shipped to the appstore in < 1 week",
+          description: "app to play the imposter party game",
           projectLink: "https://spy.advay.ca/",
           repoUrl: "https://github.com/advayc/spy",
           imageSrc: "/projects/spy.png",
           technologies: "react native, typeScript"
-        },
-        {
-          title: "GFSS Calendar",
-          description: "clubs and students around my school didnt know when other clubs were meeting. so i built a simple full stack calendar app used by the clubs and school admin to present club meetings/events on a simple calendar system. built with a simple nextjs frontend and was used by my school (1k+ mau)",
-          projectLink: "https://clubs.advay.ca/",
-          repoUrl: "https://github.com/advayc/gfsscalender",
-          imageSrc: "/projects/gfss-calendar.png",
-          technologies: "nextjs, Typescript",
-          markerText: "(1k monthly users)",
-          markerColor: "red"
         },
         {
           title: "GQ Planets",
@@ -113,7 +122,7 @@ export const fileConfigs = [
         },
      {
           title: "miway leaderboard",
-          description: "Tracks MiWay bus speeds live using Mississauga's realtime API and shows a ranked feed.",
+          description: "dashboard to show MiWay bus speeds live using Mississauga's API and shows a ranked feed.",
           projectLink: "https://miway.advay.ca/",
           repoUrl: "https://github.com/advayc/miway-leaderboard",
           imageSrc: "/projects/miway-leaderboard.png",
@@ -121,7 +130,7 @@ export const fileConfigs = [
         },
         {
           title: "nums",
-          description: "Tiny Go service for counting page views with a clean JSON API and badge output.",
+          description: "Go API for counting page views",
           projectLink: "https://docs.advay.ca/",
           repoUrl: "https://github.com/advayc/nums",
           imageSrc: "/projects/nums.png",
