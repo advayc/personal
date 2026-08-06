@@ -41,7 +41,7 @@ export const fileConfigs = [
           company: "FutureMD",
           duration: "Jun 2024 - Apr 2026",
           description: "coded website for a healthcare nonprofit that provides free healthcare to teens intreseted in medicine. found sponsors and organized a workshop event through seo and socialmedia marketing",
-          link: "https://futuremd.net/",
+          link: "https://web.archive.org/web/20250826080611/https://futuremd.net/?",
           imageSrc: "/experiences/futuremd.png",
           technologies: "nextjs, typescript"
         },
