@@ -189,14 +189,6 @@ export default function Resume() {
   }, []);
 
   useEffect(() => {
-    if (!hasLoadedPrefs.current && combinations.length > 0) {
-      const combo = combinations[0];
-      setBgStyle(combo.bgStyle);
-      setAccentColor(combo.accentColor);
-      setBgColor(combo.bgColor);
-      setComboIndex(0);
-      return;
-    }
     const idx = combinations.findIndex(
       c => c.bgStyle === bgStyle && c.accentColor === accentColor && c.bgColor === bgColor
     );
@@ -303,7 +295,7 @@ export default function Resume() {
   const resetAppearance = () => {
     setAccentColor("#F59E0B");
     setFontFamily("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
-    setBgStyle('grid');
+    setBgStyle('none');
     setBgColor("#171717");
     setTheme('dark');
     setTextTransform('normal');
