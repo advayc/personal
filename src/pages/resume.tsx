@@ -2,11 +2,14 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import dynamic from "next/dynamic";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
-import { FaArrowUpRightFromSquare, FaFilePdf, FaXTwitter, FaGear } from "react-icons/fa6";
+import { FaArrowUpRightFromSquare, FaFilePdf, FaXTwitter, FaGear, FaGlobe } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import HitCounter from "@/components/HitCounter";
 import CommandPalette from "@/components/CommandPalette";
+
+const InternetTerminal = dynamic(() => import("@/components/InternetTerminal"), { ssr: false });
 
 const current = [
   {
@@ -149,13 +152,14 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
 }
 
 export default function Resume() {
-  const [accentColor, setAccentColor] = useState("#F59E0B");
+  const [accentColor, setAccentColor] = useState("#ff3908");
+  const [bgStyle, setBgStyle] = useState<BgStyle>('none');
+  const [bgColor, setBgColor] = useState("#171717");
+  const [fontFamily, setFontFamily] = useState("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
   const [isAccentPickerOpen, setIsAccentPickerOpen] = useState(false);
   const accentPickerRef = useRef<HTMLDivElement>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [fontFamily, setFontFamily] = useState("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
-  const [bgStyle, setBgStyle] = useState<BgStyle>('none');
-  const [bgColor, setBgColor] = useState("#171717");
+  const [isInternetTerminalOpen, setIsInternetTerminalOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [textTransform, setTextTransform] = useState<'normal' | 'uppercase' | 'lowercase'>('normal');
   const [showComboIndicator, setShowComboIndicator] = useState(false);
@@ -319,8 +323,8 @@ export default function Resume() {
   return (
     <main className="min-h-screen [--accent:#ff3908] bg-[var(--paper)] text-[var(--ink)] transition-[background-color,color,background-size] duration-500 ease-in-out motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor, "--paper": themeColors.paper, "--ink": themeColors.ink, "--muted": themeColors.muted, fontFamily, backgroundColor: effectiveBgColor, backgroundImage, backgroundSize, textTransform: textTransform === 'normal' ? undefined : textTransform } as CSSProperties}>
       <Head>
-        <title>Advay Chandorkar — Resume</title>
-        <meta name="title" content="Advay Chandorkar — Resume" />
+        <title>advayc</title>
+        <meta name="title" content="advayc" />
         <meta
           name="description"
           content="Resume of Advay Chandorkar — full-stack developer and computer engineering student at Queen's University in Kingston, ON. Builder of seva eats, neurotechuoft, and other projects."
@@ -388,10 +392,13 @@ export default function Resume() {
             <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://x.com/advay_c" target="_blank" rel="noopener noreferrer" aria-label="X">
               <MdEmail />
             </Link>
-            <button className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" type="button" onClick={() => setIsCommandPaletteOpen((open) => !open)} aria-label="Settings">
-              <FaGear />
-            </button>
-          </nav>
+             <button className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" type="button" onClick={() => setIsCommandPaletteOpen((open) => !open)} aria-label="Settings">
+               <FaGear />
+             </button>
+             <button className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" type="button" onClick={() => setIsInternetTerminalOpen(true)} aria-label="Open internet terminal">
+               <FaGlobe />
+             </button>
+           </nav>
           <div className="flex items-center gap-4 max-[700px]:gap-[6px]">
             <HitCounter id="home" showLabel={false} className="text-[13px]" />
             <div className="relative" ref={accentPickerRef}>
@@ -461,7 +468,7 @@ export default function Resume() {
             style {comboIndex + 1}/{combinations.length}
           </div>
         )}
-       <CommandPalette
+        <CommandPalette
          isOpen={isCommandPaletteOpen}
          onClose={() => setIsCommandPaletteOpen(false)}
          setAccentColor={setAccentColor}
@@ -476,8 +483,14 @@ export default function Resume() {
           bgStyle={bgStyle}
           bgColor={bgColor}
           theme={theme}
-         textTransform={textTransform}
-       />
-     </main>
+          textTransform={textTransform}
+        />
+        {isInternetTerminalOpen && (
+          <InternetTerminal
+            onClose={() => setIsInternetTerminalOpen(false)}
+            headerText="advaychandorkar@personalsite: ~/internet/browser"
+          />
+        )}
+      </main>
   );
 }

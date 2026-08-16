@@ -23,7 +23,13 @@ export default function InternetTerminal({ onClose, headerText }: InternetTermin
   return (
     <motion.div
       className={`terminal-container fixed z-50 font-mono text-sm border border-gray-800/50 bg-[#151515]/90 overflow-hidden rounded-lg`}
-      style={{ width: isMaximized ? 862 : 820, height: isMaximized ? 700 : 600, top: 48, left: 64, touchAction: 'none' }}
+      style={{
+        width: isMaximized ? 'calc(100vw - 24px)' : 'min(820px, calc(100vw - 24px))',
+        height: isMaximized ? 'calc(100vh - 24px)' : 'min(600px, calc(100vh - 24px))',
+        top: 48,
+        left: 'max(12px, min(64px, calc(100vw - 844px)))',
+        touchAction: 'none',
+      }}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       drag
@@ -31,7 +37,12 @@ export default function InternetTerminal({ onClose, headerText }: InternetTermin
       dragListener={false}
       dragMomentum={false}
       dragElastic={0}
-      dragConstraints={{ left: 0, top: 0, right: (typeof window!=='undefined'?window.innerWidth:0) - (isMaximized? 862: 820), bottom: (typeof window!=='undefined'?window.innerHeight:0) - (isMaximized? 700: 600) }}
+      dragConstraints={{
+        left: 0,
+        top: 0,
+        right: typeof window !== 'undefined' ? Math.max(0, window.innerWidth - (isMaximized ? 862 : 820)) : 0,
+        bottom: typeof window !== 'undefined' ? Math.max(0, window.innerHeight - (isMaximized ? 700 : 600)) : 0,
+      }}
     >
       <div className="w-full h-full bg-transparent">
         <Internet
