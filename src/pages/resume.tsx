@@ -293,7 +293,7 @@ export default function Resume() {
   };
 
   const resetAppearance = () => {
-    setAccentColor("#F59E0B");
+    setAccentColor("#ff3908");
     setFontFamily("Helvetica Neue, Helvetica, ui-sans-serif, sans-serif");
     setBgStyle('none');
     setBgColor("#171717");
