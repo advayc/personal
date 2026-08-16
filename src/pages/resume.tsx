@@ -357,7 +357,7 @@ export default function Resume() {
       <div className="mx-auto w-[min(calc(100%_-_48px),1080px)] py-[56px] pb-[40px] max-[700px]:w-[min(calc(100%_-_36px),1080px)] max-[700px]:py-8 max-[700px]:pb-7">
        <header className="mb-[22px] grid grid-cols-[1fr_auto] items-start justify-between gap-9 pr-4 max-[700px]:mb-4 max-[700px]:grid-cols-[minmax(0,1fr)_84px] max-[700px]:gap-[14px]">
           <div>
-            <p className="mb-0 mt-0 text-[18px] tracking-[-0.02em] text-[var(--muted)]">hello, i&apos;m</p>
+            <p className="mb-0 mt-0 text-[18px] tracking-[-0.02em] text-[var(--muted)]">i&apos;m</p>
             <h1 className="m-0 text-[clamp(56px,7.2vw,88px)] font-normal leading-[0.98] tracking-[-0.065em]">advay.</h1>
             <p className="col-span-full mb-0 mt-[10px] max-w-[680px] text-[clamp(18px,1.8vw,23px)] font-medium leading-[1.38] tracking-[-0.025em] text-[var(--muted)] max-[700px]:col-span-full">
               i build things
