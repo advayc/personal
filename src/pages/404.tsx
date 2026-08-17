@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Head from 'next/head';
+import Link from 'next/link';
 
 const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
 const SelectionBox = dynamic(() => import("@/components/SelectionBox"), { ssr: false });
@@ -86,7 +87,7 @@ export default function NotFound() {
           <h1 className="text-4xl font-bold mb-4">error 404 - you aren&apos;t supposed to be here</h1>
           <p className="text-lg mb-6">
             looks like you&apos;ve wandered off the path.
-            head back to the <a href="/" className="hover:underline" style={{ color: 'var(--accent-color)' }}>landing page</a>
+            head back to the <Link href="/" className="hover:underline" style={{ color: 'var(--accent-color)' }}>landing page</Link>
           </p>
         </div>
       </div>

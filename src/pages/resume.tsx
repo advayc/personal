@@ -3,9 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import dynamic from "next/dynamic";
-import { FaGithub, FaLinkedinIn } from "react-icons/fa";
+import { FaGithub, FaLinkedinIn, FaEnvelope } from "react-icons/fa";
 import { FaArrowUpRightFromSquare, FaFilePdf, FaXTwitter, FaGear, FaGlobe } from "react-icons/fa6";
-import { MdEmail } from "react-icons/md";
 import HitCounter from "@/components/HitCounter";
 import CommandPalette from "@/components/CommandPalette";
 
@@ -321,7 +320,7 @@ export default function Resume() {
     : { paper: effectiveBgColor, ink: '#f1efed', muted: '#aaa5a2' };
 
   return (
-    <main className="min-h-screen [--accent:#ff3908] bg-[var(--paper)] text-[var(--ink)] transition-[background-color,color,background-size] duration-500 ease-in-out motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor, "--paper": themeColors.paper, "--ink": themeColors.ink, "--muted": themeColors.muted, fontFamily, backgroundColor: effectiveBgColor, backgroundImage, backgroundSize, textTransform: textTransform === 'normal' ? undefined : textTransform } as CSSProperties}>
+    <main className="min-h-screen min-h-[100dvh] [--accent:#ff3908] bg-[var(--paper)] text-[var(--ink)] transition-[background-color,color,background-size] duration-500 ease-in-out motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor, "--paper": themeColors.paper, "--ink": themeColors.ink, "--muted": themeColors.muted, fontFamily, backgroundColor: effectiveBgColor, backgroundImage, backgroundSize, textTransform: textTransform === 'normal' ? undefined : textTransform } as CSSProperties}>
       <Head>
         <title>advayc</title>
         <meta name="title" content="advayc" />
@@ -358,7 +357,7 @@ export default function Resume() {
         <meta name="twitter:site" content="@advayc" />
       </Head>
 
-      <div className="mx-auto w-[min(calc(100%_-_48px),1080px)] py-[56px] pb-[40px] max-[700px]:w-[min(calc(100%_-_36px),1080px)] max-[700px]:py-8 max-[700px]:pb-7">
+      <div className="mx-auto w-[min(calc(100%_-_48px),1080px)] py-[56px] pb-[40px] max-[700px]:w-[min(calc(100%_-_36px),1080px)] max-[700px]:py-10 max-[700px]:pb-10">
        <header className="mb-[22px] grid grid-cols-[1fr_auto] items-start justify-between gap-9 pr-4 max-[700px]:mb-4 max-[700px]:grid-cols-[minmax(0,1fr)_84px] max-[700px]:gap-[14px]">
           <div>
             <p className="mb-0 mt-0 text-[18px] tracking-[-0.02em] text-[var(--muted)]">i&apos;m</p>
@@ -381,16 +380,16 @@ export default function Resume() {
         <footer className="mt-[42px] flex items-end justify-between gap-6 max-[700px]:mt-9 max-[700px]:items-center">
           <nav className="flex gap-2" aria-label="Social links">
             <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="mailto:advay.chandorkar@gmail.com" aria-label="Email Advay">
-              <FaLinkedinIn />
+              <FaEnvelope />
             </Link>
             <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://www.linkedin.com/in/advay/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-              <FaXTwitter />
+              <FaLinkedinIn />
             </Link>
             <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://github.com/advayc" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
               <FaGithub />
             </Link>
             <Link className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" href="https://x.com/advay_c" target="_blank" rel="noopener noreferrer" aria-label="X">
-              <MdEmail />
+              <FaXTwitter />
             </Link>
              <button className="grid size-[42px] place-items-center rounded-[9px] text-[23px] text-[var(--muted)] transition-[color,background-color,transform] duration-[150ms] ease-[ease] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] hover:outline-none focus-visible:-translate-y-0.5 focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:size-[36px] max-[700px]:text-[18px]" type="button" onClick={() => setIsCommandPaletteOpen((open) => !open)} aria-label="Settings">
                <FaGear />

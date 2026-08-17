@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   --foreground-rgb: 255, 255, 255;
   --text-rgb: 255, 255, 255;
@@ -31,11 +27,16 @@
 
 html {
   background-color: rgb(var(--background-start-rgb));
+  min-height: 100%;
+  min-height: 100dvh;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background-color: rgb(var(--background-start-rgb));
+  min-height: 100%;
+  min-height: 100dvh;
+  margin: 0;
 }
 
 @layer utilities {
