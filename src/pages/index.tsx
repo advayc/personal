@@ -344,7 +344,7 @@ export default function Resume() {
           property="og:description"
           content="Advay Chandorkar — full-stack developer and computer engineering student at Queen's University in Kingston, ON. Builder of seva eats, neurotechuoft, and other projects."
         />
-        <meta property="og:image" content="/meta.png" />
+        <meta property="og:image" content="/rmeta.png" />
         <meta property="og:site_name" content="Advay Chandorkar Portfolio" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content="https://advayc.ca/" />
@@ -353,7 +353,7 @@ export default function Resume() {
           name="twitter:description"
           content="Advay Chandorkar — full-stack developer and computer engineering student at Queen's University in Kingston, ON. Builder of seva eats, neurotechuoft, and other projects."
         />
-        <meta name="twitter:image" content="/meta.png" />
+        <meta name="twitter:image" content="/rmeta.png" />
         <meta name="twitter:site" content="@advayc" />
       </Head>
 
