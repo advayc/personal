@@ -128,20 +128,20 @@ type Item = {
 
 function ResumeSection({ title, items }: { title: string; items: Item[] }) {
   return (
-    <section className="mt-[22px] max-[700px]:mt-[20px]" aria-labelledby={`${title}-heading`}>
-      <h2 id={`${title}-heading`} className="mb-[10px] text-[27px] font-medium leading-[normal] tracking-[-0.025em] max-[700px]:text-[24px]">{title}</h2>
+    <section className="mt-[12px] max-[700px]:mt-[20px]" aria-labelledby={`${title}-heading`}>
+      <h2 id={`${title}-heading`} className="mb-[17px] text-[27px] font-medium leading-[normal] tracking-[-0.025em] max-[700px]:text-[24px]">{title}</h2>
       <ul className="m-0 ml-[14px] list-none p-0 max-[700px]:ml-[10px]">
         {items.map((item) => (
-          <li className="[&+li]:mt-[3px]" key={item.title}>
-            <Link className={`group mx-[-14px] grid min-h-[44px] grid-cols-[34px_minmax(240px,1fr)_minmax(220px,0.9fr)_16px] items-center gap-[10px] rounded-[11px] px-[14px] py-2 text-[var(--muted)] no-underline transition-[color,background-color,padding] duration-[150ms] ease-[ease] hover:pl-[17px] hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] focus-visible:pl-[17px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] focus-visible:outline-none max-[700px]:mx-[-10px] max-[700px]:min-h-0 max-[700px]:px-[10px] max-[700px]:py-[9px] max-[700px]:hover:pl-[13px] max-[700px]:focus-visible:pl-[13px] ${item.imageSrc ? "max-[700px]:grid-cols-[72px_minmax(0,1fr)_16px] max-[700px]:items-center max-[700px]:gap-x-3 max-[700px]:gap-y-1" : "max-[700px]:flex max-[700px]:flex-wrap max-[700px]:gap-x-2 max-[700px]:gap-y-[3px]"}`} href={item.href} target="_blank" rel="noopener noreferrer">
+          <li className="[&+li]:mt-[10px] max-[700px]:[&+li]:mt-[-15px]" key={item.title}>
+            <Link className={`group mx-[-14px] grid min-h-[44px] grid-cols-[34px_minmax(240px,1fr)_minmax(220px,0.9fr)_16px] items-center gap-[10px] rounded-[11px] px-[14px] py-2 text-[var(--muted)] no-underline transition-[color,background-color,padding] duration-[150ms] ease-[ease] hover:pl-[17px] hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] focus-visible:pl-[17px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] max-[700px]:mx-[-10px] max-[700px]:min-h-0 max-[700px]:px-[10px] max-[700px]:py-3 max-[700px]:hover:pl-[13px] max-[700px]:focus-visible:pl-[13px] ${item.imageSrc ? "max-[700px]:grid-cols-[72px_minmax(0,1fr)_16px] max-[700px]:items-center max-[700px]:gap-x-3 max-[700px]:gap-y-1" : "max-[700px]:grid-cols-[24px_minmax(0,1fr)_16px] max-[700px]:gap-x-2 max-[700px]:gap-y-[2px]"}`} href={item.href} target="_blank" rel="noopener noreferrer">
               {item.imageSrc ? (
                 <Image className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:row-span-2 max-[700px]:size-[56px]" src={item.imageSrc} alt="" width={56} height={56} />
               ) : (
-                <span className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:mr-0.5 max-[700px]:basis-6" aria-hidden="true" />
+                <span className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:col-start-1 max-[700px]:row-span-2 max-[700px]:row-start-1 max-[700px]:mr-0.5 max-[700px]:size-6" aria-hidden="true" />
               )}
-              <span className={`text-[clamp(17px,1.6vw,20px)] font-[550] leading-[1.25] tracking-[-0.025em] max-[700px]:text-[17px] ${item.imageSrc ? "max-[700px]:col-start-2 max-[700px]:row-start-1 max-[700px]:w-auto" : "max-[700px]:w-[calc(100%_-_24px)]"}`}>{item.title}</span>
-              <span className={`text-right text-[15px] leading-[1.35] opacity-[0.72] transition-[opacity] duration-[150ms] ease-[ease] group-hover:opacity-100 group-focus-visible:opacity-100 max-[700px]:text-[14px] ${item.imageSrc ? "max-[700px]:col-start-2 max-[700px]:row-start-2 max-[700px]:w-auto max-[700px]:text-left" : "max-[700px]:w-full max-[700px]:text-left"}`}>{item.detail}</span>
-              <FaArrowUpRightFromSquare className={`size-3 -translate-x-1 translate-y-1 opacity-0 transition-[opacity,transform] duration-[150ms] ease-[ease] group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 max-[700px]:ml-auto ${item.imageSrc ? "max-[700px]:col-start-3 max-[700px]:row-span-2 max-[700px]:row-start-1" : ""}`} aria-hidden="true" />
+              <span className={`text-[clamp(17px,1.6vw,20px)] font-[550] leading-[1.25] tracking-[-0.025em] max-[700px]:text-[18px] ${item.imageSrc ? "max-[700px]:col-start-2 max-[700px]:row-start-1 max-[700px]:w-auto" : "max-[700px]:col-start-2 max-[700px]:row-start-1 max-[700px]:w-auto"}`}>{item.title}</span>
+              <span className={`text-right text-[15px] leading-[1.35] opacity-[0.72] transition-[opacity] duration-[150ms] ease-[ease] group-hover:opacity-100 group-focus-visible:opacity-100 max-[700px]:text-[14px] ${item.imageSrc ? "max-[700px]:col-start-2 max-[700px]:row-start-2 max-[700px]:w-auto max-[700px]:text-left" : "max-[700px]:col-start-2 max-[700px]:row-start-2 max-[700px]:w-auto max-[700px]:text-left"}`}>{item.detail}</span>
+              <FaArrowUpRightFromSquare className={`size-3.5 -translate-x-1 translate-y-1 self-center opacity-0 transition-[opacity,transform] duration-[150ms] ease-[ease] group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 max-[700px]:col-start-3 max-[700px]:row-span-2 max-[700px]:row-start-1 max-[700px]:ml-0 ${item.imageSrc ? "" : ""}`} aria-hidden="true" />
             </Link>
           </li>
         ))}
@@ -320,7 +320,7 @@ export default function Resume() {
     : { paper: effectiveBgColor, ink: '#f1efed', muted: '#aaa5a2' };
 
   return (
-    <main className="min-h-screen min-h-[100dvh] [--accent:#ff3908] bg-[var(--paper)] text-[var(--ink)] transition-[background-color,color,background-size] duration-500 ease-in-out motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor, "--paper": themeColors.paper, "--ink": themeColors.ink, "--muted": themeColors.muted, fontFamily, backgroundColor: effectiveBgColor, backgroundImage, backgroundSize, textTransform: textTransform === 'normal' ? undefined : textTransform } as CSSProperties}>
+    <main className="min-h-screen min-h-[100dvh] w-full overflow-x-hidden [--accent:#ff3908] bg-[var(--paper)] text-[var(--ink)] transition-[background-color,color,background-size] duration-500 ease-in-out motion-reduce:[&_*]:[scroll-behavior:auto!important] motion-reduce:[&_*]:[transition-duration:0.01ms!important]" style={{ "--accent": accentColor, "--paper": themeColors.paper, "--ink": themeColors.ink, "--muted": themeColors.muted, fontFamily, backgroundColor: effectiveBgColor, backgroundImage, backgroundSize, textTransform: textTransform === 'normal' ? undefined : textTransform } as CSSProperties}>
       <Head>
         <title>advayc</title>
         <meta name="title" content="advayc" />
@@ -357,7 +357,7 @@ export default function Resume() {
         <meta name="twitter:site" content="@advayc" />
       </Head>
 
-      <div className="mx-auto w-[min(calc(100%_-_48px),1080px)] py-[56px] pb-[40px] max-[700px]:w-[min(calc(100%_-_36px),1080px)] max-[700px]:py-10 max-[700px]:pb-10">
+       <div className="mx-auto w-[min(calc(100%_-_48px),1080px)] py-[56px] pb-[40px] max-[700px]:w-[min(calc(100%_-_36px),1080px)] max-[700px]:py-10 max-[700px]:pb-10">
        <header className="mb-[22px] grid grid-cols-[1fr_auto] items-start justify-between gap-9 pr-4 max-[700px]:mb-4 max-[700px]:grid-cols-[minmax(0,1fr)_84px] max-[700px]:gap-[14px]">
           <div>
             <p className="mb-0 mt-0 text-[18px] tracking-[-0.02em] text-[var(--muted)]">i&apos;m</p>

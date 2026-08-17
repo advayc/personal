@@ -29,6 +29,8 @@ html {
   background-color: rgb(var(--background-start-rgb));
   min-height: 100%;
   min-height: 100dvh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -37,6 +39,15 @@ body {
   min-height: 100%;
   min-height: 100dvh;
   margin: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#__next {
+  min-height: 100%;
+  min-height: 100dvh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 @layer utilities {
