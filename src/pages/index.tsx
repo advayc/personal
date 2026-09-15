@@ -150,6 +150,42 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
   );
 }
 
+function MountainFooter() {
+  return (
+    <section aria-label="Layered mountain landscape" className="mt-[48px] w-full border-t border-[color-mix(in_srgb,var(--ink)_14%,transparent)] pt-[2.5rem] max-[700px]:mt-9 max-[700px]:pt-8">
+      <div className="flex items-end justify-between gap-4 px-[max(24px,6.5vw)] pb-[2rem] max-[700px]:flex-col max-[700px]:items-start max-[700px]:pb-6">
+        <span className="pb-1 text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">kingston, on — 44.23° n</span>
+        <p className="m-0 text-right text-[clamp(2.2rem,5vw,5rem)] font-normal leading-[0.9] tracking-[-0.07em] text-[var(--ink)] max-[700px]:text-left">
+          reach new <strong className="font-normal text-[var(--accent)]">heights.</strong>
+        </p>
+      </div>
+      <div className="relative h-[clamp(19rem,38vw,30rem)] overflow-hidden">
+        <svg
+          className="absolute bottom-0 left-0 h-full w-full"
+          viewBox="0 0 1600 520"
+          role="img"
+          aria-label="Layered mountain landscape"
+          preserveAspectRatio="xMidYMax slice"
+        >
+          <path d="M0 382 L170 260 L260 318 L440 116 L555 235 L720 54 L895 276 L1080 128 L1240 256 L1408 74 L1600 228 V520 H0 Z" style={{ fill: "color-mix(in srgb, var(--ink) 16%, var(--paper))" }} />
+          <path d="M0 382 L170 260 L260 318 L440 116 L555 235 L720 54 L895 276 L1080 128 L1240 256 L1408 74 L1600 228" fill="none" strokeWidth={2} vectorEffect="non-scaling-stroke" style={{ stroke: "var(--muted)" }} />
+          <path d="M0 438 L214 310 L370 390 L560 206 L702 302 L868 178 L1026 344 L1228 206 L1398 334 L1600 224 V520 H0 Z" style={{ fill: "color-mix(in srgb, var(--ink) 30%, var(--paper))" }} />
+          <path d="M0 438 L214 310 L370 390 L560 206 L702 302 L868 178 L1026 344 L1228 206 L1398 334 L1600 224" fill="none" strokeWidth={2} vectorEffect="non-scaling-stroke" style={{ stroke: "color-mix(in srgb, var(--ink) 45%, var(--paper))" }} />
+          <path d="M0 480 L156 408 L312 454 L496 326 L660 420 L838 300 L1000 430 L1176 326 L1350 414 L1600 332 V520 H0 Z" style={{ fill: "color-mix(in srgb, var(--ink) 55%, var(--paper))" }} />
+          <path d="M0 480 L156 408 L312 454 L496 326 L660 420 L838 300 L1000 430 L1176 326 L1350 414 L1600 332" fill="none" strokeWidth={3} vectorEffect="non-scaling-stroke" style={{ stroke: "var(--accent)" }} />
+          <path d="M690 94 L720 54 L752 94 L735 87 L720 112 L706 88 Z M413 153 L440 116 L468 153 L450 145 L440 165 L428 146 Z M1384 108 L1408 74 L1438 112 L1416 101 L1406 122 Z" style={{ fill: "#f4f1ea" }} />
+        </svg>
+        <div aria-hidden="true" className="mountain-scan pointer-events-none absolute top-0 h-full w-[18%]" style={{ background: "linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 22%, transparent), transparent)", transform: "skewX(-18deg)" }} />
+      </div>
+      <style jsx>{`
+        .mountain-scan { left: -30%; animation: mountain-scan 7s ease-in-out infinite; }
+        @keyframes mountain-scan { 0% { left: -30%; } 55%, 100% { left: 115%; } }
+        @media (prefers-reduced-motion: reduce) { .mountain-scan { animation: none; } }
+      `}</style>
+    </section>
+  );
+}
+
 export default function Resume() {
   const [accentColor, setAccentColor] = useState("#ff3908");
   const [bgStyle, setBgStyle] = useState<BgStyle>('none');
@@ -462,6 +498,7 @@ export default function Resume() {
           </div>
          </footer>
         </div>
+        <MountainFooter />
        {showComboIndicator && (
           <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 animate-[fadeIn_0.25s_ease-out] rounded-full border border-[rgba(255,255,255,0.08)] bg-[#222] px-4 py-2 text-[12px] text-[var(--muted)] shadow-lg">
             style {comboIndex + 1}/{combinations.length}
