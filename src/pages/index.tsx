@@ -12,6 +12,12 @@ const InternetTerminal = dynamic(() => import("@/components/InternetTerminal"), 
 
 const current = [
   {
+    title: "working on diffusion models at magic hour",
+    detail: "ai video + image generation · san francisco, ca",
+    href: "https://magichour.ai/",
+    imageSrc: "/experiences/magichour.png",
+  },
+  {
     title: "studying computer engineering at queen's university",
     detail: "incoming student · kingston, on 📍",
     href: "https://www.queensu.ca/engineering/",
