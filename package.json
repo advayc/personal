@@ -14,6 +14,9 @@
     "typecheck": "tsc --noEmit"
   },
   "packageManager": "yarn@1.22.22",
+  "engines": {
+    "node": "24.x"
+  },
   "dependencies": {
     "@next/mdx": "^16.2.12",
     "@vercel/analytics": "^1.5.0",
