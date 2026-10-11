@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^brew info node@24 \\| sed -n '1,25p'$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

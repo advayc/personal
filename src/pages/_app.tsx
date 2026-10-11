@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import "@/components/anatomy/iso.css";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import type { AppProps } from "next/app";
