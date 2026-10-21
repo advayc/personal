@@ -40,7 +40,7 @@ const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
 const Terminal = dynamic(() => import("@/components/Terminal"), { ssr: false });
 const DrawTerminal = dynamic(() => import("@/components/DrawTerminal"), { ssr: false });
 const InternetTerminal = dynamic(() => import("@/components/InternetTerminal"), { ssr: false });
-const CommandPalette = dynamic(() => import("@/components/CommandPalette"), { ssr: false });
+const CommandPalette = dynamic(() => import("@/components/versions/V2CommandPalette"), { ssr: false });
 const HitCounter = dynamic(() => import("@/components/HitCounter"), { ssr: false });
 
 const prefetchById: Record<string, () => void> = {
@@ -304,7 +304,7 @@ export default function Archive() {
                 right now, i&apos;m an incoming first year ce student @ <Link href="https://queensu.ca">queens university</Link> and i&apos;m working on <Link href="https://github.com/Seva-Eats">seva eats</Link>
               </p>
               <p className="mt-1">
-                to learn more about me, click the files - or view my resume <Link href="/resume.pdf">here</Link> or check out the resume <Link target="_self" href="/">here</Link> !
+                to learn more about me, click the files - or view my resume <Link href="/advay_resume.pdf">here</Link> or check out the resume <Link target="_self" href="/">here</Link> !
               </p>
               <div className="mt-2">
                 <HitCounter id="home" variant="hero" fontFamily={fontFamily} />
@@ -359,7 +359,27 @@ export default function Archive() {
       <SelectionBox />
       <ShortcutHint onOpen={() => setIsPaletteOpen(true)} />
       {isPaletteOpen && (
-        <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+        <CommandPalette
+          isOpen={isPaletteOpen}
+          onClose={() => setIsPaletteOpen(false)}
+          accentColor={accentColor}
+          setAccentColor={setAccentColor}
+          fontFamily={fontFamily}
+          setFontFamily={setFontFamily}
+          bgStyle={bgStyle}
+          setBgStyle={setBgStyle}
+          bgColor={bgColor}
+          setBgColor={setBgColor}
+          theme={theme}
+          setTheme={setTheme}
+          onReset={() => {
+            setAccentColor("#22D3EE");
+            setFontFamily('"SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace');
+            setBgStyle("grid");
+            setBgColor("#0a0a0a");
+            setTheme("dark");
+          }}
+        />
       )}
     </main>
   );

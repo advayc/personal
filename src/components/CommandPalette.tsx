@@ -25,7 +25,7 @@ const destinations = [
     detail: "what i’m doing now and before",
     href: "/#experience",
   },
-  { label: "résumé", detail: "open PDF", href: "/resume.pdf", external: true },
+  { label: "résumé", detail: "open PDF", href: "/advay_resume.pdf", external: true },
   {
     label: "email",
     detail: "get in touch",

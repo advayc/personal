@@ -109,6 +109,10 @@ export default function Home() {
           </p>
           <ul className="intro-achievements">
             <li>
+              won a <Link href="/projects/gq-planets">NASA</Link> hackathon at 16 with an exoplanet detection
+              tool (ml).
+            </li>
+            <li>
               went viral on{" "}
               <PreviewLink
                 href="https://x.com/advay_c/status/2109717441349640238"
@@ -126,13 +130,8 @@ export default function Home() {
                 Jane Street puzzles
               </PreviewLink>{" "}in a row at 17.
             </li>
-            <li>
-              won a NASA Space Apps hackathon at 16 with an exoplanet detection
-              tool{" "}
-              <Link href="/projects/gq-planets">
-                (GQ Planets)
-              </Link>
-              .
+            <li key="ios-app">
+              shipped an iOS app in 4 days that reached 10k daily users after learning mobile dev in a day
             </li>
             <li>been programming semi-autonomous robots since i was 13.</li>
           </ul>
@@ -159,7 +158,7 @@ export default function Home() {
       >
         <div className="section-heading">
           <h2 id="experience-heading">experience</h2>
-          <a href="/resume.pdf" target="_blank" rel="noopener noreferrer">
+          <a href="/advay_resume.pdf" target="_blank" rel="noopener noreferrer">
             résumé <FiArrowUpRight aria-hidden="true" />
           </a>
         </div>

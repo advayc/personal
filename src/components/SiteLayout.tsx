@@ -64,16 +64,22 @@ export default function SiteLayout({
         setCommandOpen((open) => !open);
       }
     };
+    const openCommandCenter = () => setCommandOpen(true);
     window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    window.addEventListener("open-site-command-center", openCommandCenter);
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener(
+        "open-site-command-center",
+        openCommandCenter,
+      );
+    };
   }, []);
   const color = backgrounds.find((b) => b.name === background)!.color;
   return (
     <div className={`portfolio${wide ? " portfolio-wide" : ""}`}>
       <Head>
-        <title>
-          {title === "advay chandorkar" ? title : `${title} — advay chandorkar`}
-        </title>
+        <title>{title}</title>
         <meta name="description" content={description} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />

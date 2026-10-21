@@ -40,7 +40,7 @@ export default function PreviewLink({
         ),
         top:
           variant === "dmoj"
-            ? Math.max(16, Math.min(rect.bottom + 10, window.innerHeight - 456))
+            ? Math.max(16, Math.min(rect.top - 200, window.innerHeight - 456))
             : rect.bottom + 10,
       });
   };

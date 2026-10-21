@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiArrowRight, FiArrowUpRight } from "react-icons/fi";
+import { FiArrowRight, FiArrowUpRight, FiCopy, FiExternalLink, FiPlay } from "react-icons/fi";
 
 const examples = [
   { id: "portfolio-home", label: "page views", initial: 1840 },
@@ -12,6 +12,139 @@ const notes = [
   "The Go service checks the request and reads or updates the counter in Redis.",
   "The API can return a number as JSON or text, or render it as a badge.",
 ];
+
+const API_BASE = "/api/nums";
+const requestOptions = [
+  { value: "count", label: "GET /count", format: "json" },
+  { value: "count.txt", label: "GET /count.txt", format: "text" },
+  { value: "badge", label: "GET /badge", format: "svg" },
+  { value: "badge.json", label: "GET /badge.json", format: "json" },
+] as const;
+
+type RequestPath = (typeof requestOptions)[number]["value"];
+
+function LiveRequestConsole() {
+  const [requestPath, setRequestPath] = useState<RequestPath>("count");
+  const [requestId, setRequestId] = useState("portfolio-demo");
+  const [response, setResponse] = useState("");
+  const [status, setStatus] = useState<number | null>(null);
+  const [latency, setLatency] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const upstreamRequestUrl = `https://nums.advay.ca/${requestPath}?id=${encodeURIComponent(requestId || "portfolio-demo")}`;
+  const requestUrl = `${API_BASE}?endpoint=${encodeURIComponent(requestPath)}&id=${encodeURIComponent(requestId || "portfolio-demo")}`;
+  const curlCommand = `curl "${upstreamRequestUrl}"`;
+
+  const sendRequest = async () => {
+    setLoading(true);
+    setStatus(null);
+    setResponse("");
+    const startedAt = performance.now();
+    try {
+      const result = await fetch(requestUrl);
+      const body = await result.text();
+      setStatus(result.status);
+      setLatency(Math.round(performance.now() - startedAt));
+      setResponse(body);
+    } catch (error) {
+      setLatency(Math.round(performance.now() - startedAt));
+      setResponse(error instanceof Error ? error.message : "Request failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyCurl = async () => {
+    await navigator.clipboard.writeText(curlCommand);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  };
+
+  return (
+    <section className="nums-live-console" aria-labelledby="nums-live-title">
+      <div className="nums-live-heading">
+        <div>
+          <span className="nums-eyebrow">live request lab</span>
+          <h3 id="nums-live-title">send a real request</h3>
+        </div>
+        <span className="nums-live-host">
+          <i aria-hidden="true" /> nums.advay.ca
+        </span>
+      </div>
+      <p>
+        These read requests reach the hosted Go API through a secure same-origin
+        proxy. Try a counter ID and inspect the response without leaving the page.
+      </p>
+      <div className="nums-api-toolbar">
+        <label className="nums-operation">
+          <select
+            aria-label="API operation"
+            value={requestPath}
+            onChange={(event) => {
+              setRequestPath(event.target.value as RequestPath);
+              setResponse("");
+              setStatus(null);
+            }}
+          >
+            {requestOptions.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <code><strong>GET</strong> /{requestPath}</code>
+        <button className="nums-send-button" type="button" onClick={() => void sendRequest()} disabled={loading}>
+          {loading ? "Sending…" : "Send"} <FiPlay aria-hidden="true" />
+        </button>
+      </div>
+      <div className="nums-api-body">
+        <div className="nums-query-panel">
+          <h4>Query</h4>
+          <label>
+            counter id
+            <input
+              value={requestId}
+              maxLength={48}
+              onChange={(event) => setRequestId(event.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") void sendRequest();
+              }}
+            />
+          </label>
+          <p>Change the ID to read a different public counter.</p>
+        </div>
+        <div className="nums-api-results">
+          <div className="nums-code-card">
+            <div className="nums-code-card-title">
+              <span>cURL</span>
+              <button type="button" onClick={() => void copyCurl()} aria-label="Copy curl command">
+                <FiCopy aria-hidden="true" /> {copied ? "copied" : "copy"}
+              </button>
+            </div>
+            <pre>{curlCommand}</pre>
+          </div>
+          <div className="nums-code-card" aria-live="polite">
+            <div className="nums-code-card-title">
+              <span className={status !== null && status >= 200 && status < 300 ? "nums-status ok" : "nums-status"}>
+                {status === null ? "response" : `${status}${latency === null ? "" : ` · ${latency}ms`}`}
+              </span>
+              <code>JSON</code>
+            </div>
+            <pre>{loading ? "waiting for nums.advay.ca…" : response || '{\n  "id": "<your counter id>",\n  "hits": 0,\n  "source": "redis"\n}'}</pre>
+          </div>
+        </div>
+      </div>
+      <p className="nums-live-note">
+        <strong>Writes stay server-side.</strong> The <code>/hit</code> endpoint
+        needs <code>X-Auth-Token</code>; use the{" "}
+        <a href="https://docs.advay.ca/api-reference/introduction" target="_blank" rel="noreferrer">
+          API docs <FiExternalLink aria-hidden="true" />
+        </a>{" "}
+        to configure it safely.
+      </p>
+    </section>
+  );
+}
 
 function IsoBox({
   x,
@@ -151,6 +284,7 @@ export default function NumsShowcase() {
         Keep the token on your backend; never ship it in browser code. Redis holds
         the count, while the small Go service handles the API request.
       </p>
+      <LiveRequestConsole />
     </section>
   );
 }

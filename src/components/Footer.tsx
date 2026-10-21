@@ -109,7 +109,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
                     </Link>
                     <Link
                         className="transition-colors duration-200 rounded-md p-1.5 sm:p-2 text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
-                        href="/resume.pdf"
+                        href="/advay_resume.pdf"
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Resume PDF"
