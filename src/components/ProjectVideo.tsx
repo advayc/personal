@@ -2,10 +2,12 @@ import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 export default function ProjectVideo({
   src,
+  webmSrc,
   poster,
   alt,
 }: {
   src: string;
+  webmSrc: string;
   poster: string;
   alt: string;
 }) {
@@ -73,7 +75,10 @@ export default function ProjectVideo({
           dialog.current?.showModal();
         }}
       >
-        <video ref={preview} src={src} poster={poster} muted loop playsInline preload="metadata" aria-hidden="true" />
+        <video ref={preview} poster={poster} muted loop playsInline preload="metadata" aria-hidden="true">
+          <source src={webmSrc} type="video/webm" />
+          <source src={src} type="video/mp4" />
+        </video>
         <span className="zoom-hint" aria-hidden="true">view demo ↗</span>
       </button>
       <dialog className="image-lightbox project-video-lightbox" ref={dialog} aria-label={`Demo preview: ${alt}`} onClick={close}>
@@ -81,7 +86,12 @@ export default function ProjectVideo({
           close <kbd>esc</kbd>
         </button>
         <div className="lightbox-image-wrap">
-          {open && <video src={src} poster={poster} controls autoPlay={motionAllowed} loop playsInline muted />}
+          {open && (
+            <video poster={poster} controls autoPlay={motionAllowed} loop playsInline muted>
+              <source src={webmSrc} type="video/webm" />
+              <source src={src} type="video/mp4" />
+            </video>
+          )}
         </div>
         <p>{alt}</p>
       </dialog>

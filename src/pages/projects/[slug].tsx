@@ -52,6 +52,7 @@ export default function ProjectPage({
             {project.slug === "sitemaker" ? (
               <ProjectVideo
                 src="/projects/sitemaker-demo.mp4"
+                webmSrc="/projects/sitemaker-demo.webm"
                 poster="/projects/sitemaker-demo.png"
                 alt={project.imageAlt || project.title}
               />
