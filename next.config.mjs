@@ -28,6 +28,15 @@ const nextConfig = {
   },
   async headers() {
     return [
+      ...[
+        '/experiences/fast/:path*',
+        '/icons/fast/:path*',
+        '/projects/sitemaker-demo.mp4',
+        '/projects/sitemaker-demo.webm',
+      ].map((source) => ({
+        source,
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }],
+      })),
       {
         source: '/:path*',
         headers: [
