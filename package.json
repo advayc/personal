@@ -4,13 +4,10 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf .next",
-    "predev": "yarn clean",
-    "prebuild": "yarn clean",
-    "prestart": "yarn clean",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit"
   },
   "packageManager": "yarn@1.22.22",

@@ -1,5 +1,6 @@
 import type { GetStaticPaths, GetStaticProps } from "next";
 import ProjectImage from "@/components/ProjectImage";
+import ProjectVideo from "@/components/ProjectVideo";
 import GqSlides from "@/components/projects/GqSlides";
 import NumsShowcase from "@/components/projects/NumsShowcase";
 import Link from "next/link";
@@ -14,10 +15,6 @@ export default function ProjectPage({
   project: Project;
   next: { slug: string; title: string };
 }) {
-  const heroImage =
-    project.slug === "sitemaker"
-      ? "/projects/sitemaker-demo-hq.gif"
-      : project.image;
   return (
     <SiteLayout title={project.title} description={project.summary} wide>
       <Link className="back-link" href="/projects">
@@ -52,15 +49,23 @@ export default function ProjectPage({
           <figure
             className={`project-demo${project.slug === "spy" ? " phone-demo" : ""}${project.slug === "67-detector" ? " photo-demo" : ""}${project.slug === "wrapped" ? " wrapped-demo-crop" : ""}`}
           >
-            <ProjectImage
-              className="project-hero-image"
-              lightboxClassName={project.slug === "wrapped" ? "wrapped-lightbox" : undefined}
-              src={heroImage || project.image || ""}
-              alt={project.imageAlt || project.title}
-              width={project.imageWidth || (project.slug === "sitemaker" ? 480 : 1440)}
-              height={project.imageHeight || (project.slug === "sitemaker" ? 267 : 900)}
-              sizes="(max-width: 740px) calc(100vw - 48px), (max-width: 1200px) 90vw, 1040px"
-            />
+            {project.slug === "sitemaker" ? (
+              <ProjectVideo
+                src="/projects/sitemaker-demo.mp4"
+                poster="/projects/sitemaker-demo.png"
+                alt={project.imageAlt || project.title}
+              />
+            ) : (
+              <ProjectImage
+                className="project-hero-image"
+                lightboxClassName={project.slug === "wrapped" ? "wrapped-lightbox" : undefined}
+                src={project.image || ""}
+                alt={project.imageAlt || project.title}
+                width={project.imageWidth || 1440}
+                height={project.imageHeight || 900}
+                sizes="(max-width: 740px) calc(100vw - 48px), (max-width: 1200px) 90vw, 1040px"
+              />
+            )}
             <figcaption>
               {project.slug === "sitemaker" ? (
                 <>
@@ -68,6 +73,7 @@ export default function ProjectPage({
                   <a href="https://github.com/advayc/sitemaker/blob/main/public/sitemaker_demo_video.mp4">
                     original project video
                   </a>
+                  {" · "}<a href="/projects/sitemaker-demo-hq.gif" download>gif version</a>
                 </>
               ) : (
                 project.imageCaption || `${project.title} — project preview`

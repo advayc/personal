@@ -1,12 +1,14 @@
 import Head from "next/head";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect, useState, type ReactNode } from "react";
 import { FiCommand, FiArrowUpRight } from "react-icons/fi";
-import CommandPalette from "./CommandPalette";
 import HitCounter from "./HitCounter";
 import ThemeSlider from "./ThemeSlider";
 import { SiteHistoryTrigger } from "./SiteHistory";
+
+const CommandPalette = dynamic(() => import("./CommandPalette"), { ssr: false });
 
 export const backgrounds = [
   { name: "gray", color: "#171717" },
@@ -147,12 +149,14 @@ export default function SiteLayout({
           </div>
         </footer>
       </div>
-      <CommandPalette
-        isOpen={commandOpen}
-        onClose={() => setCommandOpen(false)}
-        background={background}
-        onBackgroundChange={setBackground}
-      />
+      {commandOpen && (
+        <CommandPalette
+          isOpen={commandOpen}
+          onClose={() => setCommandOpen(false)}
+          background={background}
+          onBackgroundChange={setBackground}
+        />
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import Image from "next/image";
 export default function ProjectImage({
   src,
@@ -19,6 +19,8 @@ export default function ProjectImage({
 }) {
   const opener = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const animated = src.toLowerCase().endsWith(".gif");
   const close = (event?: MouseEvent<HTMLDialogElement>) => {
     if (event && event.target !== event.currentTarget) return;
     dialog.current?.close();
@@ -26,7 +28,10 @@ export default function ProjectImage({
   useEffect(() => {
     const el = dialog.current;
     if (!el) return;
-    const onClose = () => opener.current?.focus();
+    const onClose = () => {
+      setLightboxOpen(false);
+      opener.current?.focus();
+    };
     el.addEventListener("close", onClose);
     return () => el.removeEventListener("close", onClose);
   }, []);
@@ -37,7 +42,10 @@ export default function ProjectImage({
         ref={opener}
         type="button"
         aria-label={`View larger image: ${alt}`}
-        onClick={() => dialog.current?.showModal()}
+        onClick={() => {
+          setLightboxOpen(true);
+          dialog.current?.showModal();
+        }}
       >
         <Image
           src={src}
@@ -45,6 +53,7 @@ export default function ProjectImage({
           width={width}
           height={height}
           sizes={sizes}
+          unoptimized={animated}
         />
         <span className="zoom-hint" aria-hidden="true">
           view image ↗
@@ -65,7 +74,7 @@ export default function ProjectImage({
           close <kbd>esc</kbd>
         </button>
         <div className="lightbox-image-wrap">
-          <Image src={src} alt={alt} fill sizes="96vw" priority />
+          {lightboxOpen && <Image src={src} alt={alt} fill sizes="96vw" unoptimized={animated} />}
         </div>
         <p>{alt}</p>
       </dialog>

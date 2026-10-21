@@ -6,28 +6,28 @@ import dynamic from "next/dynamic";
 import { FaGithub, FaLinkedinIn, FaEnvelope } from "react-icons/fa";
 import { FaArrowUpRightFromSquare, FaFilePdf, FaXTwitter, FaGear, FaGlobe } from "react-icons/fa6";
 import HitCounter from "@/components/HitCounter";
-import CommandPalette from "@/components/versions/V2CommandPalette";
 
 const InternetTerminal = dynamic(() => import("@/components/InternetTerminal"), { ssr: false });
+const CommandPalette = dynamic(() => import("@/components/versions/V2CommandPalette"), { ssr: false });
 
 const current = [
   {
     title: "working on diffusion models at magic hour",
     detail: "ai video + image generation · san francisco, ca",
     href: "https://magichour.ai/",
-    imageSrc: "/experiences/magichour.png",
+    imageSrc: "/experiences/fast/magichour.webp",
   },
   {
     title: "studying computer engineering at queen's university",
     detail: "incoming student · kingston, on 📍",
     href: "https://www.queensu.ca/engineering/",
-    imageSrc: "/experiences/queenseng.png",
+    imageSrc: "/experiences/fast/queenseng.webp",
   },
   {
     title: "building seva eats",
     detail: "connecting gurdwara meals with families in need",
     href: "https://sevaeats.vercel.app/",
-    imageSrc: "/experiences/seva.png",
+    imageSrc: "/experiences/fast/seva.webp",
   },
 ];
 
@@ -36,31 +36,31 @@ const previous = [
     title: "obotz",
     detail: "teaching assistant · taught robotics to kids aged 8-14",
     href: "https://obotz.ca/",
-    imageSrc: "/experiences/obotz_robotics_coding_logo.png",
+    imageSrc: "/experiences/fast/obotz_robotics_coding_logo.webp",
   },
   {
     title: "neurotechuoft",
     detail: "developer · built tools for neurotechnology research",
     href: "https://neurotechuoft.ca/",
-    imageSrc: "/experiences/neurotechuoft.png",
+    imageSrc: "/experiences/fast/neurotechuoft.webp",
   },
   {
     title: "glenforest computer science club",
     detail: "president · organized coding contests, workshops and events",
     href: "https://github.com/glenforestss",
-    imageSrc: "/experiences/gfsscsclub.png",
+    imageSrc: "/experiences/fast/gfsscsclub.webp",
   },
   {
     title: "vex robotics 31331",
     detail: "team lead · built and coded autonomus robots",
     href: "https://github.com/advayc/31331B-VRC-High-Stakes",
-    imageSrc: "/experiences/vex.png",
+    imageSrc: "/experiences/fast/vex.webp",
   },
   {
     title: "futuremd",
     detail: "vice president · coded websites and led outreach",
     href: "https://futuremd.net/",
-    imageSrc: "/experiences/futuremd.png",
+    imageSrc: "/experiences/fast/futuremd.webp",
   },
 ];
 
@@ -141,7 +141,7 @@ function ResumeSection({ title, items }: { title: string; items: Item[] }) {
           <li className="[&+li]:mt-[10px] max-[700px]:[&+li]:mt-[-15px]" key={item.title}>
             <Link className={`group mx-[-14px] grid min-h-[44px] grid-cols-[34px_minmax(240px,1fr)_minmax(220px,0.9fr)_16px] items-center gap-[10px] rounded-[11px] px-[14px] py-2 text-[var(--muted)] no-underline transition-[color,background-color,padding] duration-[150ms] ease-[ease] hover:pl-[17px] hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:text-[var(--accent)] focus-visible:pl-[17px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] focus-visible:text-[var(--accent)] max-[700px]:mx-[-10px] max-[700px]:min-h-0 max-[700px]:px-[10px] max-[700px]:py-3 max-[700px]:hover:pl-[13px] max-[700px]:focus-visible:pl-[13px] ${item.imageSrc ? "max-[700px]:grid-cols-[72px_minmax(0,1fr)_16px] max-[700px]:items-center max-[700px]:gap-x-3 max-[700px]:gap-y-1" : "max-[700px]:grid-cols-[24px_minmax(0,1fr)_16px] max-[700px]:gap-x-2 max-[700px]:gap-y-[2px]"}`} href={item.href} target="_blank" rel="noopener noreferrer">
               {item.imageSrc ? (
-                <Image className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:row-span-2 max-[700px]:size-[56px]" src={item.imageSrc} alt="" width={56} height={56} />
+                <Image className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:row-span-2 max-[700px]:size-[56px]" src={item.imageSrc} alt="" width={56} height={56} loading="eager" unoptimized />
               ) : (
                 <span className="grid size-8 place-items-center text-[22px] leading-none text-[var(--muted)] transition-[color] duration-[150ms] ease-[ease] group-hover:text-[var(--accent)] group-focus-visible:text-[var(--accent)] max-[700px]:col-start-1 max-[700px]:row-span-2 max-[700px]:row-start-1 max-[700px]:mr-0.5 max-[700px]:size-6" aria-hidden="true" />
               )}
@@ -409,8 +409,8 @@ export default function Resume() {
             </p>
           </div>
           <Link className="group relative block size-[100px] overflow-hidden bg-[#efece8] outline-0 outline-[color-mix(in_srgb,var(--accent)_22%,transparent)] transition-[outline-width,transform] duration-[180ms] ease-[ease] hover:rotate-[2deg] hover:outline-[7px] focus-visible:rotate-[2deg] focus-visible:outline-[7px] max-[700px]:mt-[7px] max-[700px]:size-[84px]" href="/archive" aria-label="View archive">
-            <Image className="absolute inset-0 size-full object-cover [image-rendering:pixelated] transition-[opacity,transform] duration-[500ms] ease-[ease] opacity-0 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100" src="/icons/me-asci.png" alt="" width={100} height={100} priority />
-            <Image className="absolute inset-0 size-full scale-100 object-cover [image-rendering:auto] opacity-100 transition-[opacity,transform] duration-[500ms] ease-[ease] group-hover:scale-[0.96] group-hover:opacity-0 group-focus-visible:scale-[0.96] group-focus-visible:opacity-0" src="/icons/me.png" alt="" width={100} height={100} priority />
+            <Image className="absolute inset-0 size-full object-cover [image-rendering:pixelated] transition-[opacity,transform] duration-[500ms] ease-[ease] opacity-0 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100" src="/icons/fast/me-asci.webp" alt="" width={100} height={100} loading="eager" unoptimized />
+            <Image className="absolute inset-0 size-full scale-100 object-cover [image-rendering:auto] opacity-100 transition-[opacity,transform] duration-[500ms] ease-[ease] group-hover:scale-[0.96] group-hover:opacity-0 group-focus-visible:opacity-0 group-focus-visible:scale-[0.96]" src="/icons/fast/me.webp" alt="" width={100} height={100} priority unoptimized />
             <span className="absolute inset-x-0 bottom-0 translate-y-full bg-[var(--accent)] p-1 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--paper)] transition-transform duration-[180ms] ease-[ease] group-hover:translate-y-0 group-focus-visible:translate-y-0">home</span>
           </Link>
         </header>
@@ -510,7 +510,7 @@ export default function Resume() {
             style {comboIndex + 1}/{combinations.length}
           </div>
         )}
-        <CommandPalette
+        {isCommandPaletteOpen && <CommandPalette
          isOpen={isCommandPaletteOpen}
          onClose={() => setIsCommandPaletteOpen(false)}
          setAccentColor={setAccentColor}
@@ -526,7 +526,7 @@ export default function Resume() {
           bgColor={bgColor}
           theme={theme}
           textTransform={textTransform}
-        />
+        />}
         {isInternetTerminalOpen && (
           <InternetTerminal
             onClose={() => setIsInternetTerminalOpen(false)}

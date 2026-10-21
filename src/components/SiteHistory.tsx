@@ -1,4 +1,4 @@
-import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { useRouter } from "next/router";
 import { FiX } from "react-icons/fi";
 
@@ -43,6 +43,8 @@ export default function SiteHistory() {
   const currentVersion = versionFromPath(router.asPath.split(/[?#]/)[0]);
   const [selectedVersion, setSelectedVersion] = useState(currentVersion);
   const [open, setOpen] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const transitionInProgress = useRef(false);
 
   useEffect(() => {
     setSelectedVersion(currentVersion);
@@ -55,12 +57,45 @@ export default function SiteHistory() {
     return () => window.removeEventListener(OPEN_HISTORY_EVENT, show);
   }, []);
 
-  const choose = (next: number) => {
+  useEffect(() => {
+    if (!open) return;
+    versions.forEach(({ href }) => {
+      if (href !== router.asPath.split(/[?#]/)[0]) void router.prefetch(href);
+    });
+  }, [open, router]);
+
+  const choose = async (next: number) => {
+    if (transitionInProgress.current) return;
     setSelectedVersion(next);
     setOpen(true);
     const destination = versions[next - 1]?.href;
     if (destination && destination !== router.asPath.split(/[?#]/)[0]) {
-      void router.push(destination);
+      transitionInProgress.current = true;
+      setTransitioning(true);
+      const root = document.documentElement;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      try {
+        if (reducedMotion) {
+          await router.push(destination);
+        } else if (document.startViewTransition) {
+          root.dataset.siteVersionMotion = "active";
+          const transition = document.startViewTransition(async () => {
+            await router.push(destination);
+          });
+          await transition.finished;
+        } else {
+          root.dataset.siteVersionFallback = "exit";
+          await new Promise((resolve) => window.setTimeout(resolve, 130));
+          await router.push(destination);
+          root.dataset.siteVersionFallback = "enter";
+          await new Promise((resolve) => window.setTimeout(resolve, 380));
+        }
+      } finally {
+        delete root.dataset.siteVersionMotion;
+        delete root.dataset.siteVersionFallback;
+        transitionInProgress.current = false;
+        setTransitioning(false);
+      }
     }
   };
 
@@ -79,7 +114,7 @@ export default function SiteHistory() {
   }
 
   return (
-    <aside className="site-version-overlay" aria-label="Site versions">
+    <aside className="site-version-overlay" aria-label="Site versions" aria-busy={transitioning}>
       <div className="site-version-topline">
         <span>site versions</span>
         <div>
@@ -104,9 +139,10 @@ export default function SiteHistory() {
           max="3"
           step="1"
           value={selectedVersion}
+          disabled={transitioning}
           aria-label="Website version"
           aria-valuetext={`Version ${selectedVersion}: ${versions[selectedVersion - 1].label}`}
-          onChange={(event) => choose(Number(event.target.value))}
+          onChange={(event) => void choose(Number(event.target.value))}
         />
       </div>
       <div className="site-version-labels">
@@ -115,7 +151,8 @@ export default function SiteHistory() {
             key={version.href}
             type="button"
             aria-current={currentVersion === index + 1 ? "page" : undefined}
-            onClick={() => choose(index + 1)}
+            disabled={transitioning}
+            onClick={() => void choose(index + 1)}
           >
             <span>0{index + 1}</span>
             {version.label}

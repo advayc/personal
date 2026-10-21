@@ -21,18 +21,20 @@ export default function Home() {
             aria-haspopup="dialog"
           >
             <Image
-              src="/icons/me.png"
+              src="/icons/fast/me.webp"
               alt="Advay overlooking the mountains"
               width={136}
               height={136}
               priority
+              unoptimized
             />
             <Image
-              src="/icons/me-asci.png"
+              src="/icons/fast/me-asci.webp"
               alt=""
               width={136}
               height={136}
               className="portrait-ascii"
+              unoptimized
             />
             <span className="portrait-home">site versions</span>
           </SiteHistoryTrigger>
@@ -44,16 +46,16 @@ export default function Home() {
               href="https://www.queensu.ca/engineering/"
               title="queen’s university"
               description="computer engineering · kingston, ontario"
-              image="/experiences/queenseng.png"
+              image="/experiences/fast/queenseng.webp"
             >
               queen’s university
             </PreviewLink>{" "}
-            and working on ai prototyping at{" "}
+            and working on ai prototyping for diffusion models at{" "}
             <PreviewLink
               href="https://magichour.ai/"
               title="magic hour"
               description="ai tools for voice, video, and image generation"
-              image="/experiences/magichour.png"
+              image="/experiences/fast/magichour.webp"
             >
               magic hour
             </PreviewLink>
@@ -156,7 +158,7 @@ export default function Home() {
           {current.map((item) => (
             <li key={item.title}>
               <a href={item.href} className="experience-row">
-                <Image src={item.imageSrc} alt="" width={32} height={32} />
+                <Image src={item.imageSrc} alt="" width={32} height={32} loading="eager" unoptimized />
                 <span>
                   <span className="experience-title">{item.title}</span>
                   <span className="experience-detail">
@@ -175,7 +177,7 @@ export default function Home() {
           {previous.map((item) => (
             <li key={item.title}>
               <a href={item.href} className="experience-row">
-                <Image src={item.imageSrc} alt="" width={32} height={32} />
+                <Image src={item.imageSrc} alt="" width={32} height={32} loading="eager" unoptimized />
                 <span>
                   <span className="experience-title">{item.title}</span>
                   <span className="experience-detail">{item.detail}</span>
