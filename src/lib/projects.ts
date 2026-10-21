@@ -83,6 +83,26 @@ export const projects: Project[] = [
     github: "https://github.com/advayc/gfsscalender",
   },
   {
+    slug: "gq-planets",
+    year: "2025",
+    title: "gq planets",
+    summary: "testing NASA mission data for promising exoplanets.",
+    description: [
+      "GQ Planets was our NASA Space Apps project. We combined 18,413 records from Kepler, K2, and TESS, then trained a model to sort exoplanet candidates from false positives. We kept 10% of the data aside to test it.",
+      "The web app takes a single candidate or a CSV and returns predictions with confidence scores. Our presentation below shows the training flow, the test results, the feature chart, and how the interface handles each request.",
+    ],
+    links: [
+      { label: "NASA Space Apps submission", href: "https://www.spaceappschallenge.org/2025/find-a-team/the-sonic-waves/?tab=project" },
+    ],
+    image: "/projects/gq-planets.png",
+    imageAlt: "GQ Planets exoplanet classification interface",
+    imageWidth: 1722,
+    imageHeight: 956,
+    stack: "Python · PyTorch",
+    github: "https://github.com/DeadUser123/Space-APPS-Hackathon",
+    imageCaption: "GQ Planets · project interface",
+  },
+  {
     slug: "sitemaker",
     year: "2025",
     title: "sitemaker",
@@ -193,26 +213,6 @@ export const projects: Project[] = [
     stack: "React Native · TypeScript",
     url: "https://spy.advay.ca/",
     github: "https://github.com/advayc/spy",
-  },
-  {
-    slug: "gq-planets",
-    year: "2025",
-    title: "gq planets",
-    summary: "testing NASA mission data for promising exoplanets.",
-    description: [
-      "GQ Planets uses 18,413 records from NASA’s Kepler, K2, and TESS missions to classify candidate exoplanets. Our PyTorch model trains on ten measurements of each planet and its host star, using a 90/10 train-test split.",
-      "The best checkpoint, from epoch 706, reached 83% accuracy, 94% recall, and an 88% F1 score. The app accepts one candidate or a CSV and returns confidence scores, downloadable results, and charts for model performance and feature importance.",
-    ],
-    links: [
-      { label: "NASA Space Apps submission", href: "https://www.spaceappschallenge.org/2025/find-a-team/the-sonic-waves/?tab=project" },
-    ],
-    image: "/projects/gq-planets.png",
-    imageAlt: "GQ Planets exoplanet classification interface",
-    imageWidth: 1722,
-    imageHeight: 956,
-    stack: "Python · PyTorch",
-    github: "https://github.com/DeadUser123/Space-APPS-Hackathon",
-    imageCaption: "GQ Planets · project interface",
   },
   {
     slug: "miway-leaderboard",

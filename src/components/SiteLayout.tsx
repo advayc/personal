@@ -112,6 +112,12 @@ export default function SiteLayout({
             >
               projects
             </Link>
+            <Link
+              href="/writing"
+              aria-current={router.pathname.startsWith("/writing") ? "page" : undefined}
+            >
+              writing
+            </Link>
           </nav>
         </header>
         <main id="main">{children}</main>

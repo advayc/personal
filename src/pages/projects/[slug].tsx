@@ -4,17 +4,11 @@ import ProjectVideo from "@/components/ProjectVideo";
 import GqSlides from "@/components/projects/GqSlides";
 import NumsShowcase from "@/components/projects/NumsShowcase";
 import Link from "next/link";
-import { FiArrowLeft, FiArrowRight, FiArrowUpRight } from "react-icons/fi";
+import { FiArrowLeft, FiArrowUpRight } from "react-icons/fi";
 import SiteLayout from "@/components/SiteLayout";
 import { projects, type Project } from "@/lib/projects";
 
-export default function ProjectPage({
-  project,
-  next,
-}: {
-  project: Project;
-  next: { slug: string; title: string };
-}) {
+export default function ProjectPage({ project }: { project: Project }) {
   return (
     <SiteLayout title={project.title} description={project.summary} wide>
       <Link className="back-link" href="/projects">
@@ -47,7 +41,7 @@ export default function ProjectPage({
         </header>
         {project.image && (
           <figure
-            className={`project-demo${project.slug === "spy" ? " phone-demo" : ""}${project.slug === "67-detector" ? " photo-demo" : ""}${project.slug === "wrapped" ? " wrapped-demo-crop" : ""}`}
+            className={`project-demo${project.slug === "spy" ? " phone-demo" : ""}${project.slug === "67-detector" ? " photo-demo" : ""}${project.slug === "wrapped" ? " wrapped-demo-crop" : ""}${project.slug === "miway-leaderboard" ? " miway-demo" : ""}`}
           >
             {project.slug === "sitemaker" ? (
               <ProjectVideo
@@ -145,13 +139,6 @@ export default function ProjectPage({
             ))}
           </div>
         )}
-
-        <nav className="next-project" aria-label="Next project">
-          <span>keep exploring</span>
-          <Link href={`/projects/${next.slug}`}>
-            {next.title} <FiArrowRight aria-hidden="true" />
-          </Link>
-        </nav>
       </article>
     </SiteLayout>
   );
@@ -163,11 +150,9 @@ export const getStaticPaths: GetStaticPaths = async () => ({
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const index = projects.findIndex((p) => p.slug === params?.slug);
   if (index === -1) return { notFound: true };
-  const next = projects[(index + 1) % projects.length];
   return {
     props: {
       project: projects[index],
-      next: { slug: next.slug, title: next.title },
     },
   };
 };

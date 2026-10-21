@@ -20,22 +20,24 @@ export default function Home() {
             aria-label="Explore versions of my website"
             aria-haspopup="dialog"
           >
-            <Image
-              src="/icons/fast/me.webp"
-              alt="Advay overlooking the mountains"
-              width={136}
-              height={136}
-              priority
-              unoptimized
-            />
-            <Image
-              src="/icons/fast/me-asci.webp"
-              alt=""
-              width={136}
-              height={136}
-              className="portrait-ascii"
-              unoptimized
-            />
+            <div className="portrait-wrapper">
+              <Image
+                src="/icons/fast/me.webp"
+                alt="Advay overlooking the mountains"
+                width={136}
+                height={136}
+                priority
+                unoptimized
+              />
+              <Image
+                src="/icons/fast/me-asci.webp"
+                alt=""
+                width={136}
+                height={136}
+                className="portrait-ascii"
+                unoptimized
+              />
+            </div>
             <span className="portrait-home">site versions</span>
           </SiteHistoryTrigger>
         </div>
@@ -74,8 +76,16 @@ export default function Home() {
                     <span><strong>my account</strong><small>advayc on DMOJ</small></span>
                     <FiArrowUpRight aria-hidden="true" />
                   </span>
-                  <span className="dmoj-avatar" role="img" aria-label="Advay's pixel-art DMOJ avatar">
-                  </span>
+                <span className="dmoj-avatar">
+                  <Image
+                    src="/dmoj-avatar.png"
+                    alt="Advay's pixel-art monkey avatar on DMOJ"
+                    width={120}
+                    height={120}
+                    loading="lazy"
+                    unoptimized
+                  />
+                </span>
                   <span className="dmoj-card-stats">
                     <span><strong>242</strong> problems solved</span>
                     <span><strong>rank by points</strong> #825</span>

@@ -59,9 +59,16 @@ export default function SiteHistory() {
 
   useEffect(() => {
     if (!open) return;
-    versions.forEach(({ href }) => {
-      if (href !== router.asPath.split(/[?#]/)[0]) void router.prefetch(href);
-    });
+    const prefetch = () => {
+      const currentPath = router.asPath.split(/[?#]/)[0];
+      versions.forEach(({ href }) => {
+        if (href !== currentPath) void router.prefetch(href);
+      });
+    };
+    // @ts-ignore
+    const timeoutId = window.setTimeout(prefetch, 0);
+    return () => // @ts-ignore
+    window.clearTimeout(timeoutId);
   }, [open, router]);
 
   const choose = async (next: number) => {
@@ -77,21 +84,14 @@ export default function SiteHistory() {
       try {
         if (reducedMotion) {
           await router.push(destination);
-        } else if (document.startViewTransition) {
-          root.dataset.siteVersionMotion = "active";
-          const transition = document.startViewTransition(async () => {
-            await router.push(destination);
-          });
-          await transition.finished;
         } else {
           root.dataset.siteVersionFallback = "exit";
-          await new Promise((resolve) => window.setTimeout(resolve, 130));
+          await new Promise((resolve) => window.setTimeout(resolve, 190));
           await router.push(destination);
           root.dataset.siteVersionFallback = "enter";
-          await new Promise((resolve) => window.setTimeout(resolve, 380));
+          await new Promise((resolve) => window.setTimeout(resolve, 470));
         }
       } finally {
-        delete root.dataset.siteVersionMotion;
         delete root.dataset.siteVersionFallback;
         transitionInProgress.current = false;
         setTransitioning(false);
@@ -153,6 +153,8 @@ export default function SiteHistory() {
             aria-current={currentVersion === index + 1 ? "page" : undefined}
             disabled={transitioning}
             onClick={() => void choose(index + 1)}
+            onPointerEnter={() => void router.prefetch(version.href)}
+            onFocus={() => void router.prefetch(version.href)}
           >
             <span>0{index + 1}</span>
             {version.label}
