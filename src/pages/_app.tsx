@@ -7,6 +7,7 @@ import { TerminalProvider } from '@/components/TerminalContext';
 import { SelectionBoxProvider } from '@/components/SelectionContext';
 import Head from "next/head";
 import { calculateAge } from '@/utils/age';
+import SiteHistory from '@/components/SiteHistory';
 
 const SpeedInsights = dynamic(
   () => import("@vercel/speed-insights/next").then((mod) => mod.SpeedInsights),
@@ -66,17 +67,22 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="twitter:url" content={SITE_URL} />
         <meta property="twitter:title" content={DEFAULT_TITLE} />
         <meta property="twitter:description" content={DEFAULT_DESCRIPTION} />
-        <meta property="twitter:image" content="/meta.png" />
+        <meta property="og:image" content="https://advayc.ca/meta.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Advay Chandorkar — building things people use" />
+        <meta property="twitter:image" content="https://advayc.ca/meta.png" />
         <link rel="icon" href="/favicon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#000000" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={SITE_URL} />
+        <link key="canonical" rel="canonical" href={SITE_URL} />
       </Head>
 
       <TerminalProvider>
         <SelectionBoxProvider>
           <Component {...pageProps} />
+          <SiteHistory />
         </SelectionBoxProvider>
       </TerminalProvider>
       <DeferredMonitoring />

@@ -359,20 +359,7 @@ export default function Archive() {
       <SelectionBox />
       <ShortcutHint onOpen={() => setIsPaletteOpen(true)} />
       {isPaletteOpen && (
-        <CommandPalette
-          isOpen={isPaletteOpen}
-          onClose={() => setIsPaletteOpen(false)}
-          setAccentColor={setAccentColor}
-          setFontFamily={setFontFamily}
-          setBgStyle={setBgStyle}
-          setBgColor={setBgColor}
-          setTheme={setTheme}
-          accentColor={accentColor}
-          fontFamily={fontFamily}
-          bgStyle={bgStyle}
-          bgColor={bgColor}
-          theme={theme}
-        />
+        <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
       )}
     </main>
   );

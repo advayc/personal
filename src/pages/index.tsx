@@ -3,6 +3,7 @@ import Link from "next/link";
 import { FiArrowRight, FiArrowUpRight } from "react-icons/fi";
 import SiteLayout from "@/components/SiteLayout";
 import PreviewLink from "@/components/PreviewLink";
+import { SiteHistoryTrigger } from "@/components/SiteHistory";
 import { current, previous } from "@/lib/experience";
 
 export default function Home() {
@@ -14,10 +15,10 @@ export default function Home() {
             <h1 id="intro-heading">hey, i’m advay.</h1>
             <p className="intro-caption">a little about me</p>
           </div>
-          <Link
-            href="/archive"
+          <SiteHistoryTrigger
             className="portrait"
-            aria-label="Explore my old website"
+            aria-label="Explore versions of my website"
+            aria-haspopup="dialog"
           >
             <Image
               src="/icons/me.png"
@@ -33,8 +34,8 @@ export default function Home() {
               height={136}
               className="portrait-ascii"
             />
-            <span className="portrait-home">home</span>
-          </Link>
+            <span className="portrait-home">site versions</span>
+          </SiteHistoryTrigger>
         </div>
         <div className="intro-writing">
           <p>
@@ -58,34 +59,70 @@ export default function Home() {
             </PreviewLink>
             .
           </p>
-          <p>i like building things and solving problems.</p>
+          <p>
+            i like building things and{" "}
+            <PreviewLink
+              href="https://dmoj.ca/user/advayc"
+              title="DMOJ · advayc"
+              description="Competitive programming profile"
+              variant="dmoj"
+              previewContent={
+                <span className="dmoj-card">
+                  <span className="dmoj-card-heading">
+                    <span><strong>my account</strong><small>advayc on DMOJ</small></span>
+                    <FiArrowUpRight aria-hidden="true" />
+                  </span>
+                  <span className="dmoj-avatar" role="img" aria-label="Advay's pixel-art DMOJ avatar">
+                  </span>
+                  <span className="dmoj-card-stats">
+                    <span><strong>242</strong> problems solved</span>
+                    <span><strong>rank by points</strong> #825</span>
+                    <span><strong>total points</strong> 382</span>
+                  </span>
+                  <span className="dmoj-card-contests">
+                    <span><strong>4</strong> contests written</span>
+                    <span><strong>rank by rating</strong> #2513</span>
+                  </span>
+                  <span className="dmoj-card-ratings">
+                    <span><strong>rating</strong><i className="dmoj-rating-circle" aria-hidden="true" /><em>1378</em></span>
+                    <span><strong>min. rating</strong><i className="dmoj-rating-circle dmoj-min-circle" aria-hidden="true" /><em>1037</em></span>
+                    <span><strong>max rating</strong><i className="dmoj-rating-circle dmoj-peak-circle" aria-hidden="true" /><em>1599</em></span>
+                  </span>
+                </span>
+              }
+            >
+              solving problems
+            </PreviewLink>, most
+            recently i’ve:
+          </p>
           <ul className="intro-achievements">
             <li>
-              At 17, I solved six{" "}
+              went viral on{" "}
+              <PreviewLink
+                href="https://x.com/advay_c/status/2109717441349640238"
+                title="6 Jane Street puzzles in a row"
+                description="The streak that reached more than 500,000 views."
+              >
+                X
+              </PreviewLink>{" "}
+              (500k+ views) after solving 6{" "}
               <PreviewLink
                 href="https://www.janestreet.com/puzzles/archive/"
                 title="Jane Street puzzles"
                 description="Monthly puzzles and past solutions."
               >
                 Jane Street puzzles
-              </PreviewLink>{" "}
-              in a row. A post about it passed 500,000 views on{" "}
-              <PreviewLink
-                href="https://x.com/advay_c/status/2109717441349640238"
-                title="six puzzles, one streak"
-                description="More than 500,000 views on X."
-              >
-                X
-              </PreviewLink>
-              .
+              </PreviewLink>{" "}in a row at 17.
             </li>
             <li>
-              At 16, I won a NASA hackathon with an exoplanet detection tool.{" "}
+              won a NASA Space Apps hackathon at 16 with an exoplanet detection
+              tool{" "}
               <Link href="/projects/gq-planets">
-                GQ Planets <FiArrowUpRight aria-hidden="true" />
+                (GQ Planets)
               </Link>
+              .
             </li>
-            <li>i’ve spent a lot of time building robots with friends.</li>
+            <li>been programming semi-autonomous robots since i was 13.</li>
           </ul>
         </div>
         <nav className="social-links" aria-label="Social links">

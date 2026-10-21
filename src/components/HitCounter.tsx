@@ -73,7 +73,7 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
     const load = async () => {
       let value: number | null = null;
 
-      if (!initiallyFetchOnly && !sessionStorage.getItem(sessionKey)) {
+      if (process.env.NODE_ENV !== 'development' && !initiallyFetchOnly && !sessionStorage.getItem(sessionKey)) {
         value = await resolveHits(id, true);
         if (value != null) sessionStorage.setItem(sessionKey, '1');
       }

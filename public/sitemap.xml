@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemx.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://advay.ca/</loc>
-    <lastmod>2024-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://advay.ca/resume</loc>
-    <lastmod>2026-07-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-</urlset> 
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://advayc.ca/</loc></url>
+  <url><loc>https://advayc.ca/projects</loc></url>
+  <url><loc>https://advayc.ca/projects/wrapped</loc></url>
+  <url><loc>https://advayc.ca/projects/seva-eats</loc></url>
+  <url><loc>https://advayc.ca/projects/gfss-calendar</loc></url>
+  <url><loc>https://advayc.ca/projects/sitemaker</loc></url>
+  <url><loc>https://advayc.ca/projects/nums</loc></url>
+  <url><loc>https://advayc.ca/projects/spy</loc></url>
+  <url><loc>https://advayc.ca/projects/gq-planets</loc></url>
+  <url><loc>https://advayc.ca/projects/miway-leaderboard</loc></url>
+  <url><loc>https://advayc.ca/systems</loc></url>
+  <url><loc>https://advayc.ca/projects/67-detector</loc></url>
+  <url><loc>https://advayc.ca/archive</loc></url>
+</urlset>

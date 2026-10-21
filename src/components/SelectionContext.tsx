@@ -76,7 +76,8 @@ export const SelectionBoxProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     const handleMouseDown = (event: MouseEvent) => {
-      if (terminalOpenRef.current || draggingRef.current || isEventInAnyTerminal(event.target)) return;
+      if (event.button !== 0 || terminalOpenRef.current || draggingRef.current || isEventInAnyTerminal(event.target)) return;
+      if (event.target instanceof Element && event.target.closest('a, button, input, textarea, select, dialog')) return;
 
       isSelectingRef.current = true;
       startRef.current = { x: event.clientX, y: event.clientY };

@@ -5,10 +5,7 @@ export default function Document() {
     <Html lang="en">
       <Head>
         <meta charSet="UTF-8" />
-        <meta property="og:image" content="/meta.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Preview of Advay Chandorkar's developer portfolio" />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var b=localStorage.getItem('portfolioBackground');if(['gray','black','white','cream'].indexOf(b)<0)b='gray';document.documentElement.dataset.background=b;document.documentElement.classList.toggle('light',b==='white'||b==='cream')}catch(e){}})();` }} />
       </Head>
       <body>
         <Main />

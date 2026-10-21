@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import ThemeSlider from "./ThemeSlider";
 import { FiArrowUpRight, FiArrowRight, FiSearch, FiX } from "react-icons/fi";
+import { openSiteHistory } from "./SiteHistory";
 
 type Background = "gray" | "black" | "white" | "cream";
 
@@ -49,7 +50,7 @@ const destinations = [
     href: "https://x.com/advay_c",
     external: true,
   },
-  { label: "old site", detail: "explore the desktop", href: "/archive" },
+  { label: "site versions", detail: "browse earlier designs", href: "#site-versions" },
   {
     label: "website source",
     detail: "this site on github",
@@ -100,6 +101,10 @@ export default function CommandPalette({
   }, [highlighted, isOpen]);
   const navigate = (item: (typeof destinations)[number]) => {
     onClose();
+    if (item.href === "#site-versions") {
+      window.setTimeout(openSiteHistory, 60);
+      return;
+    }
     if (item.external) {
       if (item.href.startsWith("mailto:")) window.location.href = item.href;
       else window.open(item.href, "_blank", "noopener,noreferrer");
