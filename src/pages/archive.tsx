@@ -1,9 +1,5 @@
 import React, { useEffect, useState, useCallback, startTransition } from "react";
 import dynamic from "next/dynamic";
-import File from "@/components/File";
-import Footer from "@/components/Footer";
-import SelectionBox from "@/components/SelectionBox";
-import ShortcutHint from "@/components/ShortcutHint";
 import { useTerminal } from "@/components/TerminalContext";
 import Link from '@/components/Link';
 import Head from 'next/head';
@@ -38,6 +34,10 @@ const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
 };
 
 const Terminal = dynamic(() => import("@/components/Terminal"), { ssr: false });
+const File = dynamic(() => import("@/components/File"), { ssr: false });
+const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
+const SelectionBox = dynamic(() => import("@/components/SelectionBox"), { ssr: false });
+const ShortcutHint = dynamic(() => import("@/components/ShortcutHint"), { ssr: false });
 const DrawTerminal = dynamic(() => import("@/components/DrawTerminal"), { ssr: false });
 const InternetTerminal = dynamic(() => import("@/components/InternetTerminal"), { ssr: false });
 const CommandPalette = dynamic(() => import("@/components/versions/V2CommandPalette"), { ssr: false });

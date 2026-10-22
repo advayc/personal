@@ -1,11 +1,30 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 import SiteLayout from "@/components/SiteLayout";
-import { Microcontroller } from "@/components/systems/Electronics";
-import { Chronograph, MaglevCube } from "@/components/systems/Mechanics";
-import { Planetary } from "@/components/systems/PlanetaryGearbox";
-import { PidController } from "@/components/systems/PidController";
-import { KalmanFilter } from "@/components/systems/KalmanFilter";
+const Microcontroller = dynamic(
+  () => import("@/components/systems/Electronics").then((mod) => mod.Microcontroller),
+  { ssr: false },
+);
+const Chronograph = dynamic(
+  () => import("@/components/systems/Mechanics").then((mod) => mod.Chronograph),
+  { ssr: false },
+);
+const MaglevCube = dynamic(
+  () => import("@/components/systems/Mechanics").then((mod) => mod.MaglevCube),
+  { ssr: false },
+);
+const Planetary = dynamic(
+  () => import("@/components/systems/PlanetaryGearbox").then((mod) => mod.Planetary),
+  { ssr: false },
+);
+const PidController = dynamic(
+  () => import("@/components/systems/PidController").then((mod) => mod.PidController),
+  { ssr: false },
+);
+const KalmanFilter = dynamic(
+  () => import("@/components/systems/KalmanFilter").then((mod) => mod.KalmanFilter),
+  { ssr: false },
+);
 const GpuFigure = dynamic(() => import("@/components/anatomy/GpuFigure"), {
   ssr: false,
 });

@@ -32,6 +32,8 @@ const nextConfig = {
       ...[
         '/experiences/fast/:path*',
         '/icons/fast/:path*',
+        '/icons/:path*',
+        '/experiences/:path*',
         '/projects/sitemaker-demo.mp4',
         '/projects/sitemaker-demo.webm',
       ].map((source) => ({

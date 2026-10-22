@@ -19,3 +19,17 @@ Both versions let you change the accent color, background pattern, background co
 ## Stack
 
 Next.js 15, React 18, TypeScript, Tailwind CSS, Framer Motion, Vercel Analytics & Speed Insights. Hit counter powered by a custom Go API.
+
+## Development runtime
+
+This project requires Node.js 24.22.1. The version is pinned in `.node-version` and `.nvmrc`; `volta` users are pinned through `package.json`.
+
+With `fnm` or `nvm`, run:
+
+```bash
+fnm use
+# or: nvm use
+yarn install
+```
+
+The `dev`, `build`, `start`, `lint`, and `typecheck` scripts verify Node 24 before running.

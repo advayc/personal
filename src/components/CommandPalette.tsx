@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import ThemeSlider from "./ThemeSlider";
 import { FiArrowUpRight, FiArrowRight, FiSearch, FiX } from "react-icons/fi";
-import { openSiteHistory } from "./SiteHistory";
+import { openSiteHistory } from "./SiteHistoryTrigger";
 
 type Background = "gray" | "black" | "white" | "cream";
 

@@ -6,7 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { FiCommand, FiArrowUpRight } from "react-icons/fi";
 import HitCounter from "./HitCounter";
 import ThemeSlider from "./ThemeSlider";
-import { SiteHistoryTrigger } from "./SiteHistory";
+import SiteHistoryTrigger from "./SiteHistoryTrigger";
 
 const CommandPalette = dynamic(() => import("./CommandPalette"), { ssr: false });
 

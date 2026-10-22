@@ -88,8 +88,7 @@ export const projects: Project[] = [
     title: "gq planets",
     summary: "testing NASA mission data for promising exoplanets.",
     description: [
-      "GQ Planets was our NASA Space Apps project. We combined 18,413 records from Kepler, K2, and TESS, then trained a model to sort exoplanet candidates from false positives. We kept 10% of the data aside to test it.",
-      "The web app takes a single candidate or a CSV and returns predictions with confidence scores. Our presentation below shows the training flow, the test results, the feature chart, and how the interface handles each request.",
+      "GQ Planets was our NASA Space Apps project: a web app that uses Kepler, K2, and TESS observations to flag possible exoplanets. We trained a classifier on 18,413 records and made it possible to check one candidate or a whole CSV.",
     ],
     links: [
       { label: "NASA Space Apps submission", href: "https://www.spaceappschallenge.org/2025/find-a-team/the-sonic-waves/?tab=project" },

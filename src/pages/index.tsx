@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FiArrowRight, FiArrowUpRight } from "react-icons/fi";
 import SiteLayout from "@/components/SiteLayout";
 import PreviewLink from "@/components/PreviewLink";
-import { SiteHistoryTrigger } from "@/components/SiteHistory";
+import SiteHistoryTrigger from "@/components/SiteHistoryTrigger";
 import { current, previous } from "@/lib/experience";
 
 export default function Home() {
@@ -27,7 +27,6 @@ export default function Home() {
                 width={136}
                 height={136}
                 priority
-                unoptimized
               />
               <Image
                 src="/icons/fast/me-asci.webp"
@@ -35,7 +34,6 @@ export default function Home() {
                 width={136}
                 height={136}
                 className="portrait-ascii"
-                unoptimized
               />
             </div>
             <span className="portrait-home">site versions</span>
@@ -73,7 +71,17 @@ export default function Home() {
               previewContent={
                 <span className="dmoj-card">
                   <span className="dmoj-card-heading">
-                    <span><strong>my account</strong><small>advayc on DMOJ</small></span>
+                    <span>
+                      <a
+                        href="https://dmoj.ca/user/advayc"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="dmoj-account-link"
+                      >
+                        <strong>my account</strong>
+                      </a>
+                      <small>advayc on DMOJ</small>
+                    </span>
                     <FiArrowUpRight aria-hidden="true" />
                   </span>
                 <span className="dmoj-avatar">
@@ -83,7 +91,6 @@ export default function Home() {
                     width={120}
                     height={120}
                     loading="lazy"
-                    unoptimized
                   />
                 </span>
                   <span className="dmoj-card-stats">
@@ -131,7 +138,7 @@ export default function Home() {
               </PreviewLink>{" "}in a row at 17.
             </li>
             <li key="ios-app">
-              shipped an iOS app in 4 days that reached 10k daily users after learning mobile dev in a day
+              shipped an iOS app in 4 days that reached 5k monthly users after learning mobile dev in a day
             </li>
             <li>been programming semi-autonomous robots since i was 13.</li>
           </ul>
@@ -167,7 +174,7 @@ export default function Home() {
           {current.map((item) => (
             <li key={item.title}>
               <a href={item.href} className="experience-row">
-                <Image src={item.imageSrc} alt="" width={32} height={32} loading="eager" unoptimized />
+                <Image src={item.imageSrc} alt="" width={32} height={32} loading="lazy" />
                 <span>
                   <span className="experience-title">{item.title}</span>
                   <span className="experience-detail">
@@ -186,7 +193,7 @@ export default function Home() {
           {previous.map((item) => (
             <li key={item.title}>
               <a href={item.href} className="experience-row">
-                <Image src={item.imageSrc} alt="" width={32} height={32} loading="eager" unoptimized />
+                <Image src={item.imageSrc} alt="" width={32} height={32} loading="lazy" />
                 <span>
                   <span className="experience-title">{item.title}</span>
                   <span className="experience-detail">{item.detail}</span>

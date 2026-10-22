@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { FiX } from "react-icons/fi";
 
@@ -8,29 +8,6 @@ const versions = [
   { label: "advay.ca", href: "/versions/2" },
   { label: "current site", href: "/" },
 ] as const;
-
-export function openSiteHistory() {
-  if (typeof window !== "undefined") window.dispatchEvent(new Event(OPEN_HISTORY_EVENT));
-}
-
-export function SiteHistoryTrigger({
-  children,
-  onClick,
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      {...props}
-      onClick={(event) => {
-        onClick?.(event);
-        if (!event.defaultPrevented) openSiteHistory();
-      }}
-    >
-      {children}
-    </button>
-  );
-}
 
 function versionFromPath(path: string) {
   if (path === "/archive" || path.startsWith("/versions/1")) return 1;
@@ -62,13 +39,17 @@ export default function SiteHistory() {
     const prefetch = () => {
       const currentPath = router.asPath.split(/[?#]/)[0];
       versions.forEach(({ href }) => {
-        if (href !== currentPath) void router.prefetch(href);
+        if (href === currentPath) return;
+        void router.prefetch(href);
+        // Next.js prefetching is disabled by the dev server. A quiet request
+        // warms its on-demand compiler so local version changes do not pay the
+        // first-visit compilation cost.
+        if (process.env.NODE_ENV === "development") {
+          void fetch(href, { credentials: "same-origin" }).catch(() => undefined);
+        }
       });
     };
-    // @ts-ignore
-    const timeoutId = window.setTimeout(prefetch, 0);
-    return () => // @ts-ignore
-    window.clearTimeout(timeoutId);
+    prefetch();
   }, [open, router]);
 
   const choose = async (next: number) => {
@@ -86,10 +67,10 @@ export default function SiteHistory() {
           await router.push(destination);
         } else {
           root.dataset.siteVersionFallback = "exit";
-          await new Promise((resolve) => window.setTimeout(resolve, 190));
+          await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
           await router.push(destination);
           root.dataset.siteVersionFallback = "enter";
-          await new Promise((resolve) => window.setTimeout(resolve, 470));
+          await new Promise((resolve) => window.setTimeout(resolve, 230));
         }
       } finally {
         delete root.dataset.siteVersionFallback;

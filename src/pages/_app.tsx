@@ -7,7 +7,9 @@ import { TerminalProvider } from '@/components/TerminalContext';
 import { SelectionBoxProvider } from '@/components/SelectionContext';
 import Head from "next/head";
 import { calculateAge } from '@/utils/age';
-import SiteHistory from '@/components/SiteHistory';
+const SiteHistory = dynamic(() => import('@/components/SiteHistory'), {
+  ssr: false,
+});
 
 const SpeedInsights = dynamic(
   () => import("@vercel/speed-insights/next").then((mod) => mod.SpeedInsights),
