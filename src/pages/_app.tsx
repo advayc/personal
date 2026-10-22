@@ -24,7 +24,8 @@ const Analytics = dynamic(
 
 const BIRTH_DATE = new Date(2008, 11, 16);
 const AGE = calculateAge(BIRTH_DATE);
-const SITE_URL = 'https://advayc.ca/';
+const SITE_URL = 'https://www.advay.ca/';
+const SOCIAL_IMAGE_URL = `${SITE_URL}meta.png`;
 const DEFAULT_TITLE = 'Advay Chandorkar | Full Stack Developer';
 const DEFAULT_DESCRIPTION = `I'm a ${AGE}yo full stack developer, building things to solve problems`;
 const DEFAULT_KEYWORDS = 'Advay Chandorkar, Full Stack Developer, Web Development, React, TypeScript, Next.js, Golang';
@@ -71,11 +72,11 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="twitter:url" content={SITE_URL} />
         <meta property="twitter:title" content={DEFAULT_TITLE} />
         <meta property="twitter:description" content={DEFAULT_DESCRIPTION} />
-        <meta property="og:image" content="https://advayc.ca/meta.png" />
+        <meta property="og:image" content={SOCIAL_IMAGE_URL} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content="Advay Chandorkar — building things people use" />
-        <meta property="twitter:image" content="https://advayc.ca/meta.png" />
+        <meta name="twitter:image" content={SOCIAL_IMAGE_URL} />
         <link rel="icon" href="/favicon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#000000" />
