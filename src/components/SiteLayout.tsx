@@ -148,11 +148,14 @@ export default function SiteLayout({
               <SiteHistoryTrigger className="archive-link">
                 site versions
               </SiteHistoryTrigger>
-              <HitCounter
-                id="home"
-                showLabel={false}
-                className="portfolio-hits"
-              />
+              <span className="portfolio-views">
+                <HitCounter
+                  id="home"
+                  showLabel={false}
+                  className="portfolio-hits"
+                />
+                <span className="portfolio-hits-label">views</span>
+              </span>
             </div>
             <div className="site-controls">
               <ThemeSlider value={background} onChange={setBackground} />
