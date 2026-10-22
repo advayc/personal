@@ -360,7 +360,7 @@ const bitrateOptions: { value: Bitrate; label: string; cutoff: number; image: st
 const demoDuration = 6;
 
 type AudioExcerpt = { samples: Float32Array; sampleRate: number };
-type Spectrum = { bins: number[][]; sampleRate: number; seconds: number };
+type Spectrum = { bins: number[][]; sampleRate: number; seconds: number; frameSize: number; hop: number };
 
 function readWavExcerpt(buffer: ArrayBuffer): AudioExcerpt {
   const view = new DataView(buffer);
@@ -428,45 +428,48 @@ function fft(real: Float64Array, imag: Float64Array) {
 function makeSpectrum({ samples, sampleRate }: AudioExcerpt): Spectrum {
   const frameSize = 512;
   const hop = 128;
-  const frames = Math.max(1, 1 + Math.floor((samples.length - frameSize) / hop));
+  const frames = Math.max(1, Math.ceil(samples.length / hop));
   const window = Array.from({ length: frameSize }, (_, index) => 0.5 - 0.5 * Math.cos((2 * Math.PI * index) / (frameSize - 1)));
-  const windowPower = window.reduce((sum, value) => sum + value * value, 0);
+  const windowSum = window.reduce((sum, value) => sum + value, 0);
   const bins = Array.from({ length: frames }, (_, frame) => {
     const real = new Float64Array(frameSize);
     const imag = new Float64Array(frameSize);
-    for (let index = 0; index < frameSize; index++) real[index] = (samples[frame * hop + index] || 0) * window[index];
+    for (let index = 0; index < frameSize; index++) real[index] = (samples[frame * hop + index - frameSize / 2] || 0) * window[index];
     fft(real, imag);
     return Array.from({ length: frameSize / 2 + 1 }, (_, bin) => {
       const scale = bin === 0 || bin === frameSize / 2 ? 1 : 2;
-      const power = scale * (real[bin] ** 2 + imag[bin] ** 2) / (sampleRate * windowPower);
-      return 10 * Math.log10(power + 1e-12);
+      const amplitude = scale * Math.hypot(real[bin], imag[bin]) / windowSum;
+      return 20 * Math.log10(amplitude + 1e-9);
     });
   });
-  return { bins, sampleRate, seconds: samples.length / sampleRate };
+  return { bins, sampleRate, seconds: samples.length / sampleRate, frameSize, hop };
 }
 
-const viridisStops = [
-  [68, 1, 84], [59, 82, 139], [33, 145, 140], [94, 201, 98], [253, 231, 37],
-];
+const spectrogramStops = ["--spectrum-low", "--spectrum-indigo", "--spectrum-blue", "--spectrum-teal", "--spectrum-gold", "--spectrum-hot", "--spectrum-peak"];
 
-function viridis(value: number) {
-  const position = Math.max(0, Math.min(0.9999, value)) * (viridisStops.length - 1);
+function parseColor(value: string) {
+  const hex = value.trim().replace(/^#/, "");
+  return [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
+}
+
+function spectrogramColor(value: number, colors: number[][]) {
+  const position = Math.pow(Math.max(0, Math.min(0.9999, value)), 1.35) * (colors.length - 1);
   const index = Math.floor(position);
   const blend = position - index;
-  const color = viridisStops[index].map((start, channel) => Math.round(start + (viridisStops[index + 1][channel] - start) * blend));
+  const color = colors[index].map((start, channel) => Math.round(start + (colors[index + 1][channel] - start) * blend));
   return `rgb(${color[0]} ${color[1]} ${color[2]})`;
 }
 
 function Spectrogram({ excerpt, label }: { excerpt: AudioExcerpt | undefined; label: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const spectrum = useMemo(() => excerpt ? makeSpectrum(excerpt) : null, [excerpt]);
-  const [cursor, setCursor] = useState<{ time: number; frequency: number; power: number } | null>(null);
+  const [cursor, setCursor] = useState<{ frame: number; bin: number } | null>(null);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !spectrum) return;
     const draw = () => {
       const width = 880;
-      const height = 480;
+      const height = 520;
       const density = Math.max(0.35, canvas.clientWidth / width);
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(width * density * pixelRatio);
@@ -478,27 +481,28 @@ function Spectrogram({ excerpt, label }: { excerpt: AudioExcerpt | undefined; la
       const style = getComputedStyle(canvas);
       const muted = style.getPropertyValue("--muted").trim() || "#aaa6a2";
       const line = style.getPropertyValue("--line").trim() || "#383735";
+      const colors = spectrogramStops.map((name) => parseColor(style.getPropertyValue(name)));
       const left = 90;
       const top = 42;
       const plotWidth = 620;
       const plotHeight = 340;
       const right = left + plotWidth;
       const bottom = top + plotHeight;
-      const minDb = -80;
-      const maxDb = 45;
+      const minDb = -90;
+      const maxDb = 0;
       const nyquist = spectrum.sampleRate / 2;
       context.clearRect(0, 0, width, height);
       context.fillStyle = muted;
       context.textAlign = "center";
       context.font = font(16, "500");
-      context.fillText(`${label} spectrogram · 20.0–20.1 s`, left + plotWidth / 2, 20);
+      context.fillText(`${label} · ${Math.round(spectrum.seconds * 1000)} ms excerpt`, left + plotWidth / 2, 20);
 
       const frameWidth = plotWidth / spectrum.bins.length;
       const binHeight = plotHeight / spectrum.bins[0].length;
       for (let frame = 0; frame < spectrum.bins.length; frame++) {
         for (let bin = 0; bin < spectrum.bins[frame].length; bin++) {
-          const power = (spectrum.bins[frame][bin] - minDb) / (maxDb - minDb);
-          context.fillStyle = viridis(power);
+          const level = (spectrum.bins[frame][bin] - minDb) / (maxDb - minDb);
+          context.fillStyle = spectrogramColor(level, colors);
           context.fillRect(left + frame * frameWidth, bottom - (bin + 1) * binHeight, frameWidth + 0.5, binHeight + 0.5);
         }
       }
@@ -517,7 +521,8 @@ function Spectrogram({ excerpt, label }: { excerpt: AudioExcerpt | undefined; la
       context.strokeStyle = muted;
       context.beginPath(); context.moveTo(left, top); context.lineTo(left, bottom); context.lineTo(right, bottom); context.stroke();
       context.textAlign = "center";
-      for (const time of [0, 0.02, 0.04, 0.06, 0.08, 0.1]) {
+      for (let tick = 0; tick <= 5; tick++) {
+        const time = (spectrum.seconds * tick) / 5;
         const x = left + (time / spectrum.seconds) * plotWidth;
         context.strokeStyle = line;
         context.beginPath(); context.moveTo(x, bottom); context.lineTo(x, bottom + 4); context.stroke();
@@ -525,28 +530,28 @@ function Spectrogram({ excerpt, label }: { excerpt: AudioExcerpt | undefined; la
         context.fillText(time.toFixed(2), x, bottom + 18);
       }
       context.fillStyle = muted;
-      context.font = font(15);
-      context.fillText("Time (s)", left + plotWidth / 2, height - 8);
-      context.save(); context.translate(18, top + plotHeight / 2); context.rotate(-Math.PI / 2); context.fillText("Frequency (Hz)", 0, 0); context.restore();
+      context.font = font(17);
+      context.fillText("Time from excerpt start (s)", left + plotWidth / 2, height - 10);
+      context.save(); context.translate(14, top + plotHeight / 2); context.rotate(-Math.PI / 2); context.fillText("Frequency (Hz)", 0, 0); context.restore();
 
       const barX = right + 26;
       const barWidth = 14;
       for (let pixel = 0; pixel < plotHeight; pixel++) {
-        context.fillStyle = viridis(1 - pixel / plotHeight);
+        context.fillStyle = spectrogramColor(1 - pixel / (plotHeight - 1), colors);
         context.fillRect(barX, top + pixel, barWidth, 1);
       }
       context.font = font(12);
       context.textAlign = "left";
       context.fillStyle = muted;
-      for (const db of [-60, -40, -20, 0, 20, 40]) {
-        const y = bottom - ((db - minDb) / (maxDb - minDb)) * plotHeight;
+      for (const db of [0, -20, -40, -60, -80]) {
+        const y = top + ((maxDb - db) / (maxDb - minDb)) * plotHeight;
         context.fillText(String(db), barX + barWidth + 6, y + 3);
       }
-      context.save(); context.translate(856, top + plotHeight / 2); context.rotate(-Math.PI / 2); context.font = font(15); context.textAlign = "center"; context.fillText("Power (dB)", 0, 0); context.restore();
+      context.save(); context.translate(866, top + plotHeight / 2); context.rotate(-Math.PI / 2); context.font = font(17); context.textAlign = "center"; context.fillText("Level (dBFS)", 0, 0); context.restore();
       if (cursor) {
-        const cursorX = left + (cursor.time / spectrum.seconds) * plotWidth;
-        const cursorY = bottom - (cursor.frequency / nyquist) * plotHeight;
-        context.strokeStyle = "#ffffff";
+        const cursorX = left + ((cursor.frame + 0.5) / spectrum.bins.length) * plotWidth;
+        const cursorY = bottom - ((cursor.bin + 0.5) / spectrum.bins[0].length) * plotHeight;
+        context.strokeStyle = spectrogramColor(1, colors);
         context.lineWidth = 1;
         context.setLineDash([4, 4]);
         context.beginPath();
@@ -556,7 +561,7 @@ function Spectrogram({ excerpt, label }: { excerpt: AudioExcerpt | undefined; la
         context.lineTo(right, cursorY);
         context.stroke();
         context.setLineDash([]);
-        context.fillStyle = "#ffffff";
+        context.fillStyle = spectrogramColor(1, colors);
         context.beginPath();
         context.arc(cursorX, cursorY, 3, 0, Math.PI * 2);
         context.fill();
@@ -567,36 +572,53 @@ function Spectrogram({ excerpt, label }: { excerpt: AudioExcerpt | undefined; la
     return () => window.removeEventListener("resize", draw);
   }, [cursor, label, spectrum]);
   if (!spectrum) return <div className="audio-spectrogram-loading" role="status">Loading source spectrogram…</div>;
-  const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
+  const selectAt = (event: PointerEvent<HTMLCanvasElement>) => {
     const canvas = event.currentTarget;
     const bounds = canvas.getBoundingClientRect();
     const plotLeft = bounds.width * (90 / 880);
-    const plotTop = bounds.height * (42 / 480);
+    const plotTop = bounds.height * (42 / 520);
     const plotWidth = bounds.width * (620 / 880);
-    const plotHeight = bounds.height * (340 / 480);
+    const plotHeight = bounds.height * (340 / 520);
     const x = Math.max(plotLeft, Math.min(plotLeft + plotWidth, event.clientX - bounds.left));
     const y = Math.max(plotTop, Math.min(plotTop + plotHeight, event.clientY - bounds.top));
-    const time = ((x - plotLeft) / plotWidth) * spectrum.seconds;
-    const frequency = (1 - (y - plotTop) / plotHeight) * (spectrum.sampleRate / 2);
-    const frame = Math.min(spectrum.bins.length - 1, Math.floor((time / spectrum.seconds) * spectrum.bins.length));
-    const bin = Math.min(spectrum.bins[0].length - 1, Math.floor((frequency / (spectrum.sampleRate / 2)) * spectrum.bins[0].length));
-    setCursor({ time, frequency, power: spectrum.bins[frame][bin] });
+    const frame = Math.max(0, Math.min(spectrum.bins.length - 1, Math.floor(((x - plotLeft) / plotWidth) * spectrum.bins.length)));
+    const bin = Math.max(0, Math.min(spectrum.bins[0].length - 1, Math.round((1 - (y - plotTop) / plotHeight) * (spectrum.bins[0].length - 1))));
+    setCursor({ frame, bin });
   };
+  const activeBin = cursor && spectrum ? spectrum.bins[cursor.frame][cursor.bin] : null;
+  const activeTime = cursor && spectrum ? (cursor.frame * spectrum.hop) / spectrum.sampleRate : null;
+  const activeFrequency = cursor && spectrum ? cursor.bin * spectrum.sampleRate / spectrum.frameSize : null;
   return (
     <>
       <canvas
         ref={canvasRef}
         className="audio-spectrogram-canvas"
         role="img"
-        aria-label={`${label} spectrogram with frequency, time, and power in decibels`}
-        onPointerMove={handlePointerMove}
+        aria-label={`${label} spectrogram, ${Math.round(spectrum.seconds * 1000)} millisecond excerpt. Use arrow keys or point to inspect frequency, time, and level.`}
+        tabIndex={0}
+        onPointerDown={selectAt}
+        onPointerMove={selectAt}
         onPointerLeave={() => setCursor(null)}
+        onKeyDown={(event) => {
+          if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          setCursor((current) => {
+            const frame = current?.frame ?? Math.floor(spectrum.bins.length / 2);
+            const bin = current?.bin ?? Math.floor(spectrum.bins[0].length / 2);
+            if (event.key === "Home") return { frame: 0, bin };
+            if (event.key === "End") return { frame: spectrum.bins.length - 1, bin };
+            return {
+              frame: Math.max(0, Math.min(spectrum.bins.length - 1, frame + (event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0))),
+              bin: Math.max(0, Math.min(spectrum.bins[0].length - 1, bin + (event.key === "ArrowUp" ? 1 : event.key === "ArrowDown" ? -1 : 0))),
+            };
+          });
+        }}
       />
-      {cursor && (
-        <div className="audio-spectrogram-readout" aria-live="polite">
-          {cursor.time.toFixed(3)} s · {Math.round(cursor.frequency).toLocaleString()} Hz · {cursor.power.toFixed(1)} dB
-        </div>
-      )}
+      <div className="audio-spectrogram-readout" aria-live="polite">
+        {cursor && activeBin !== null && activeTime !== null && activeFrequency !== null
+          ? `${activeTime.toFixed(3)} s · ${Math.round(activeFrequency).toLocaleString()} Hz · ${activeBin.toFixed(1)} dBFS`
+          : "Move over the plot or use arrow keys to inspect"}
+      </div>
     </>
   );
 }
@@ -733,9 +755,9 @@ function AudioStudy() {
           <span className="audio-time">{formatTime(time)} / 0:06</span>
         </div>
         <div className="audio-spectrogram"><Spectrogram excerpt={excerpts[bitrate]} label={active.label} /></div>
-        <p className="audio-description">{bitrate === "wav" ? "Uncompressed WAV · full harmonic bandwidth" : `MP3 · modeled low-pass bandwidth at ${active.cutoff.toLocaleString()} Hz`}</p>
-        <p className="audio-disclosure">The player uses a short synthesized listening sample. The spectrogram is calculated from the original WAV or matching MP3 at 20 seconds.</p>
-      <StudyCaption>Figures 9–13. This custom spectrogram uses the essay’s encoded audio samples, with time and frequency on the axes and power in decibels on the color scale.</StudyCaption>
+        <p className="audio-description">{bitrate === "wav" ? "Listening demo · synthesized tone sample" : `Listening demo · synthesized tone low-pass filtered at ${active.cutoff.toLocaleString()} Hz`}</p>
+        <p className="audio-disclosure">The spectrogram uses the supplied 100 ms PCM excerpts: the original WAV and MP3 encodes decoded back to WAV. The essay identifies this slice as 20.0–20.1 s. The listening player is a separate synthesized sample and is labeled illustrative.</p>
+      <StudyCaption>Figures 9–13. Frequency is shown on a linear scale to Nyquist; color and the readout show single-bin level in dBFS. Point to the plot or focus it and use the arrow keys to inspect the measured excerpt.</StudyCaption>
       </div>
     </StudyFrame>
   );

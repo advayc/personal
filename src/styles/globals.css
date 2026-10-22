@@ -30,7 +30,7 @@ html {
   min-height: 100%;
   min-height: 100dvh;
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -40,14 +40,14 @@ body {
   min-height: 100dvh;
   margin: 0;
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 #__next {
   min-height: 100%;
   min-height: 100dvh;
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 @layer utilities {

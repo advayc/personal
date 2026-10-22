@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
@@ -160,11 +160,65 @@ function FontPicker({ value, onChange }: { value: Typeface; onChange: (font: Typ
 
 function Contents({ headings }: { headings: Heading[] }) {
   const [open, setOpen] = useState(false);
+  const [activeHeading, setActiveHeading] = useState(headings[0]?.id || "");
+  const desktopNavRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const headingElements = headings
+      .map(({ id }) => document.getElementById(id))
+      .filter((heading): heading is HTMLElement => Boolean(heading));
+    if (headingElements.length === 0) return;
+    let timer: number | undefined;
+    const updateActiveHeading = () => {
+      if (timer !== undefined) return;
+      timer = window.setTimeout(() => {
+        timer = undefined;
+        let current = headingElements[0];
+        const readingLine = window.innerHeight * 0.25;
+        for (const heading of headingElements) {
+          if (heading.getBoundingClientRect().top <= readingLine) current = heading;
+          else break;
+        }
+        const atDocumentEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+        if (atDocumentEnd) current = headingElements[headingElements.length - 1];
+        setActiveHeading(current.id);
+      }, 50);
+    };
+    updateActiveHeading();
+    window.addEventListener("scroll", updateActiveHeading, { passive: true });
+    window.addEventListener("resize", updateActiveHeading);
+    return () => {
+      window.removeEventListener("scroll", updateActiveHeading);
+      window.removeEventListener("resize", updateActiveHeading);
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [headings]);
+  useEffect(() => {
+    const nav = desktopNavRef.current;
+    if (!nav || !activeHeading) return;
+    const activeLink = Array.from(nav.querySelectorAll<HTMLAnchorElement>("a[href]")).find(
+      (link) => link.getAttribute("href") === `#${activeHeading}`,
+    );
+    if (!activeLink) return;
+    const navBounds = nav.getBoundingClientRect();
+    const linkBounds = activeLink.getBoundingClientRect();
+    const inset = 12;
+    if (linkBounds.top < navBounds.top + inset) {
+      nav.scrollTo({ top: nav.scrollTop - (navBounds.top + inset - linkBounds.top), behavior: "smooth" });
+    } else if (linkBounds.bottom > navBounds.bottom - inset) {
+      nav.scrollTo({ top: nav.scrollTop + (linkBounds.bottom - navBounds.bottom + inset), behavior: "smooth" });
+    }
+  }, [activeHeading]);
   const links = (
     <ol>
       {headings.map((heading) => (
         <li key={heading.id} className={`writing-toc-level-${heading.level}`}>
-          <a href={`#${heading.id}`} onClick={() => setOpen(false)}>{heading.label}</a>
+          <a
+            className={activeHeading === heading.id ? "is-active" : undefined}
+            href={`#${heading.id}`}
+            onClick={() => setOpen(false)}
+          >
+            {heading.label}
+          </a>
         </li>
       ))}
     </ol>
@@ -175,7 +229,7 @@ function Contents({ headings }: { headings: Heading[] }) {
         <summary>On this page <FiChevronDown aria-hidden="true" /></summary>
         {links}
       </details>
-      <nav className="writing-toc" aria-label="On this page">
+      <nav className="writing-toc" aria-label="On this page" ref={desktopNavRef}>
         <span className="writing-toc-title">On this page</span>
         {links}
       </nav>
@@ -192,7 +246,7 @@ export default function WritingReader({ markdown }: { markdown: string }) {
   };
 
   return (
-    <div className="writing-reader">
+    <div className={`writing-reader typeface-${typeface}`}>
       <div className="writing-reader-tools">
         <FontPicker value={typeface} onChange={changeTypeface} />
       </div>
@@ -212,4 +266,3 @@ export default function WritingReader({ markdown }: { markdown: string }) {
     </div>
   );
 }
-
