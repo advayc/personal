@@ -59,6 +59,15 @@ export default function SiteLayout({
   }, [background, ready]);
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
+      const target = e.target;
+      const typing = target instanceof HTMLElement && (
+        target.isContentEditable ||
+        Boolean(target.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], dialog"))
+      );
+      if (!e.metaKey && !e.ctrlKey && !e.altKey && !e.repeat && !typing) {
+        if (e.key.toLowerCase() === "d") setBackground("gray");
+        if (e.key.toLowerCase() === "l") setBackground("white");
+      }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setCommandOpen((open) => !open);

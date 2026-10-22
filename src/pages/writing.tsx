@@ -15,7 +15,16 @@ export default function Writing() {
               <li key={entry.slug}>
                 <Link href={`/writing/${entry.slug}`}>
                   <span>{entry.title}</span>
-                  <time dateTime={entry.date}>{entry.date}</time>
+                  {entry.date && (
+                    <time dateTime={entry.date}>
+                      {new Date(`${entry.date}T00:00:00`).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        timeZone: "UTC",
+                      })}
+                    </time>
+                  )}
                 </Link>
                 {entry.summary && <p>{entry.summary}</p>}
               </li>

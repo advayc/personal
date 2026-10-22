@@ -1,7 +1,7 @@
 # Writing
 
-Each published article is a TSX component in this folder. TSX keeps prose and custom artifacts together: an article can import a diagram, simulation, image, or other React component directly.
+Each published article is a Markdown file in this folder. Add its filename, title, and URL slug to `index.ts`; the writing page renders Markdown headings, bold text, tables, figures, and KaTeX equations automatically.
 
-Create a file such as `my-article.tsx` that exports a default component. Then import it in `index.ts` and add a `WritingEntry` with a unique slug, title, ISO date, optional summary, and `Article`. The index page and `/writing/[slug]` are generated from that registry at build time.
+Create `my-article.md`, then add a `WritingEntry` with a unique slug, title, `markdownFile`, and optional summary. The index page and `/writing/[slug]` are generated from that registry at build time. Use `##`, `###`, and `####` for the section hierarchy; the article page builds its side navigation from those headings. Use `$$ ... $$` for display equations and normal Markdown tables and image links.
 
-Keep artifact components alongside the article or in `src/components/writing/`. Give interactive artifacts keyboard controls and a reduced-motion mode. Put media in `public/writing/<slug>/` and use descriptive alt text.
+To add an interactive study, place a `:::interactive{type="..."}` directive where it belongs in the Markdown and add the corresponding component in `src/components/writing/`. The lossy-compression article uses `jpeg-overview`, `jpeg`, `artifact-zoom`, `jpeg-fidelity`, `dct`, `audio`, `jpeg-graph`, `mp3-graph`, `quality`, `perception`, `pipeline`, `quantization`, and `tradeoff`. Use `:::sources` around a bulleted bibliography to make it collapsible; link source titles with normal Markdown links such as `[Paper title](https://example.com)`. Put media in `public/writing/<slug>/assets/` and use descriptive alt text. The Kodak original, its full-quality JPEG outputs, and borderless crop comparisons live in `public/writing/lossy-compression/assets/`; the WAV and MP3 excerpts used by the interactive spectrogram are in its `audio/` folder.

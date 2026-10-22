@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import Image from "next/image";
+import { createPortal } from "react-dom";
 export default function ProjectImage({
   src,
   alt,
@@ -20,12 +21,14 @@ export default function ProjectImage({
   const opener = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const animated = src.toLowerCase().endsWith(".gif");
   const close = (event?: MouseEvent<HTMLDialogElement>) => {
     if (event && event.target !== event.currentTarget) return;
     dialog.current?.close();
   };
   useEffect(() => {
+    setMounted(true);
     const el = dialog.current;
     if (!el) return;
     const onClose = () => {
@@ -59,25 +62,28 @@ export default function ProjectImage({
           view image ↗
         </span>
       </button>
-      <dialog
-        className={`image-lightbox ${lightboxClassName || ""}`}
-        ref={dialog}
-        aria-label={`Image preview: ${alt}`}
-        onClick={close}
-      >
-        <button
-          className="lightbox-close"
-          type="button"
-          aria-label="Close image preview"
-          onClick={() => close()}
+      {mounted && createPortal(
+        <dialog
+          className={`image-lightbox ${lightboxClassName || ""}`}
+          ref={dialog}
+          aria-label={`Image preview: ${alt}`}
+          onClick={close}
         >
-          close <kbd>esc</kbd>
-        </button>
-        <div className="lightbox-image-wrap">
-          {lightboxOpen && <Image src={src} alt={alt} fill sizes="96vw" unoptimized={animated} />}
-        </div>
-        <p>{alt}</p>
-      </dialog>
+          <button
+            className="lightbox-close"
+            type="button"
+            aria-label="Close image preview"
+            onClick={() => close()}
+          >
+            close <kbd>esc</kbd>
+          </button>
+          <div className="lightbox-image-wrap">
+            {lightboxOpen && <Image src={src} alt={alt} fill sizes="96vw" unoptimized={animated} />}
+          </div>
+          <p>{alt}</p>
+        </dialog>,
+        document.body,
+      )}
     </>
   );
 }

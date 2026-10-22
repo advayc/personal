@@ -1,5 +1,7 @@
 import "@/styles/globals.css";
 import "@/components/anatomy/iso.css";
+import "@/components/writing/writing.css";
+import "katex/dist/katex.min.css";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import type { AppProps } from "next/app";
