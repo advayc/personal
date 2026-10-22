@@ -135,12 +135,12 @@ export default function Home() {
                 description="Monthly puzzles and past solutions."
               >
                 Jane Street puzzles
-              </PreviewLink>{" "}in a row at 17.
+              </PreviewLink>{" "}in a row at 17 (math)
             </li>
             <li key="ios-app">
-              shipped an iOS app in 4 days that reached 5k monthly users after learning mobile dev in a day
+              shipped an iOS app in 4 days that reached 5k monthly users after learning mobile dev in a day (typescript/swift)
             </li>
-            <li>been programming semi-autonomous robots since i was 13.</li>
+            <li>been programming semi-autonomous robots since i was 13 (c++ / python)</li>
           </ul>
         </div>
         <nav className="social-links" aria-label="Social links">
