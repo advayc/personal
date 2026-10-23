@@ -1,7 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  let target = req.query.url as string;
+  const rawTarget = req.query.url;
+  if (Array.isArray(rawTarget)) {
+    res.status(400).json({ error: 'url param must be a single string' });
+    return;
+  }
+  let target: string | undefined = rawTarget;
 
   if (typeof target === 'string') {
     let prev = null;
