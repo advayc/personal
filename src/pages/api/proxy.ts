@@ -22,6 +22,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 .replace(/&quot;/gi, '"')
                 .replace(/&apos;/gi, "'");
   }
+
+  let parsedTarget: URL;
+  try {
+    parsedTarget = new URL(target);
+  } catch {
+    return res.status(400).json({ error: 'Invalid target URL' });
+  }
+
+  if (parsedTarget.protocol !== 'http:' && parsedTarget.protocol !== 'https:') {
+    return res.status(400).json({ error: 'Only HTTP(S) URLs are allowed' });
+  }
+
+  const hostname = parsedTarget.hostname.toLowerCase();
+  const allowedDomains = ['bing.com', 'google.com'];
+  const isAllowedHost = allowedDomains.some(
+    (domain) => hostname === domain || hostname.endsWith(`.${domain}`)
+  );
+
+  const isIPv4 = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostname);
+  const isIPv6 = hostname.includes(':');
+  const isLocalhost = hostname === 'localhost';
+
+  if (!isAllowedHost || isIPv4 || isIPv6 || isLocalhost) {
+    return res.status(400).json({ error: 'Target host is not allowed' });
+  }
+
+  const safeTarget = parsedTarget.toString();
   
   if (!target) {
     if (req.query.q || req.query.search) {
@@ -103,7 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (req.headers[header]) headers[header] = req.headers[header] as string;
     });
     
-    if (target.includes('bing.com') || target.includes('google.com')) {
+    if (hostname.endsWith('bing.com') || hostname.endsWith('google.com')) {
       headers['Sec-Fetch-Dest'] = 'document';
       headers['Sec-Fetch-Mode'] = 'navigate';
       headers['Sec-Fetch-Site'] = 'cross-site';
@@ -111,7 +138,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers['Upgrade-Insecure-Requests'] = '1';
     }
     
-    if (target.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf)$/i)) {
+    if (parsedTarget.pathname.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf)$/i)) {
       headers['Accept'] = 'image/*, */*';
     }
 
@@ -138,7 +165,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers['Cookie'] = req.headers['cookie'] as string;
     }
 
-    const response = await fetch(target, { 
+    const response = await fetch(safeTarget, { 
       headers,
       method: req.method !== 'OPTIONS' ? req.method : 'GET',
       body: req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'OPTIONS' ? JSON.stringify(req.body) : undefined,
