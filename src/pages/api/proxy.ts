@@ -28,6 +28,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 .replace(/&apos;/gi, "'");
   }
 
+  if (!target) {
+    res.status(400).json({ error: 'Missing url param' });
+    return;
+  }
+
   let parsedTarget: URL;
   try {
     parsedTarget = new URL(target);
