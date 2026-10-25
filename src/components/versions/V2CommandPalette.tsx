@@ -41,7 +41,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, setAcc
     { id: 'linkedin', label: 'LinkedIn Profile', shortcut: 'Shift+L', onSelect: () => window.open('https://www.linkedin.com/in/advay/', '_blank') },
     { id: 'github', label: 'GitHub Profile', shortcut: 'Shift+G', onSelect: () => window.open('https://github.com/advayc', '_blank') },
     { id: 'resume', label: 'Resume', shortcut: 'Shift+R', onSelect: () => window.open('/advay_resume.pdf', '_blank') },
-    { id: 'email', label: 'Email', shortcut: 'Shift+E', onSelect: () => window.open('mailto:advay.chandorkar@gmail.com', '_self') },
+    { id: 'email', label: 'Email', shortcut: 'Shift+E', onSelect: () => window.open('mailto:me@advay.ca', '_self') },
     { id: 'repo', label: 'Website Repository', shortcut: 'Shift+C', onSelect: () => window.open('https://github.com/advayc/personal', '_blank') }
   ];
 

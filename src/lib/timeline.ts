@@ -47,7 +47,7 @@ export const timeline = [
     ],
   },
   {
-    date: "summer 2024",
+    date: "august 2024",
     title: "back to problem solving",
     text: "Spent more time practising competitive programming on DMOJ and LeetCode.",
     links: [
@@ -107,12 +107,12 @@ export const timeline = [
     links: [{ label: "seva eats", href: "/projects/seva-eats" }],
   },
   {
-    date: "summer 2026",
+    date: "july 2026",
     title: "following the inefficiencies",
     text: "Built more apps and agents around the small inefficiencies I noticed in my life and other people’s.",
   },
   {
-    date: "now · 2026",
+    date: "october 2026",
     title: "engineering + ai",
     text: "Studying computer engineering at Queen’s and working on AI prototyping at Magic Hour: voice, video, and image generation.",
     links: [{ label: "magic hour", href: "https://magichour.ai/" }],

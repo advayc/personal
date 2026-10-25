@@ -144,7 +144,7 @@ export default function Home() {
           </ul>
         </div>
         <nav className="social-links" aria-label="Social links">
-          <a href="mailto:advay.chandorkar@gmail.com">
+          <a href="mailto:me@advay.ca">
             email <FiArrowUpRight aria-hidden="true" />
           </a>
           <a href="https://www.linkedin.com/in/advay/">

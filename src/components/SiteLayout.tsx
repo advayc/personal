@@ -7,6 +7,7 @@ import { FiCommand, FiArrowUpRight } from "react-icons/fi";
 import HitCounter from "./HitCounter";
 import ThemeSlider from "./ThemeSlider";
 import SiteHistoryTrigger from "./SiteHistoryTrigger";
+import { accentColors, type AccentColor } from "@/lib/theme";
 
 const CommandPalette = dynamic(() => import("./CommandPalette"), { ssr: false });
 
@@ -17,7 +18,6 @@ export const backgrounds = [
   { name: "cream", color: "#f4f1ea" },
 ] as const;
 export type Background = (typeof backgrounds)[number]["name"];
-
 export default function SiteLayout({
   children,
   title = "advay chandorkar",
@@ -31,6 +31,7 @@ export default function SiteLayout({
 }) {
   const router = useRouter();
   const [background, setBackground] = useState<Background>("gray");
+  const [accentColor, setAccentColor] = useState<AccentColor>("orange");
   const [ready, setReady] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   useEffect(() => {
@@ -38,16 +39,23 @@ export default function SiteLayout({
       const saved = localStorage.getItem("portfolioBackground");
       if (backgrounds.some((b) => b.name === saved))
         setBackground(saved as Background);
+      const savedAccent = localStorage.getItem("portfolioAccent");
+      if (accentColors.some((color) => color.name === savedAccent))
+        setAccentColor(savedAccent as AccentColor);
     } catch {}
     setReady(true);
   }, []);
   useEffect(() => {
     if (!ready) return;
     document.documentElement.dataset.background = background;
-    document.documentElement.style.setProperty("--accent-color", "#ff3908");
+    const accent = accentColors.find((color) => color.name === accentColor)!.value;
+    const red = Number.parseInt(accent.slice(1, 3), 16);
+    const green = Number.parseInt(accent.slice(3, 5), 16);
+    const blue = Number.parseInt(accent.slice(5, 7), 16);
+    document.documentElement.style.setProperty("--accent-color", accent);
     document.documentElement.style.setProperty(
       "--accent-color-rgb",
-      "255, 57, 8",
+      `${red}, ${green}, ${blue}`,
     );
     document.documentElement.classList.toggle(
       "light",
@@ -55,8 +63,9 @@ export default function SiteLayout({
     );
     try {
       localStorage.setItem("portfolioBackground", background);
+      localStorage.setItem("portfolioAccent", accentColor);
     } catch {}
-  }, [background, ready]);
+  }, [accentColor, background, ready]);
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       const target = e.target;
@@ -139,7 +148,7 @@ export default function SiteLayout({
         <footer className="site-footer">
           <div className="footer-top">
             <Link href="/systems">systems i find interesting</Link>
-            <a href="mailto:advay.chandorkar@gmail.com">
+            <a href="mailto:me@advay.ca">
               say hello <FiArrowUpRight aria-hidden="true" />
             </a>
           </div>
@@ -179,6 +188,8 @@ export default function SiteLayout({
           onClose={() => setCommandOpen(false)}
           background={background}
           onBackgroundChange={setBackground}
+          accentColor={accentColor}
+          onAccentColorChange={setAccentColor}
         />
       )}
     </div>

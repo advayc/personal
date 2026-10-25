@@ -118,7 +118,7 @@ const Footer: React.FC<FooterProps> = ({ selected: propSelected, accentColorProp
                     </Link>
                     <Link
                         className="transition-colors duration-200 rounded-md p-1.5 sm:p-2 text-[rgba(var(--text-rgb),0.7)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color-hover)]"
-                        href="mailto:advay.chandorkar@gmail.com"
+                        href="mailto:me@advay.ca"
                     >
                         <MdMail className="w-5 h-5 sm:w-5 sm:h-5" />
                     </Link>

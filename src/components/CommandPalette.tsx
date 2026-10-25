@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "next/router";
 import ThemeSlider from "./ThemeSlider";
 import { FiArrowUpRight, FiArrowRight, FiSearch, FiX } from "react-icons/fi";
 import { openSiteHistory } from "./SiteHistoryTrigger";
+import { accentColors, type AccentColor } from "@/lib/theme";
+import { FaGithub, FaLinkedin, FaXTwitter, FaEnvelope } from "react-icons/fa6";
 
 type Background = "gray" | "black" | "white" | "cream";
 
@@ -11,6 +13,8 @@ interface CommandPaletteProps {
   onClose: () => void;
   background?: Background;
   onBackgroundChange?: (background: Background) => void;
+  accentColor?: AccentColor;
+  onAccentColorChange?: (accentColor: AccentColor) => void;
 }
 const destinations = [
   { label: "home", detail: "a little about me", href: "/" },
@@ -29,7 +33,7 @@ const destinations = [
   {
     label: "email",
     detail: "get in touch",
-    href: "mailto:advay.chandorkar@gmail.com",
+    href: "mailto:me@advay.ca",
     external: true,
   },
   {
@@ -64,6 +68,8 @@ export default function CommandPalette({
   onClose,
   background = "gray",
   onBackgroundChange,
+  accentColor = "orange",
+  onAccentColorChange,
 }: CommandPaletteProps) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -190,7 +196,13 @@ export default function CommandPalette({
                 tabIndex={-1}
               >
                 <span>
-                  {item.label}
+                  <span className="command-result-label">
+                    {item.label === "github" && <FaGithub aria-hidden="true" />}
+                    {item.label === "linkedin" && <FaLinkedin aria-hidden="true" />}
+                    {item.label === "x" && <FaXTwitter aria-hidden="true" />}
+                    {item.label === "email" && <FaEnvelope aria-hidden="true" />}
+                    {item.label}
+                  </span>
                   <small>{item.detail}</small>
                 </span>
                 {item.external ? (
@@ -207,9 +219,26 @@ export default function CommandPalette({
             </li>
           )}
         </ul>
-        {onBackgroundChange && (
+        {(onBackgroundChange || onAccentColorChange) && (
           <div className="command-appearance">
-            <ThemeSlider value={background} onChange={onBackgroundChange} />
+            {onBackgroundChange && <ThemeSlider value={background} onChange={onBackgroundChange} />}
+            {onAccentColorChange && (
+              <div className="command-accent-picker" aria-label="Accent color">
+                <span>accent</span>
+                <div role="group" aria-label="Choose accent color">
+                  {accentColors.map((color) => (
+                    <button
+                      key={color.name}
+                      type="button"
+                      aria-label={`${color.name} accent`}
+                      aria-pressed={accentColor === color.name}
+                      onClick={() => onAccentColorChange(color.name)}
+                      style={{ "--accent-swatch": color.value } as CSSProperties}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
         <footer className="command-footer">

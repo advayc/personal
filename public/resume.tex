@@ -7,127 +7,144 @@
 \usepackage{fancyhdr}
 \usepackage{tabularx}
 
-% Font and margin settings
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
+
 \addtolength{\oddsidemargin}{-0.5in}
 \addtolength{\evensidemargin}{-0.5in}
 \addtolength{\textwidth}{1in}
-\addtolength{\topmargin}{-0.5in}
-\addtolength{\textheight}{1.0in}
+\addtolength{\topmargin}{-0.55in}
+\addtolength{\textheight}{1.15in}
+
 \setlength{\tabcolsep}{0in}
 \urlstyle{same}
 
-% Section formatting
 \titleformat{\section}{
   \scshape\large
 }{}{0em}{}[\titlerule]
 
+\titlespacing{\section}{0pt}{7pt}{5pt}
+
+\setlist[itemize]{
+  itemsep=1pt,
+  topsep=2pt,
+  parsep=0pt,
+  partopsep=0pt
+}
+
 \raggedbottom
 \raggedright
 
-% Custom commands
 \newcommand{\resumeSubheading}[4]{
-  \vspace{-1pt}\item
+  \vspace{4pt}\item
   \begin{tabular*}{1\textwidth}{l@{\extracolsep{\fill}}r}
     \textbf{#1} & \textit{#2} \\
     \textit{\small#3} & \textit{\small#4}
   \end{tabular*}
+  \vspace{-4pt}
 }
 
 \newcommand{\resumeItem}[1]{
-  \item\small{
-    {#1 \vspace{-2pt}}
-  }
+  \item\small{#1}
 }
 
-\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+\newcommand{\resumeSubHeadingListStart}{
+  \begin{itemize}[leftmargin=0.15in, label={}, itemsep=0pt, topsep=0pt]
+}
 
-\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
-\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeSubHeadingListEnd}{
+  \end{itemize}
+}
 
-% Use "-" instead of "*" for resume item lists
-\newcommand{\resumeItemListStart}{\begin{itemize}[label=-]}
-\newcommand{\resumeItemListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{
+  \begin{itemize}[leftmargin=0.2in, label=-, itemsep=1pt, topsep=2pt]
+}
 
-%-------------------------
-% DOCUMENT CONTENT
-%-------------------------
+\newcommand{\resumeItemListEnd}{
+  \end{itemize}
+}
+
 \begin{document}
 
-%----------HEADING----------
 \begin{center}
-    \textbf{\Huge \scshape Advay Chandorkar} \\ \vspace{2pt}
-    \small \href{mailto:advay.chandorkar@gmail.com}{\underline{advay.chandorkar@gmail.com}} $|$ 
+    \textbf{\Huge \scshape Advay Chandorkar} \\ \vspace{3pt}
+    \href{mailto:me@advay.ca}{\underline{me@advay.ca}} $|$
     \href{https://linkedin.com/in/advay}{\underline{linkedin.com/in/advay}} $|$
     \href{https://github.com/advayc}{\underline{github.com/advayc}} $|$
-    \href{https://advay.ca}{\underline{advay.ca}}
+    \href{https://advay.ca/}{\underline{advay.ca}}
 \end{center}
 
-% Education
 \section{Education}
 \resumeSubHeadingListStart
     \resumeSubheading
-        {Glenforest Secondary School}{Mississauga, ON}
-        {International Baccalaureate (IB), Expected Graduation: 2026}{2022 -- Present}
+        {Queen's University}{Kingston, ON}
+        {Honours Bachelor of Applied Science (BASc) in Computer Engineering}{2026 -- 2030}
 \resumeSubHeadingListEnd
 
-% Experience
 \section{Experience}
 \resumeSubHeadingListStart
-    \resumeSubheading
-        {Software Developer}{\href{https://neurotechuoft.ca/}{NeurotechUoft}}
-        {Jun 2025 -- Present}{}
+
+\resumeSubheading
+        {Magic Hour AI (YC W24)}{Software Engineering Intern}
+        {Oct 2026 -- Present}{}
     \resumeItemListStart
-        \resumeItem{Contributed in a team of three to create frontend and backend for the website.}
-        \resumeItem{Wrote a custom GitHub Actions workflow to ship the Next.js site, managing WHC hosting to connect deployment to the domain.}
+        \resumeItem{Built a Python backend for Magic Hour's voice-editing API with 6 voice-editing controls and 3 transcript-editing operations (Voice Editor, Voice Enhancing, Transcript Editing).}
+        \resumeItem{Adapted Tencent AuK, built on Qwen2.5-Omni, for word-level speech editing in Google Colab with L4/T4 GPUs.}
+        \resumeItem{Wrote 291 regression tests and automated checks for transcript mismatches, discontinuities at edit boundaries, and changes to audio outside the edited segment.}
     \resumeItemListEnd
-    \textbf{Skills:} Next.js, TypeScript, Tailwind CSS, Git, React, GitHub Actions
+        \textbf{Skills:} Python, Google Colab, Tencent AuK, Qwen2.5-Omni, ASR, Git
+    \vspace{-4pt}
 
-
-    \resumeSubheading
-        {Lead Web Developer}{\href{https://futuremd.net}{FutureMD}}
-        {Jun 2024 -- Present}{}
+\resumeSubheading
+        {NeurotechUoft}{Software Developer}
+        {Jun 2025 -- Jun 2026}{}
     \resumeItemListStart
-        \resumeItem{Developed and maintained the official website for a nonprofit organization using Next.js, TypeScript, and Tailwind CSS.}
-        \resumeItem{Wrote a newsletter system enabling executives to send emails to subscribers efficiently.}
-        \resumeItem{Utilized Next.js dynamic routing to create an updatable blog page through JSON.}
+        \resumeItem{Developed full-stack features for the club website using Next.js, and TypeScript, reaching 1,000+ website views.}
+        \resumeItem{Worked with director to configure email domain forwarding for 300+ students and researchers across the club.}
+        \resumeItem{Created a CI/CD pipeline using GitHub Actions that automated builds, deployments, and domain routing.}
     \resumeItemListEnd
-    \textbf{Skills:} Next.js, TypeScript, Tailwind CSS, Git, Figma, SEO
+    \textbf{Skills:} Next.js, TypeScript, Tailwind CSS, Git, GitHub Actions, Communication, Collaboration
+    \vspace{-4pt}
 
-    \resumeSubheading
-        {Team Lead}{VEX Robotics (Team 31331B)}
-        {May 2024 -- Present}{}
+\resumeSubheading
+        {FutureMD}{Founder / Vice Director}
+        {May 2024 -- May 2026}{}
     \resumeItemListStart
-        \resumeItem{Led the robotics team to the Ontario Provincial Championship, mentoring members on strategies and technical skills.}
-        \resumeItem{Designed, built, programmed and documented mechanical subsystems for competitions across the province.}
-        \resumeItem{Wrote a PID control algorithm for autonomous robot subsystem control.}
+        \resumeItem{Founded and led a registered nonprofit platform for students pursuing medicine, reaching over 87,000 website views.}
+        \resumeItem{Led sponsorship outreach and secured a \$3,000 operating budget with federal grants to support workshops and student events.}
+        \resumeItem{Used Google Analytics to track website traffic and guide content, SEO, and user experience improvements, improving reach by over 20\%.}
     \resumeItemListEnd
-    \textbf{Skills:} Python, Leadership, Teamwork, Fusion 360, Git, Communication
+    \textbf{Skills:} Next.js, TypeScript, PostgreSQL, Tailwind CSS, Google Analytics, Figma, Git
 
-% Projects
+\resumeSubHeadingListEnd
+
 \section{Projects}
 \resumeSubHeadingListStart
-    \resumeSubheading
-        {Nums}{\href{https://github.com/advayc/nums}{github.com/advayc/nums}}
-        {Golang, Next.js, Redis}{Aug 2025}
-    \resumeItemListStart
-        \resumeItem{Built a hit counter service with a Go backend and a Next.js API proxy to track and display website page views.}
-        \resumeItem{Implemented endpoints for incrementing counts, retrieving JSON, returning plain numbers, and generating dynamic SVG badges for readmes files.}
-        \resumeItem{Integrated persistent storage through Upstash Redis with fallback to in-memory storage.}
-    \resumeItemListEnd
-    \textbf{Skills:} Golang, REST APIs, Redis, Web Deployment, Git
 
     \resumeSubheading
-        {Sitemaker}{\href{https://sitemaker-beta.vercel.app/}{sitemaker-beta.vercel.app}}
-        {Next.js, TypeScript, Tailwind CSS}{July 2025}
+        {Seva Eats}{\href{https://seva-eats.vercel.app/}{Website}}
+        {December 2025 -- June 2026}{}
     \resumeItemListStart
-        \resumeItem{Created a platform to generate personal websites instantly by uploading resumes or CVs in multiple formats.}
-        \resumeItem{Built a secure pipeline ensuring uploaded data is processed safely and never stored permanently.}
-        \resumeItem{Designed modern, responsive templates to showcase user skills and experience professionally.}
+        \resumeItem{Built and deployed a cross-platform iOS and web app connecting gurdwaras' langar programs with people in need.}
+        \resumeItem{Engineered a custom route optimization algorithm built on top of Dijkstra's algorithm to match volunteers with nearby delivery requests, minimizing travel distance and delivery time.}
+        \resumeItem{Built the mobile app in Expo and the web app in Next.js, backed by Supabase for authentication, orders, and real-time tracking in PostgreSQL.}
     \resumeItemListEnd
-    \textbf{Skills:} Next.js, TypeScript, Tailwind CSS, Gemini, Figma
-    \resumeSubHeadingListEnd
+    \textbf{Skills:} Expo, React Native, TypeScript, Supabase, PostgreSQL, Route Optimization, Full-Stack Development
+    \vspace{-4pt}
+
+    \resumeSubheading
+        {GQ Planets}{\href{https://www.spaceappschallenge.org/2025/find-a-team/the-sonic-waves/?tab=project}{Model + Web App + Slide}}
+        {Python, PyTorch, Flask}{2025}
+    \resumeItemListStart
+        \resumeItem{Developed a neural network that detects exoplanets using Kepler, K2, and TESS mission data.}
+        \resumeItem{Achieved 83 percent accuracy and 94 percent recall using merged and preprocessed datasets.}
+        \resumeItem{Built a web interface supporting single predictions, batch CSV uploads, and result downloads.}
+        \resumeItem{Added visual tools including ROC curves, confusion matrices, and confidence scoring. Displayed all our findings on a powerpoint presentation.}
+        \resumeItem{Won Most Innovative and selected as a Global Nominee at the NASA Space Apps Hackathon.}
+    \resumeItemListEnd
+    \textbf{Skills:} Python, PyTorch, Flask, Machine Learning, Data Processing, Communication, Teamwork, Excel
+
+\resumeSubHeadingListEnd
 
 \end{document}
