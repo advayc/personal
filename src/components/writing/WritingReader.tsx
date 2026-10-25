@@ -6,8 +6,9 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";
-import { FiChevronDown } from "react-icons/fi";
+import { FiChevronDown, FiExternalLink } from "react-icons/fi";
 import LossyCompressionStudies from "./LossyCompressionStudies";
+import CardMathStudy from "./CardMathStudy";
 import ProjectImage from "@/components/ProjectImage";
 
 type Heading = { id: string; label: string; level: number };
@@ -90,6 +91,7 @@ function MarkdownDirective({ children, ...props }: MarkdownDivProps) {
   const directive = props["data-writing-directive"];
   const type = props["data-type"] || "";
   if (directive === "interactive") {
+    if (type === "card-math") return <CardMathStudy />;
     return <LossyCompressionStudies kind={type} />;
   }
   if (directive === "sources") {
@@ -248,6 +250,15 @@ export default function WritingReader({ markdown }: { markdown: string }) {
   return (
     <div className={`writing-reader typeface-${typeface}`}>
       <div className="writing-reader-tools">
+        <a
+          className="writing-pdf-link"
+          href="/ee.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span>view PDF</span>
+          <FiExternalLink aria-hidden="true" />
+        </a>
         <FontPicker value={typeface} onChange={changeTypeface} />
       </div>
       <div className="writing-reader-grid">
@@ -260,7 +271,7 @@ export default function WritingReader({ markdown }: { markdown: string }) {
           >
             {markdown}
           </ReactMarkdown>
-          <div className="writing-word-count">3,623 words</div>
+          <div className="writing-word-count">{markdown.trim().split(/\s+/).length.toLocaleString()} words</div>
         </article>
       </div>
     </div>
