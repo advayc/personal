@@ -6,7 +6,7 @@ const OPEN_HISTORY_EVENT = "portfolio:open-site-history";
 const versions = [
   { label: "2024", date: "2023", href: "/versions/1" },
   { label: "june 2026", date: "2025", href: "/versions/2" },
-  { label: "currnet", date: "2026", href: "/" },
+  { label: "current", date: "2026", href: "/" },
 ] as const;
 
 function versionFromPath(path: string) {
