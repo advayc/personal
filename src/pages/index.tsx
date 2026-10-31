@@ -22,17 +22,17 @@ export default function Home() {
           >
             <div className="portrait-wrapper">
               <Image
-                src="/icons/fast/me.webp"
+                src="/icons/me.png"
                 alt="Advay overlooking the mountains"
                 width={136}
-                height={136}
+                height={181}
                 priority
               />
               <Image
-                src="/icons/fast/me-asci.webp"
+                src="/icons/me-asci.png"
                 alt=""
                 width={136}
-                height={136}
+                height={169}
                 className="portrait-ascii"
               />
             </div>

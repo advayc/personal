@@ -67,15 +67,16 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="og:title" content={DEFAULT_TITLE} />
         <meta property="og:description" content={DEFAULT_DESCRIPTION} />
         <meta property="og:site_name" content="Advay Chandorkar Portfolio" />
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content={SITE_URL} />
-        <meta property="twitter:title" content={DEFAULT_TITLE} />
-        <meta property="twitter:description" content={DEFAULT_DESCRIPTION} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={SITE_URL} />
+        <meta name="twitter:title" content={DEFAULT_TITLE} />
+        <meta name="twitter:description" content={DEFAULT_DESCRIPTION} />
         <meta property="og:image" content="https://advayc.ca/meta.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content="Advay Chandorkar — building things people use" />
-        <meta property="twitter:image" content="https://advayc.ca/meta.png" />
+        <meta name="twitter:image" content="https://advayc.ca/meta.png" />
+        <meta name="twitter:image:alt" content="Advay Chandorkar — building things people use" />
         <link rel="icon" href="/favicon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#000000" />
