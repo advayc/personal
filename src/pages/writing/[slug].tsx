@@ -29,7 +29,7 @@ export default function WritingArticle({ slug, markdown }: Props) {
           </time>
         )}
       </div>
-      <WritingReader markdown={markdown} />
+      <WritingReader markdown={markdown} pdfHref={entry.pdfFile} />
     </SiteLayout>
   );
 }

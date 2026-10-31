@@ -239,7 +239,7 @@ function Contents({ headings }: { headings: Heading[] }) {
   );
 }
 
-export default function WritingReader({ markdown }: { markdown: string }) {
+export default function WritingReader({ markdown, pdfHref }: { markdown: string; pdfHref?: string }) {
   const headings = useMemo(() => readHeadings(markdown), [markdown]);
   const [typeface, setTypeface] = useState<Typeface>("sans");
 
@@ -250,15 +250,17 @@ export default function WritingReader({ markdown }: { markdown: string }) {
   return (
     <div className={`writing-reader typeface-${typeface}`}>
       <div className="writing-reader-tools">
-        <a
-          className="writing-pdf-link"
-          href="/ee.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span>view PDF</span>
-          <FiExternalLink aria-hidden="true" />
-        </a>
+        {pdfHref && (
+          <a
+            className="writing-pdf-link"
+            href={pdfHref}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>view PDF</span>
+            <FiExternalLink aria-hidden="true" />
+          </a>
+        )}
         <FontPicker value={typeface} onChange={changeTypeface} />
       </div>
       <div className="writing-reader-grid">
