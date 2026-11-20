@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useReducedMotion } from "../systems/useLive";
 
 /* Anatomy Fig 1 — GPU: a tile-painting factory.
    Object is explanation: dispatcher gantry (scheduler) feeds triangles
@@ -34,7 +35,7 @@ const coreUV = (i: number): [number, number] => {
   return [sx / VW, 1 - sy / VH];
 };
 
-function Box(o: {
+const Box = memo(function Box(o: {
   x: number; y: number; w: number; d: number; z0: number; z1: number;
   lit?: boolean; shadeA?: string; shadeB?: string; edge?: "hi" | "mid" | "lo" | "lit";
 }) {
@@ -55,9 +56,9 @@ function Box(o: {
       <path className="iso-line" data-tone={edge} d={outline3} />
     </g>
   );
-}
+});
 
-function Cyl(o: { x: number; y: number; r: number; z0: number; z1: number; lit?: boolean }) {
+const Cyl = memo(function Cyl(o: { x: number; y: number; r: number; z0: number; z1: number; lit?: boolean }) {
   const { x, y, r, z0, z1, lit } = o;
   const [cx1, cy1] = P(x, y, z1);
   const [cx0, cy0] = P(x, y, z0);
@@ -72,7 +73,7 @@ function Cyl(o: { x: number; y: number; r: number; z0: number; z1: number; lit?:
       <path className="iso-line" data-tone={lit ? "lit" : "mid"} d={topEl} />
     </g>
   );
-}
+});
 
 const FRAG = `
 precision mediump float;
@@ -113,58 +114,31 @@ export default function GpuFigure({ theme }: { theme: "dark" | "paper" }) {
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(0);
   const [hover, setHover] = useState<number | null>(null);
-  const [reduced, setReduced] = useState(false);
+  const reduced = useReducedMotion();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<number[]>(Array(CORES).fill(0.06));
-  const targetRef = useRef<number[]>(Array(CORES).fill(0.06));
   const stateRef = useRef({ done: 0, running: false, work: 128, cpuMode: false });
   stateRef.current = { done, running, work, cpuMode };
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const lanes = cpuMode ? 4 : CORES;
-  const perLane = Math.ceil(work / lanes);
   const frameMs = cpuMode ? work * 3.2 : Math.ceil(work / CORES) * 0.9 + 1.1;
   const speedup = ((work * 3.2) / frameMs).toFixed(1);
 
-  // progress loop (time-based, eased)
+  // Scheduling ends when a dispatch finishes; an idle GPU has no simulation clock.
   useEffect(() => {
-    let raf = 0;
+    if (!running || reduced) return;
     let last = performance.now();
-    const tick = (t: number) => {
-      const dt = Math.min(0.05, (t - last) / 1000);
-      last = t;
-      const s = stateRef.current;
-      if (s.running && !reduced) {
-        const rate = s.cpuMode ? s.work / 2.4 : s.work / 0.9;
-        const nd = Math.min(s.work, s.done + rate * dt);
-        setDone(nd);
-        if (nd >= s.work) setRunning(false);
-      }
-      // ease glow toward target (no pops)
-      const active = new Array(CORES).fill(0.05);
-      if (s.running || s.done > 0) {
-        const per = Math.ceil(s.work / (s.cpuMode ? 4 : CORES));
-        for (let i = 0; i < CORES; i++) {
-          const assigned = s.cpuMode ? (i < 4 ? per : 0) : per;
-          const finished = Math.max(0, s.done - 0) / (s.cpuMode ? 4 : CORES);
-          const mine = Math.min(assigned, Math.max(0, assigned - Math.max(0, s.done / (s.cpuMode ? 4 : CORES) - 0)));
-          void finished; void mine;
-          const hasWork = s.cpuMode ? i < 4 && s.done < s.work : s.done < s.work;
-          active[i] = hasWork ? 0.55 + 0.45 * Math.min(1, (s.work - s.done) / s.work + 0.3) : 0.06;
-        }
-      }
-      targetRef.current = active;
-      for (let i = 0; i < CORES; i++) {
-        const g = glowRef.current[i];
-        const want = targetRef.current[i];
-        glowRef.current[i] = g + (want - g) * Math.min(1, dt * 4);
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
+    let raf = requestAnimationFrame(function advance(now) {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const state = stateRef.current;
+      const duration = state.cpuMode ? 2.4 : 0.9;
+      const next = Math.min(state.work, state.done + state.work * dt / duration);
+      setDone(next);
+      if (next >= state.work) setRunning(false);
+      else raf = requestAnimationFrame(advance);
+    });
     return () => cancelAnimationFrame(raf);
-  }, [reduced]);
+  }, [running, reduced]);
 
   // WebGL layer
   useEffect(() => {
@@ -179,8 +153,10 @@ export default function GpuFigure({ theme }: { theme: "dark" | "paper" }) {
       return s;
     };
     const pr = gl.createProgram()!;
-    gl.attachShader(pr, mk(gl.VERTEX_SHADER, VERT));
-    gl.attachShader(pr, mk(gl.FRAGMENT_SHADER, FRAG));
+    const vertex = mk(gl.VERTEX_SHADER, VERT);
+    const fragment = mk(gl.FRAGMENT_SHADER, FRAG);
+    gl.attachShader(pr, vertex);
+    gl.attachShader(pr, fragment);
     gl.linkProgram(pr);
     gl.useProgram(pr);
     const buf = gl.createBuffer();
@@ -194,22 +170,19 @@ export default function GpuFigure({ theme }: { theme: "dark" | "paper" }) {
     const uInk = gl.getUniformLocation(pr, "uInk");
     const uPos = gl.getUniformLocation(pr, "uPos");
     const uGlow = gl.getUniformLocation(pr, "uGlow");
-    const uvs = coreUV(0);
-    void uvs;
     const positions = new Float32Array(CORES * 2);
     for (let i = 0; i < CORES; i++) {
       const [u, v] = coreUV(i);
       positions[i * 2] = u;
       positions[i * 2 + 1] = v;
     }
+    const glow = new Float32Array(CORES).fill(0.06);
+    gl.uniform1f(uPaper, theme === "paper" ? 1 : 0);
+    gl.uniform3f(uInk, 1.0, 0.45, 0.15);
+    gl.uniform2fv(uPos, positions);
+    gl.clearColor(0, 0, 0, 0);
     let raf = 0;
-    let visible = true;
-    const io = new IntersectionObserver((e) => (visible = e[0].isIntersecting), { threshold: 0.05 });
-    io.observe(cv);
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const onMq = () => setReduced(mq.matches);
-    mq.addEventListener?.("change", onMq);
+    let visible = false;
     const size = () => {
       const r = Math.min(1.5, window.devicePixelRatio || 1);
       const w = Math.max(2, Math.floor(cv.clientWidth * r));
@@ -220,27 +193,48 @@ export default function GpuFigure({ theme }: { theme: "dark" | "paper" }) {
         gl.viewport(0, 0, w, h);
       }
     };
-    const t0 = performance.now();
-    const frame = () => {
-      raf = requestAnimationFrame(frame);
-      if (!visible) return;
-      size();
-      const t = (performance.now() - t0) / 1000;
-      gl.uniform1f(uTime, reduced ? 0 : t);
-      gl.uniform1f(uPaper, theme === "paper" ? 1 : 0);
-      gl.uniform3f(uInk, 1.0, 0.45, 0.15);
-      gl.uniform2fv(uPos, positions);
-      gl.uniform1fv(uGlow, new Float32Array(glowRef.current));
-      gl.clearColor(0, 0, 0, 0);
+    const start = performance.now();
+    let last = start;
+    const draw = (now: number) => {
+      const state = stateRef.current;
+      const ease = Math.min(1, (now - last) * 0.004);
+      last = now;
+      const activeGlow = 0.55 + 0.45 * Math.min(1, (state.work - state.done) / state.work + 0.3);
+      for (let i = 0; i < CORES; i++) {
+        const active = state.done < state.work && (!state.cpuMode || i < 4);
+        const target = !state.running && state.done === 0 ? 0.05 : active ? activeGlow : 0.06;
+        glow[i] += (target - glow[i]) * ease;
+      }
+      gl.uniform1f(uTime, reduced ? 0 : (now - start) / 1000);
+      gl.uniform1fv(uGlow, glow);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      if (reduced && (performance.now() - t0 > 500)) cancelAnimationFrame(raf);
+      if (!reduced) raf = requestAnimationFrame(draw);
     };
-    frame();
+    const sync = () => {
+      cancelAnimationFrame(raf);
+      if (!visible || document.hidden) return;
+      size();
+      last = performance.now();
+      raf = requestAnimationFrame(draw);
+    };
+    const intersection = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      sync();
+    });
+    const resize = new ResizeObserver(sync);
+    resize.observe(cv);
+    intersection.observe(cv);
+    document.addEventListener("visibilitychange", sync);
     return () => {
       cancelAnimationFrame(raf);
-      io.disconnect();
-      mq.removeEventListener?.("change", onMq);
+      document.removeEventListener("visibilitychange", sync);
+      resize.disconnect();
+      intersection.disconnect();
+      gl.deleteBuffer(buf);
+      gl.deleteProgram(pr);
+      gl.deleteShader(vertex);
+      gl.deleteShader(fragment);
     };
   }, [theme, reduced]);
 
@@ -281,7 +275,7 @@ export default function GpuFigure({ theme }: { theme: "dark" | "paper" }) {
   const screws: [number, number][] = [[-150, -78], [150, -78], [150, 78], [-150, 78]];
   return (
     <div>
-      <div className="fx-stage" ref={wrapRef} role="img"
+      <div className="fx-stage" role="img"
         aria-label="Tile-painting factory showing how a GPU shades many triangles in parallel"
         tabIndex={0}
         onKeyDown={(e) => {

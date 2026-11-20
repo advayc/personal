@@ -9,6 +9,8 @@ export default function ProjectImage({
   height,
   className,
   lightboxClassName,
+  priority = false,
+  animated = false,
 }: {
   src: string;
   alt: string;
@@ -17,27 +19,20 @@ export default function ProjectImage({
   height: number;
   className?: string;
   lightboxClassName?: string;
+  priority?: boolean;
+  animated?: boolean;
 }) {
   const opener = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const animated = src.toLowerCase().endsWith(".gif");
+  const direct = animated || src.toLowerCase().endsWith(".gif");
   const close = (event?: MouseEvent<HTMLDialogElement>) => {
     if (event && event.target !== event.currentTarget) return;
     dialog.current?.close();
   };
   useEffect(() => {
-    setMounted(true);
-    const el = dialog.current;
-    if (!el) return;
-    const onClose = () => {
-      setLightboxOpen(false);
-      opener.current?.focus();
-    };
-    el.addEventListener("close", onClose);
-    return () => el.removeEventListener("close", onClose);
-  }, []);
+    if (lightboxOpen) dialog.current?.showModal();
+  }, [lightboxOpen]);
   return (
     <>
       <button
@@ -45,10 +40,7 @@ export default function ProjectImage({
         ref={opener}
         type="button"
         aria-label={`View larger image: ${alt}`}
-        onClick={() => {
-          setLightboxOpen(true);
-          dialog.current?.showModal();
-        }}
+        onClick={() => setLightboxOpen(true)}
       >
         <Image
           src={src}
@@ -56,17 +48,22 @@ export default function ProjectImage({
           width={width}
           height={height}
           sizes={sizes}
-          unoptimized={animated}
+          priority={priority}
+          unoptimized={direct}
         />
         <span className="zoom-hint" aria-hidden="true">
           view image ↗
         </span>
       </button>
-      {mounted && createPortal(
+      {lightboxOpen && createPortal(
         <dialog
           className={`image-lightbox ${lightboxClassName || ""}`}
           ref={dialog}
           aria-label={`Image preview: ${alt}`}
+          onClose={() => {
+            setLightboxOpen(false);
+            opener.current?.focus();
+          }}
           onClick={close}
         >
           <button
@@ -78,7 +75,7 @@ export default function ProjectImage({
             close <kbd>esc</kbd>
           </button>
           <div className="lightbox-image-wrap">
-            {lightboxOpen && <Image src={src} alt={alt} fill sizes="96vw" unoptimized={animated} />}
+            <Image src={src} alt={alt} fill sizes="96vw" unoptimized={direct} />
           </div>
           <p>{alt}</p>
         </dialog>,

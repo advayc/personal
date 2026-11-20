@@ -52,7 +52,7 @@
 .recent { margin-top: 64px; }
 .recent h3 { margin: 26px 0 8px; }
 .recent ol { list-style: none; margin: 0; padding: 0; }
-.recent li { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 16px; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.recent summary { display: grid; grid-template-columns: 74px minmax(0, 1fr) minmax(0, auto) 16px; gap: 16px; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--line); font-size: 14px; }
 .recent time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .visitPath { overflow-wrap: anywhere; }
 .visitMeta { color: var(--muted); font-size: 12px; }
@@ -63,7 +63,7 @@
   .breakdowns { grid-template-columns: minmax(0, 1fr); }
   .breakdown { margin-top: 40px; }
   .recent { margin-top: 52px; }
-  .recent li { grid-template-columns: 64px minmax(0, 1fr); gap: 4px 12px; }
+  .recent summary { grid-template-columns: 64px minmax(0, 1fr) 16px; gap: 4px 12px; }
   .visitMeta { grid-column: 2; }
 }
 
@@ -83,3 +83,15 @@
 @keyframes pulse { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .live span { animation: none; } }
 @media (max-width: 540px) { .visitMeta { justify-content: flex-start; } }
+
+.recent summary { cursor: pointer; list-style: none; }
+.recent summary::-webkit-details-marker { display: none; }
+.recent summary:hover, .recent summary:focus-visible { color: var(--accent); }
+.chevron { width: 15px; align-self: center; }
+.recent details[open] .chevron { transform: rotate(180deg); }
+.details { margin: 0 0 16px; padding: 12px 16px; background: var(--wash); font-size: 14px; }
+.details > div { display: grid; grid-template-columns: minmax(110px, 1fr) 2fr; gap: 12px; padding-block: 4px; }
+.details dt { color: var(--muted); }
+.details dd, .metaItem { overflow-wrap: anywhere; min-width: 0; }
+.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 14px; }
+@media (max-width: 540px) { .chevron { grid-column: 3; grid-row: 1; } }

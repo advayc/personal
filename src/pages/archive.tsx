@@ -1,3 +1,8 @@
+import HitCounter from "@/components/HitCounter";
+import ShortcutHint from "@/components/ShortcutHint";
+import SelectionBox from "@/components/SelectionBox";
+import Footer from "@/components/Footer";
+import File from "@/components/File";
 import React, { useEffect, useState, useCallback, startTransition } from "react";
 import dynamic from "next/dynamic";
 import { useTerminal } from "@/components/TerminalContext";
@@ -34,14 +39,9 @@ const bgStyleConfig: Record<BgStyle, { image: string; size?: string }> = {
 };
 
 const Terminal = dynamic(() => import("@/components/Terminal"), { ssr: false });
-const File = dynamic(() => import("@/components/File"), { ssr: false });
-const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
-const SelectionBox = dynamic(() => import("@/components/SelectionBox"), { ssr: false });
-const ShortcutHint = dynamic(() => import("@/components/ShortcutHint"), { ssr: false });
 const DrawTerminal = dynamic(() => import("@/components/DrawTerminal"), { ssr: false });
 const InternetTerminal = dynamic(() => import("@/components/InternetTerminal"), { ssr: false });
 const CommandPalette = dynamic(() => import("@/components/versions/V2CommandPalette"), { ssr: false });
-const HitCounter = dynamic(() => import("@/components/HitCounter"), { ssr: false });
 
 const prefetchById: Record<string, () => void> = {
   experience: () => {
@@ -145,19 +145,6 @@ export default function Archive() {
     }
     try { localStorage.setItem('siteTheme', theme); } catch {}
   }, [theme]);
-
-  useEffect(() => {
-    const schedule = () => {
-      void import('@/lib/fileConfigs');
-      void import('@/components/Terminal');
-    };
-    if (typeof window.requestIdleCallback === 'function') {
-      const id = window.requestIdleCallback(schedule, { timeout: 3000 });
-      return () => window.cancelIdleCallback(id);
-    }
-    const id = setTimeout(schedule, 1500);
-    return () => clearTimeout(id);
-  }, []);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 700);

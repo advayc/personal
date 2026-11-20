@@ -13,7 +13,7 @@ export default function Writing() {
           <ul>
             {writings.map((entry) => (
               <li key={entry.slug}>
-                <Link href={`/writing/${entry.slug}`}>
+                <Link href={`/writing/${entry.slug}`} prefetch={false}>
                   <span>{entry.title}</span>
                   {entry.date && (
                     <time dateTime={entry.date}>

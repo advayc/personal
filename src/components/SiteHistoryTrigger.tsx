@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-const OPEN_HISTORY_EVENT = "portfolio:open-site-history";
+export const OPEN_HISTORY_EVENT = "portfolio:open-site-history";
 
 export function openSiteHistory() {
   if (typeof window !== "undefined") {

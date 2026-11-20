@@ -23,11 +23,13 @@ export default function SiteLayout({
   title = "advay chandorkar",
   description = "i like building things and solving problems.",
   wide = false,
+  mainClassName,
 }: {
   children: ReactNode;
   title?: string;
   description?: string;
   wide?: boolean;
+  mainClassName?: string;
 }) {
   const router = useRouter();
   const [background, setBackground] = useState<Background>("gray");
@@ -144,7 +146,7 @@ export default function SiteLayout({
             </Link>
           </nav>
         </header>
-        <main id="main">{children}</main>
+        <main id="main" className={mainClassName}>{children}</main>
         <footer className="site-footer">
           <div className="footer-top">
             <Link href="/systems">systems i find interesting</Link>

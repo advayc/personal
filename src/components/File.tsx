@@ -41,7 +41,8 @@ export default function File({
         "cursor-pointer pt-2 border border-dotted border-transparent transition-colors duration-200",
         "hover:bg-[rgba(var(--accent-color-rgb),0.21)] hover:border-[var(--accent-color)] text-foreground"
       )}
-      onMouseEnter={onPrefetch}
+      onPointerEnter={onPrefetch}
+      onFocus={onPrefetch}
     >
       <button
         className={clsx("custom-focus w-full", className)}

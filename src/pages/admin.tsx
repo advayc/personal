@@ -3,15 +3,16 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, type CSSProperties } from "react";
-import { FiArrowRight, FiX } from "react-icons/fi";
+import { FiArrowRight, FiChevronDown, FiX } from "react-icons/fi";
 import { adminSecret, hasAdminSession, privateResponse } from "@/lib/visits/adminAuth";
-import { ADMIN_ACTIONS, ADMIN_PATH, sourceOf, type Visit } from "@/lib/visits/shared";
+import { ADMIN_ACTIONS, ADMIN_PATH, type Visit } from "@/lib/visits/shared";
+import { reportedApp, sourceOf } from "@/lib/visits/source";
 import { PageIcon, PlaceIcon, SourceIcon } from "@/components/VisitIcons";
 import { hasVisitStore, readVisits } from "@/lib/visits/store";
 import styles from "@/styles/visits.module.css";
 
 const ZONE = "America/Toronto";
-const MAX_RECENT = 100;
+const MAX_RECENT = 25;
 const MAX_ROWS = 8;
 const REFRESH_MS = 30_000;
 const FILTERS = ["source", "place", "page"] as const;
@@ -19,7 +20,7 @@ type FilterKey = (typeof FILTERS)[number];
 type Filters = Partial<Record<FilterKey, string>>;
 
 type Row = { label: string; icon: string | null; count: number; share: number; href: string; active: boolean };
-type RecentVisit = { id: string; iso: string; time: string; path: string; place: string; country: string | null; source: string; sourceKey: string };
+type RecentVisit = Visit & { iso: string; time: string; place: string; source: string; sourceKey: string };
 type Day = { label: string; visits: RecentVisit[] };
 type Dashboard = {
   total: number;
@@ -30,7 +31,8 @@ type Dashboard = {
   places: Row[];
   pages: Row[];
   days: Day[];
-  hidden: number;
+  older: string | null;
+  newest: string | null;
   active: { key: FilterKey; label: string; clear: string }[];
   updated: string;
 };
@@ -48,18 +50,11 @@ function placeOf(visit: Visit) {
   return [visit.city, country].filter(Boolean).join(", ") || "unknown";
 }
 
-const facets: Record<FilterKey, (visit: Visit) => string> = {
-  source: (visit) => sourceOf(visit).label,
-  place: placeOf,
-  page: (visit) => visit.path,
-};
-
-// The value each row's icon is drawn from: a source key, a country code, or the path.
-const iconOf: Record<FilterKey, (visit: Visit) => string | null> = {
-  source: (visit) => sourceOf(visit).key,
-  place: (visit) => visit.country,
-  page: (visit) => visit.path,
-};
+function classify(visit: Visit) {
+  const source = sourceOf(visit);
+  return { ...visit, source: source.label, sourceKey: source.key, place: placeOf(visit), page: visit.path };
+}
+type ClassifiedVisit = ReturnType<typeof classify>;
 
 function hrefWith(filters: Filters, key: FilterKey, value: string | null) {
   const params = new URLSearchParams();
@@ -71,19 +66,19 @@ function hrefWith(filters: Filters, key: FilterKey, value: string | null) {
   return query ? `${ADMIN_PATH}?${query}` : ADMIN_PATH;
 }
 
-function matches(visit: Visit, filters: Filters, skip?: FilterKey) {
-  return FILTERS.every((key) => key === skip || !filters[key] || facets[key](visit) === filters[key]);
+function matches(visit: ClassifiedVisit, filters: Filters, skip?: FilterKey) {
+  return FILTERS.every((key) => key === skip || !filters[key] || visit[key] === filters[key]);
 }
 
 // Each breakdown counts visits matching the other filters, so a selected row keeps its siblings visible.
-function breakdown(visits: Visit[], filters: Filters, key: FilterKey): Row[] {
+function breakdown(visits: ClassifiedVisit[], filters: Filters, key: FilterKey): Row[] {
   const counts = new Map<string, number>();
   const icons = new Map<string, string | null>();
   for (const visit of visits) {
     if (!matches(visit, filters, key)) continue;
-    const label = facets[key](visit);
+    const label = visit[key];
     counts.set(label, (counts.get(label) ?? 0) + 1);
-    if (!icons.has(label)) icons.set(label, iconOf[key](visit));
+    if (!icons.has(label)) icons.set(label, key === "source" ? visit.sourceKey : key === "place" ? visit.country : visit.path);
   }
   const rows = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   const top = rows[0]?.[1] ?? 1;
@@ -103,25 +98,28 @@ function breakdown(visits: Visit[], filters: Filters, key: FilterKey): Row[] {
   }));
 }
 
-function buildDashboard(visits: Visit[], filters: Filters, now: number): Dashboard {
+function buildDashboard(records: Visit[], filters: Filters, now: number, after: string | null): Dashboard {
+  const visits = records.map(classify);
   const filtered = visits.filter((visit) => matches(visit, filters));
   const todayKey = dayKey.format(now);
   const yesterdayKey = dayKey.format(now - 86_400_000);
 
+  const cursor = after ? filtered.findIndex((visit) => visit.id === after) : -1;
+  const start = after && cursor < 0 ? filtered.length : cursor + 1;
+  const visible = filtered.slice(start, start + MAX_RECENT);
+  const base = new URLSearchParams(filters);
+  const newest = base.size ? ADMIN_PATH + "?" + base : ADMIN_PATH;
+  const last = visible.at(-1);
+  if (last) base.set("after", last.id);
   const days: Day[] = [];
-  for (const visit of filtered.slice(0, MAX_RECENT)) {
+  for (const visit of visible) {
     const key = dayKey.format(visit.at);
     const label = key === todayKey ? "today" : key === yesterdayKey ? "yesterday" : dayLabel.format(visit.at).toLowerCase();
     if (days.at(-1)?.label !== label) days.push({ label, visits: [] });
     days.at(-1)!.visits.push({
-      id: visit.id,
+      ...visit,
       iso: new Date(visit.at).toISOString(),
       time: clock.format(visit.at).toLowerCase().replace(/\s/g, " "),
-      path: visit.path,
-      place: placeOf(visit),
-      country: visit.country,
-      source: sourceOf(visit).label,
-      sourceKey: sourceOf(visit).key,
     });
   }
 
@@ -129,12 +127,13 @@ function buildDashboard(visits: Visit[], filters: Filters, now: number): Dashboa
     total: filtered.length,
     today: filtered.filter((visit) => dayKey.format(visit.at) === todayKey).length,
     week: filtered.filter((visit) => visit.at > now - 7 * 86_400_000).length,
-    sourceCount: new Set(filtered.map(facets.source)).size,
+    sourceCount: new Set(filtered.filter((visit) => visit.sourceKey !== "unknown").map((visit) => visit.source)).size,
     sources: breakdown(visits, filters, "source"),
     places: breakdown(visits, filters, "place"),
     pages: breakdown(visits, filters, "page"),
     days,
-    hidden: Math.max(0, filtered.length - MAX_RECENT),
+    older: start + visible.length < filtered.length ? ADMIN_PATH + "?" + base : null,
+    newest: after ? newest : null,
     active: FILTERS.filter((key) => filters[key]).map((key) => ({
       key,
       label: filters[key]!,
@@ -200,7 +199,7 @@ function SignIn({ error }: { error: boolean }) {
   return (
     <section className={styles.intro}>
       <h1>visits.</h1>
-      <p>sign in to see who’s been looking around.</p>
+      <p>sign in to see recorded page views.</p>
       <form className={styles.signIn} action={ADMIN_ACTIONS} method="post">
         <input type="hidden" name="action" value="login" />
         <label htmlFor="password" className={styles.label}>password</label>
@@ -224,14 +223,37 @@ function SignIn({ error }: { error: boolean }) {
   );
 }
 
+function VisitDetails({ visit }: { visit: RecentVisit }) {
+  const missing = "Not recorded";
+  const rows = [
+    ["Recorded at (UTC)", visit.iso],
+    ["Page", visit.path],
+    ["Browser-reported referrer", visit.referrer ? visit.referrer + (visit.referrerPath ?? "") : null],
+    ["Previous portfolio page", visit.previousPath],
+    ["Link tag · utm_source", visit.utmSource],
+    ["Link tag · ref", visit.refTag],
+    ...(visit.tag ? [["Earlier link tag", visit.tag]] : []),
+    ["Connection IP", visit.ip],
+    ["Address supplied by", visit.ipSource === "socket" ? "Server connection" : visit.ipSource],
+    ["IP location estimate", [visit.city, visit.region, visit.country].filter(Boolean).join(", ")],
+    ["In-app browser signal", reportedApp(visit.agent)?.label],
+    ["Reported user agent", visit.agent],
+  ];
+  return (
+    <dl className={styles.details}>
+      {rows.map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{value || missing}</dd></div>)}
+    </dl>
+  );
+}
+
 function Activity({ dashboard }: { dashboard: Dashboard }) {
-  const { total, today, week, sourceCount, sources, places, pages, days, hidden, active, updated } = dashboard;
+  const { total, today, week, sourceCount, sources, places, pages, days, older, newest, active, updated } = dashboard;
   const router = useRouter();
 
   // Re-run getServerSideProps so new visits appear without a manual reload.
   useEffect(() => {
     const refresh = () => {
-      if (document.visibilityState === "visible") void router.replace(router.asPath, undefined, { scroll: false });
+      if (!newest && !document.querySelector("details[open]") && document.visibilityState === "visible") void router.replace(router.asPath, undefined, { scroll: false });
     };
     const timer = window.setInterval(refresh, REFRESH_MS);
     document.addEventListener("visibilitychange", refresh);
@@ -239,13 +261,13 @@ function Activity({ dashboard }: { dashboard: Dashboard }) {
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [router]);
+  }, [router, newest]);
   return (
     <>
       <section className={styles.intro}>
         <h1>visits.</h1>
-        <p>last 30 days, in toronto time. sources and places are picked up automatically from each visit.</p>
-        <p className={styles.live}><span aria-hidden="true" />updated {updated} · refreshes every 30 seconds</p>
+        <p>up to 2,000 recorded page views from the last 30 days, in toronto time. open a view to inspect its source.</p>
+        <p className={styles.live}><span aria-hidden="true" />updated {updated}{!newest && " · refreshes every 30 seconds while browsing the list"}</p>
       </section>
 
       <dl className={styles.stats}>
@@ -283,21 +305,27 @@ function Activity({ dashboard }: { dashboard: Dashboard }) {
               <ol>
                 {day.visits.map((visit) => (
                   <li key={visit.id}>
-                    <time dateTime={visit.iso}>{visit.time}</time>
-                    <span className={styles.visitPath}>
-                      <span className={styles.icon}><PageIcon path={visit.path} /></span>
-                      {visit.path}
-                    </span>
-                    <span className={styles.visitMeta}>
-                      <span className={styles.metaItem}>
-                        <span className={styles.icon}><PlaceIcon country={visit.country} /></span>
-                        {visit.place}
-                      </span>
-                      <span className={styles.metaItem}>
-                        <span className={styles.icon}><SourceIcon source={visit.sourceKey} /></span>
-                        {visit.source}
-                      </span>
-                    </span>
+                    <details>
+                      <summary>
+                        <time dateTime={visit.iso}>{visit.time}</time>
+                        <span className={styles.visitPath}>
+                          <span className={styles.icon}><PageIcon path={visit.path} /></span>
+                          {visit.path}
+                        </span>
+                        <span className={styles.visitMeta}>
+                          <span className={styles.metaItem}>
+                            <span className={styles.icon}><PlaceIcon country={visit.country} /></span>
+                            {visit.place}
+                          </span>
+                          <span className={styles.metaItem}>
+                            <span className={styles.icon}><SourceIcon source={visit.sourceKey} /></span>
+                            {visit.source}
+                          </span>
+                        </span>
+                        <FiChevronDown className={styles.chevron} aria-hidden="true" />
+                      </summary>
+                      <VisitDetails visit={visit} />
+                    </details>
                   </li>
                 ))}
               </ol>
@@ -305,10 +333,13 @@ function Activity({ dashboard }: { dashboard: Dashboard }) {
           ))
         ) : (
           <p className={styles.quiet}>
-            {active.length ? "no views match these filters." : "new views will show up here."}
+            {newest ? "no older views remain." : active.length ? "no views match these filters." : "new views will show up here."}
           </p>
         )}
-        {hidden > 0 && <p className={styles.quiet}>and {hidden} older {hidden === 1 ? "view" : "views"}.</p>}
+        <nav className={styles.pager} aria-label="Visit history">
+          {newest && <Link href={newest} scroll={false}>newest views</Link>}
+          {older && <Link href={older} scroll={false}>older views</Link>}
+        </nav>
       </section>
     </>
   );
@@ -376,7 +407,7 @@ export const getServerSideProps = (async ({ req, res, query }) => {
   let dashboard: Dashboard | null = null;
   if (hasVisitStore()) {
     try {
-      dashboard = buildDashboard(await readVisits(), filters, Date.now());
+      dashboard = buildDashboard(await readVisits(), filters, Date.now(), typeof query.after === "string" ? query.after : null);
     } catch {
       console.error("Could not load portfolio visit activity");
     }

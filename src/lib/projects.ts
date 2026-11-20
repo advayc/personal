@@ -5,6 +5,7 @@ export type Project = {
   year: string;
   gallery?: { src: string; alt: string; caption: string; width?: number; height?: number }[];
   imageCaption?: string;
+  animated?: boolean;
   description: string[];
   image?: string;
   thumbnail?: string;
@@ -217,7 +218,8 @@ export const projects: Project[] = [
     title: "miway leaderboard",
     summary: "a live look at Mississauga’s buses.",
     description: ["A live leaderboard that ranks MiWay bus routes by their average speed from the transit feed."],
-    image: "/projects/miway-leaderboard-demo-hq.gif",
+    image: "/projects/miway-leaderboard-demo.webp",
+    animated: true,
     imageAlt: "MiWay live bus leaderboard",
     imageWidth: 800,
     imageHeight: 878,

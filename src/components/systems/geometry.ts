@@ -78,16 +78,19 @@ export function gearPath(teeth: number, r: number) {
   }
   return k.pathOf(pts, true);
 }
-export function chipArt(value: number) {
+export function chipArt() {
   let s = board(220, 170);
   s += box(-38, -38, 1, 76, 76, 5);
+  // Each pin is a translation of one of two shapes in this fixed projection.
+  const [originX, originY] = k.iso([0, 0, 0], P);
+  const pin = (shape: string, x: number, y: number) => {
+    const [px, py] = k.iso([x, y, 0], P);
+    return `<use href="#atmega-pin-${shape}" x="${px - originX}" y="${py - originY}"/>`;
+  };
+  s += `<defs><g id="atmega-pin-long">${box(0, 0, 1, 2, 10, 2)}</g><g id="atmega-pin-wide">${box(0, 0, 1, 10, 2, 2)}</g></defs>`;
   for (let i = 0; i < 16; i++) {
     const a = -33 + i * 4.4;
-    s +=
-      box(a, -48, 1, 2, 10, 2) +
-      box(a, 38, 1, 2, 10, 2) +
-      box(-48, a, 1, 10, 2, 2) +
-      box(38, a, 1, 10, 2, 2);
+    s += pin("long", a, -48) + pin("long", a, 38) + pin("wide", -48, a) + pin("wide", 38, a);
   }
   s += box(-35, -35, 6, 70, 70, 6);
   s += line(k.planOutline({ x: -31, y: -31, w: 62, d: 62, r: 3 }, 12.1, P));
@@ -106,7 +109,7 @@ export function chipArt(value: number) {
         P,
       ),
     );
-    s += disc(x, 64, 1, 5, 3, P, Boolean(value & (1 << i)));
+    s += `<g data-output-pin>${disc(x, 64, 1, 5, 3, P, i === 0)}</g>`;
     s += box(x - 5, 72, 0, 10, 3, 2);
   }
   for (let i = 0; i < 7; i++) {

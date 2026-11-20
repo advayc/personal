@@ -39,3 +39,6 @@ next-env.d.ts
 
 # Local UI review captures
 /.impeccable/review/
+
+# Local Redis snapshots may contain private visit records
+/dump.rdb

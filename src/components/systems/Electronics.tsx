@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   P,
   k,
@@ -11,9 +11,16 @@ import {
   topMatrix,
 } from "./geometry";
 import { capacitance, capacitorCharge } from "./models";
+const chip = { __html: chipArt() };
+
 export function Microcontroller() {
   const [value, setValue] = useState(1);
-  const art = useMemo(() => chipArt(value), [value]);
+  const boardRef = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    boardRef.current?.querySelectorAll("[data-output-pin] > g").forEach((pin, bit) => {
+      pin.toggleAttribute("data-lit", Boolean(value & (1 << bit)));
+    });
+  }, [value]);
   return (
     <div className="system-instrument">
       <svg
@@ -21,7 +28,8 @@ export function Microcontroller() {
         role="img"
         aria-label={`ATmega128 board with 64 pins and PORTB output ${value}`}
         className="iso-svg"
-        dangerouslySetInnerHTML={{ __html: art }}
+        ref={boardRef}
+        dangerouslySetInnerHTML={chip}
       />
       <div className="instrument-controls">
         <button onClick={() => setValue((v) => (v + 1) % 256)}>clock +1</button>

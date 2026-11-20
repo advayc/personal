@@ -22,9 +22,8 @@ const SelectionBoxContext = createContext<SelectionBoxState>(emptySelection);
 export const useSelectionBox = () => useContext(SelectionBoxContext);
 
 const isEventInAnyTerminal = (target: EventTarget | null): boolean => {
-  if (!(target instanceof Node)) return false;
-  const terminalElements = document.querySelectorAll('.terminal-container');
-  return Array.from(terminalElements).some((element) => element.contains(target));
+  const element = target instanceof Element ? target : target instanceof Node ? target.parentElement : null;
+  return Boolean(element?.closest('.terminal-container'));
 };
 
 const setSelectionVars = (left: number, top: number, width: number, height: number) => {
