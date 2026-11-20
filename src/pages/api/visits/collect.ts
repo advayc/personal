@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { randomUUID } from "node:crypto";
-import { isIP } from "node:net";
 import { adminSecret, hasAdminSession, sameOrigin, visitRateBucket } from "@/lib/visits/adminAuth";
-import { campaignTag, isPortfolioPage, referringDomain } from "@/lib/visits/shared";
+import { connectionIp } from "@/lib/visits/connectionIp";
+import { campaignTag, isPortfolioPage, publicReferrerPath, referringDomain } from "@/lib/visits/shared";
 import { hasVisitStore, recordVisit } from "@/lib/visits/store";
 
 export const config = { api: { bodyParser: { sizeLimit: "2kb" } } };
@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const secret = adminSecret();
-  if (!secret || !hasVisitStore()) return res.status(204).end();
+  if (!secret || !hasVisitStore()) return res.status(process.env.VERCEL_ENV === "preview" ? 204 : 503).end();
   if (!sameOrigin(req)) return res.status(403).end();
   if (req.headers["sec-gpc"] === "1" || req.headers.dnt === "1" || hasAdminSession(req.cookies, secret)) {
     return res.status(204).end();
@@ -36,23 +36,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(204).end();
   }
 
-  const { path, referrer, tag } = req.body ?? {};
+  const { path, referrer, tag, utmSource, refTag, internal, previousPath, referrerPath } = req.body ?? {};
   if (!isPortfolioPage(path)) return res.status(400).end();
 
-  const address = process.env.VERCEL === "1" ? req.headers["x-vercel-forwarded-for"] : req.socket.remoteAddress;
-  const ip = typeof address === "string" ? address.split(",")[0].trim() : "";
+  const vercel = process.env.VERCEL === "1";
+  const forwarded = req.headers["x-vercel-forwarded-for"];
+  const forwardedFor = typeof forwarded === "string" ? forwarded : forwarded?.[0];
+  const ip = connectionIp(forwardedFor, req.socket.remoteAddress, vercel);
+  const host = referringDomain(referrer, req.headers.host?.split(":")[0] ?? "");
+  const onSite = internal === true && !host;
+  const eventId = req.body.eventId;
+  const id = typeof eventId === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(eventId) ? eventId.toLowerCase() : randomUUID();
   const now = Date.now();
   try {
     await recordVisit({
-      id: randomUUID(),
+      id,
       at: now,
       path: path.replace(/\/$/, "") || "/",
       city: geo(req.headers["x-vercel-ip-city"], true),
       region: geo(req.headers["x-vercel-ip-country-region"]),
       country: geo(req.headers["x-vercel-ip-country"]),
-      referrer: referringDomain(referrer, req.headers.host?.split(":")[0] ?? ""),
+      referrer: host,
+      referrerPath: publicReferrerPath(host, referrerPath),
+      internal: onSite,
+      previousPath: onSite && isPortfolioPage(previousPath) ? previousPath : null,
+      utmSource: campaignTag(utmSource),
+      refTag: campaignTag(refTag),
+      ip,
+      ipSource: ip ? (vercel ? "Vercel" : "socket") : null,
+      agent: agent.slice(0, 384),
       tag: campaignTag(tag),
-    }, visitRateBucket(isIP(ip) ? ip : "unknown", secret, now));
+    }, visitRateBucket(ip ?? "unknown", secret, now));
     return res.status(204).end();
   } catch {
     console.error("Could not record portfolio visit");

@@ -1,3 +1,5 @@
+import styles from "@/components/writing/writing.module.css";
+import "katex/dist/katex.min.css";
 import type { GetStaticPaths, GetStaticProps } from "next";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -7,13 +9,15 @@ import SiteLayout from "@/components/SiteLayout";
 import { getWriting, writings } from "@/content/writing";
 import WritingReader from "@/components/writing/WritingReader";
 
-type Props = { slug: string; markdown: string };
+import { compileWriting, type WritingDocument } from "@/lib/compileWriting";
 
-export default function WritingArticle({ slug, markdown }: Props) {
+type Props = { slug: string; article: WritingDocument };
+
+export default function WritingArticle({ slug, article }: Props) {
   const entry = getWriting(slug);
   if (!entry) return null;
   return (
-    <SiteLayout wide title={entry.title} description={entry.summary || entry.title}>
+    <SiteLayout wide mainClassName={styles.page} title={entry.title} description={entry.summary || entry.title}>
       <div className="writing-tools">
         <Link className="back-link" href="/writing">
           <FiArrowLeft aria-hidden="true" /> all writing
@@ -29,7 +33,7 @@ export default function WritingArticle({ slug, markdown }: Props) {
           </time>
         )}
       </div>
-      <WritingReader markdown={markdown} pdfHref={entry.pdfFile} />
+      <WritingReader article={article} pdfHref={entry.pdfFile} />
     </SiteLayout>
   );
 }
@@ -44,5 +48,5 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
   const entry = getWriting(slug);
   if (!entry) return { notFound: true };
   const markdownPath = join(process.cwd(), "src/content/writing", entry.markdownFile);
-  return { props: { slug, markdown: readFileSync(markdownPath, "utf8") } };
+  return { props: { slug, article: compileWriting(readFileSync(markdownPath, "utf8")) } };
 };

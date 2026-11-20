@@ -44,7 +44,9 @@ export default function PreviewLink({
             : rect.bottom + 10,
       });
   };
+  const visible = position !== null;
   useEffect(() => {
+    if (!visible) return;
     window.addEventListener("scroll", close, true);
     window.addEventListener("resize", close);
     return () => {
@@ -52,7 +54,7 @@ export default function PreviewLink({
       window.removeEventListener("scroll", close, true);
       window.removeEventListener("resize", close);
     };
-  }, []);
+  }, [visible]);
   return (
     <span
       className="preview-link"

@@ -1,3 +1,5 @@
+/* Keep the figure and article class names within this page. */
+:where(.page) :global {
 .writing-tools { --writing-shift:32px; display:flex; align-items:center; justify-content:space-between; margin:-25px 0 22px; }
 .writing-date { color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums; }
 .writing-reader { --writing-body-font:"Helvetica Neue",Helvetica,ui-sans-serif,sans-serif; --writing-mono-font:"SFMono-Regular",Consolas,monospace; --writing-shift:32px; }
@@ -259,3 +261,4 @@
   .card-input-wrap input { width:60px; }
 }
 @media(prefers-reduced-motion:reduce) { .math-card { transition:none; }.card-solver-cards .math-card,.card-solver-cards .math-card::after { animation:none!important; } }
+}

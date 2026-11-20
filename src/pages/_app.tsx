@@ -1,7 +1,4 @@
 import "@/styles/globals.css";
-import "@/components/anatomy/iso.css";
-import "@/components/writing/writing.css";
-import "katex/dist/katex.min.css";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -12,9 +9,26 @@ import Head from "next/head";
 import { calculateAge } from '@/utils/age';
 import VisitTracking from "@/components/VisitTracking";
 import { ADMIN_PATH } from "@/lib/visits/shared";
+import { OPEN_HISTORY_EVENT } from "@/components/SiteHistoryTrigger";
 const SiteHistory = dynamic(() => import('@/components/SiteHistory'), {
   ssr: false,
 });
+
+function HistoryControl({ path }: { path: string }) {
+  const archived = path === "/archive" || path.startsWith("/versions/");
+  const [open, setOpen] = useState(archived);
+
+  useEffect(() => {
+    if (archived) setOpen(true);
+  }, [archived, path]);
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener(OPEN_HISTORY_EVENT, show);
+    return () => window.removeEventListener(OPEN_HISTORY_EVENT, show);
+  }, []);
+
+  return open || archived ? <SiteHistory open={open} setOpen={setOpen} /> : null;
+}
 
 const SpeedInsights = dynamic(
   () => import("@vercel/speed-insights/next").then((mod) => mod.SpeedInsights),
@@ -56,10 +70,12 @@ function DeferredMonitoring() {
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  if (router.pathname === ADMIN_PATH) return <Component {...pageProps} />;
+  const tracker = router.isReady && <VisitTracking page={router.asPath} eligible={![ADMIN_PATH, "/404", "/500", "/_error"].includes(router.pathname)} />;
+  if (router.pathname === ADMIN_PATH) return <>{tracker}<Component {...pageProps} /></>;
 
   return (
     <>
+      {tracker}
       <Head>
         <title>{DEFAULT_TITLE}</title>
         <meta name="title" content={DEFAULT_TITLE} />
@@ -93,11 +109,10 @@ export default function App({ Component, pageProps }: AppProps) {
       <TerminalProvider>
         <SelectionBoxProvider>
           <Component {...pageProps} />
-          <SiteHistory />
+          <HistoryControl path={router.pathname} />
         </SelectionBoxProvider>
       </TerminalProvider>
       <DeferredMonitoring />
-      {router.isReady && !["/404", "/500", "/_error"].includes(router.pathname) && <VisitTracking page={router.asPath} />}
     </>
   );
 }

@@ -1,0 +1,19 @@
+/* Reserve the diagram's SVG and controls while its interactive module loads. */
+.drawing:empty::before {
+  content: "";
+  display: block;
+  padding-top: calc(var(--figure-height, 68%) + var(--controls-height, 150px));
+}
+:global(#atmega) .drawing { --figure-height: 63.333%; --controls-height: 64px; }
+:global(#cube) .drawing { --figure-height: 75%; --controls-height: 100px; }
+:global(#chronograph) .drawing { --controls-height: 210px; }
+:global(#planetary) .drawing { --controls-height: 180px; }
+:global(#pid) .drawing, :global(#kalman) .drawing { --figure-height: 70%; --controls-height: 125px; }
+:global(#gpu) .drawing { --figure-height: 62.5%; --controls-height: 76px; }
+@media (max-width: 700px) {
+  :global(#cube) .drawing { --controls-height: 165px; }
+  :global(#chronograph) .drawing { --controls-height: 250px; }
+  :global(#planetary) .drawing { --controls-height: 210px; }
+  :global(#pid) .drawing, :global(#kalman) .drawing { --controls-height: 170px; }
+  :global(#gpu) .drawing { --controls-height: 110px; }
+}

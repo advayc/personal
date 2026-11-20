@@ -1,3 +1,4 @@
+import { useReducedMotion, useVisibleInstrument } from "./useLive";
 import { useEffect, useMemo, useState } from "react";
 
 type Point = { t: number; y: number };
@@ -29,26 +30,20 @@ export function PidController() {
   const [target, setTarget] = useState(1);
   const [running, setRunning] = useState(true);
   const [time, setTime] = useState(0);
-  const [reduced, setReduced] = useState(false);
+  const reduced = useReducedMotion();
+  const { ref, visible } = useVisibleInstrument();
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-  useEffect(() => {
-    if (!running || reduced) return;
+    if (!running || reduced || !visible) return;
     const timer = window.setInterval(() => setTime((value) => value + 0.04), 40);
     return () => window.clearInterval(timer);
-  }, [running, reduced]);
+  }, [running, reduced, visible]);
   const series = useMemo(() => response(kp, ki, kd, target), [kp, ki, kd, target]);
-  const path = series.map((point, i) => (i ? "L" : "M") + plotX(point.t).toFixed(1) + " " + plotY(point.y).toFixed(1)).join(" ");
+  const path = useMemo(() => series.map((point, i) => (i ? "L" : "M") + plotX(point.t).toFixed(1) + " " + plotY(point.y).toFixed(1)).join(" "), [series]);
   const sample = series[Math.min(series.length - 1, Math.floor((time % 4.5) / 4.5 * (series.length - 1)))];
   const rotorAngle = running && !reduced ? time * (4 + kp * 5) : 0;
   const scale = (v: number) => Math.max(0, Math.min(100, Math.round(v * 100)));
   return (
-    <div className="system-instrument pid-study">
+    <div ref={ref} className="system-instrument pid-study">
       <svg className="iso-svg pid-mechanism" viewBox="0 0 760 310" role="img" aria-label="Animated closed-loop PID system: setpoint, controller, motor, encoder feedback">
         <defs>
           <linearGradient id="pid-wire" x1="0" x2="1">

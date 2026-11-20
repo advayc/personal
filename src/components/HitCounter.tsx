@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface HitCounterProps {
   id: string;
@@ -38,33 +38,8 @@ async function resolveHits(id: string, increment: boolean): Promise<number | nul
   return request;
 }
 
-const useAnimatedNumber = (target: number | null, duration = 800) => {
-  const [display, setDisplay] = useState(0);
-  const prevTargetRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (target == null) return;
-    const start = prevTargetRef.current == null ? 0 : prevTargetRef.current;
-    const end = target;
-    if (start === end) return;
-    prevTargetRef.current = end;
-    const startTime = performance.now();
-    let frame: number;
-    const tick = (now: number) => {
-      const progress = Math.min(1, (now - startTime) / duration);
-      const value = Math.round(start + (end - start) * progress);
-      setDisplay(value);
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [target, duration]);
-
-  return target == null ? null : display.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-};
-
 const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFetchOnly = false, variant = 'default', fontFamily, showLabel = true }) => {
-  const [hits, setHits] = useState<number | null>(null);
+  const [hits, setHits] = useState<number | null | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,16 +48,20 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
     const load = async () => {
       let value: number | null = null;
 
-      if (process.env.NODE_ENV !== 'development' && !initiallyFetchOnly && !sessionStorage.getItem(sessionKey)) {
-        value = await resolveHits(id, true);
-        if (value != null) sessionStorage.setItem(sessionKey, '1');
+      if (process.env.NODE_ENV !== 'development' && !initiallyFetchOnly) {
+        try {
+          if (!sessionStorage.getItem(sessionKey)) {
+            value = await resolveHits(id, true);
+            if (value != null) sessionStorage.setItem(sessionKey, '1');
+          }
+        } catch { /* With blocked storage, only read the counter. */ }
       }
 
       if (value == null) {
         value = await resolveHits(id, false);
       }
 
-      if (!cancelled && value != null) setHits(value);
+      if (!cancelled) setHits(value);
     };
 
     const schedule = () => { if (!cancelled) void load(); };
@@ -102,13 +81,14 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
     };
   }, [id, initiallyFetchOnly]);
 
-  const animated = useAnimatedNumber(hits);
+  const count = hits === undefined ? '…' : hits === null ? '—' : hits.toLocaleString('en-US');
+  const label = hits === undefined ? 'Loading view count' : hits === null ? 'View count unavailable' : `Recorded views: ${count}`;
 
   if (variant === 'hero') {
     return (
       <div
         className={`select-none cursor-pointer flex items-center justify-center gap-2 mt-0 mx-auto w-fit${className ? ` ${className}` : ''}`}
-        aria-label={hits == null ? 'Loading view count' : `Page viewed ${hits} times`}
+        aria-label={label}
         style={fontFamily ? { fontFamily } : undefined}
       >
         <span className="text-primary text-base sm:text-base">views —</span>
@@ -121,7 +101,7 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
             textUnderlineOffset: '3px',
           }}
         >
-          {animated == null ? '…' : animated}
+          {count}
         </span>
       </div>
     );
@@ -130,7 +110,7 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
   return (
     <div
       className={`select-none cursor-pointer inline-flex items-center gap-2 text-xs font-mono tracking-wide ${className}`}
-      aria-label={hits == null ? 'Loading view count' : `Page viewed ${hits} times`}
+      aria-label={label}
       style={fontFamily ? { fontFamily } : undefined}
     >
       {showLabel && <span className="opacity-70">views</span>}
@@ -143,7 +123,7 @@ const HitCounter: React.FC<HitCounterProps> = ({ id, className = '', initiallyFe
           textUnderlineOffset: '3px',
         }}
       >
-        {animated == null ? '…' : animated}
+        {count}
       </span>
     </div>
   );

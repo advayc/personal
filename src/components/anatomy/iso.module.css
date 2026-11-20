@@ -1,0 +1,377 @@
+/* Keep the figure and article class names within this page. */
+:where(.page) :global {
+.system-study { display:grid; grid-template-columns:minmax(0,2fr) minmax(180px,1fr); gap:50px; align-items:center; padding:35px 0 52px; border-bottom:1px solid var(--line); scroll-margin-top:30px; }
+.system-study:last-child { border-bottom:0; }
+.system-copy h2 { font-weight:600; font-size:18px; letter-spacing:-.02em; }
+.system-copy p { font-size:14px; color:var(--muted); margin:9px 0 0; line-height:1.65; max-width:250px; }
+.system-drawing { min-width:0; }
+.system-instrument > svg { display:block; width:100%; height:auto; overflow:visible; }
+.instrument-controls { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px 14px; font-size:11px; }
+.instrument-controls button { padding:5px 9px; min-height:32px; border:1px solid var(--line); border-radius:4px; color:var(--muted); background:transparent; cursor:pointer; }
+.instrument-controls button:hover,.instrument-controls button[aria-pressed="true"] { color:var(--ink); border-color:var(--muted); background:var(--wash); }
+.instrument-controls button:disabled { opacity:.45; cursor:default; }
+.instrument-controls label { display:flex; gap:8px; align-items:center; color:var(--muted); }
+.instrument-controls input[type="range"] { width:85px; accent-color:var(--muted); height:28px; }
+.instrument-controls select { background:var(--paper); padding:5px 9px; border:1px solid var(--line); border-radius:4px; }
+.bit-switches,.view-buttons { display:flex; gap:3px; }
+.bit-switches button { padding:3px 7px; font-variant-numeric:tabular-nums; }
+.system-instrument output { display:block; margin-top:13px; font-size:10px; line-height:1.7; text-align:center; color:var(--muted); font-variant-numeric:tabular-nums; }
+.comparison-labels,.comparison-readout { display:grid; grid-template-columns:1fr 1fr; text-align:center; gap:15px; font-size:10px; color:var(--muted); }
+.comparison-labels { margin-bottom:-35px; }
+.comparison-readout { margin-top:10px; }.comparison-readout output { margin:0; }
+.chip-engraving { fill:var(--anatomy-hi); font-size:8px; font-family:monospace; }
+.system-pin,.system-hub { fill:var(--anatomy-lit); }
+.charge-mark { stroke:var(--anatomy-lit); stroke-width:1; }
+.node-letter { fill:var(--ink); font-size:9px; font-weight:500; }
+.edge-weight circle { fill:var(--paper); }.edge-weight text { fill:var(--muted); font-size:8px; text-anchor:middle; }
+.graph-candidate path { stroke:var(--accent) !important; stroke-width:2; }
+.watch-dial-labels { fill:var(--anatomy-hi); font-size:6px; }
+.watch-hour-hands { stroke:var(--anatomy-lit); stroke-width:3; stroke-linecap:round; fill:none; }
+.watch-second { stroke:var(--accent); stroke-width:1; fill:none; }
+.gear-face { fill:var(--anatomy-mid); stroke:var(--anatomy-hi); stroke-width:.7; }
+.gear-sun { fill:var(--anatomy-hi); }.gear-ring { fill:var(--anatomy-mid); stroke:var(--anatomy-hi); stroke-width:.6; }
+.gear-bearing { fill:var(--anatomy-lo); stroke:var(--anatomy-hi); stroke-width:.5; }
+.gear-carrier { fill:var(--anatomy-lo); stroke:var(--anatomy-hi); stroke-width:.8; }
+.gear-engraving { stroke:var(--anatomy-lit); stroke-width:.6; }
+.legacy-system { width:100%; overflow:hidden; }.legacy-system > * { max-width:100%; }
+
+@media(max-width:700px){
+ .system-study { grid-template-columns:1fr; gap:24px; padding:24px 0 45px; }
+ .system-copy { grid-row:1; }.system-copy p { max-width:none; margin-top:5px; }.system-copy h2 { font-size:17px; }
+ .system-instrument svg { max-height:360px; }.system-instrument { padding-bottom:5px; }
+}
+
+.raptor-plume { transform-origin:50% 0; transition:opacity 240ms ease; }
+.raptor-thrust-vector { stroke:var(--anatomy-red); stroke-width:2; stroke-dasharray:3 3; marker-end:none; opacity:calc(var(--throttle, 0) * .85); transition:opacity 300ms ease; }
+[data-pump] path { stroke:var(--anatomy-lit); stroke-width:1; }
+.thrust-gauge { width:min(250px,75%); height:4px; margin:15px auto 0; background:var(--line); overflow:hidden; }
+.thrust-gauge span { display:block; height:100%; background:linear-gradient(90deg,#e8b34f,#e56840); transition:width 500ms cubic-bezier(.2,.8,.2,1); }
+.cube-study .iso-svg { touch-action:pan-y; }
+.cube-study [data-cubie] { will-change:transform; }
+.cube-controls { gap:8px; }
+.cube-controls select { min-width:110px; }
+.raptor-controls { gap:7px 12px; }
+.raptor-controls input[type="range"] { width:70px; }
+
+@media(max-width:700px){ .system-study { grid-template-columns:minmax(0,1fr); }.system-copy{grid-row:1;} }
+
+/* Precision parts and quiet, inspectable mechanism controls. */
+.movement-well { fill:var(--anatomy-shade-0); stroke:var(--anatomy-lo); stroke-width:.65; }
+.movement-wheel,.precision-gear { fill:var(--anatomy-shade-3); stroke:var(--anatomy-hi); stroke-width:.65; stroke-linejoin:round; }
+.movement-spoke { fill:var(--anatomy-top); stroke:var(--anatomy-lo); stroke-width:.45; }
+.movement-hub { fill:var(--anatomy-top); stroke:var(--anatomy-mid); stroke-width:.75; }
+.movement-jewel { fill:var(--accent); stroke:var(--anatomy-lit); stroke-width:.4; }
+.movement-spring,.movement-hairspring { fill:none; stroke:var(--anatomy-hi); stroke-width:.5; }
+.movement-balance { fill:none; stroke:var(--anatomy-hi); stroke-width:1.3; }
+.movement-lever { fill:none; stroke:var(--anatomy-mid); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.movement-clutch { fill:var(--anatomy-top); stroke:var(--accent); stroke-width:.9; transition:opacity 300ms ease; }
+.movement-bridge { fill:var(--anatomy-shade-3); stroke:var(--anatomy-hi); stroke-width:.75; }
+.bearing-ball { fill:var(--anatomy-lit); }
+.gear-thickness { fill:var(--anatomy-lo); stroke:var(--anatomy-mid); stroke-width:.75; }
+.watch-study [data-watch-part],.gearbox-study [data-part] { opacity:.55; transition:opacity 260ms ease; }
+.watch-study[data-inspect="train"] [data-watch-part="train"],.watch-study[data-inspect="balance"] [data-watch-part="balance"],.watch-study[data-inspect="clutch"] [data-watch-part="clutch"],.gearbox-study[data-inspect="sun"] [data-part="sun"],.gearbox-study[data-inspect="planets"] [data-part="planets"],.gearbox-study[data-inspect="ring"] [data-part="ring"],.gearbox-study[data-inspect="carrier"] [data-part="carrier"] { opacity:1; }
+[data-bearing-cover],[data-train],[data-train-shell],[data-train-wheel] { transition:transform 650ms cubic-bezier(.22,.8,.25,1); }
+.mechanism-inspector { max-width:450px; margin:18px auto 0; text-align:center; }
+.mechanism-inspector .view-buttons { justify-content:center; flex-wrap:wrap; gap:4px; }
+.mechanism-inspector .view-buttons button { border:0; border-bottom:1px solid transparent; border-radius:0; padding:5px 8px; font-size:11px; color:var(--muted); cursor:pointer; }
+.mechanism-inspector .view-buttons button[aria-pressed="true"] { color:var(--ink); border-bottom-color:var(--accent); }
+.mechanism-inspector p { font-size:12px; line-height:1.6; color:var(--muted); min-height:3.2em; margin:10px 0 7px; }
+.mechanism-inspector small { display:block; font-size:9px; line-height:1.6; color:var(--muted); opacity:.8; }
+.maglev-guide-coil,.maglev-drive-coil { fill:none; stroke:var(--anatomy-mid); stroke-width:.85; opacity:.4; }
+.maglev-study[data-system="propulsion"] .maglev-drive-coil,.maglev-study[data-system="levitation"] .maglev-guide-coil,.maglev-study[data-system="guidance"] .maglev-guide-coil { stroke:var(--accent); stroke-width:1.2; opacity:var(--coil-strength,.65); }
+.train-wheel { fill:var(--anatomy-shade-0); stroke:var(--anatomy-mid); stroke-width:.85; }
+.train-windscreen { fill:var(--anatomy-shade-0); stroke:var(--anatomy-hi); stroke-width:.75; }
+@media(prefers-reduced-motion:reduce){[data-bearing-cover],[data-train],[data-train-shell],[data-train-wheel],.watch-study [data-watch-part],.gearbox-study [data-part] {transition:none;} }
+.watch-study > svg,.gearbox-study > svg,.maglev-study > svg { overflow:hidden; }
+.mechanism-zoom { transform-origin:300px 210px; transform:scale(var(--detail-zoom,1)); transition:transform 500ms cubic-bezier(.22,.8,.25,1); }
+.maglev-study .mechanism-zoom { transform-origin:300px 250px; }
+@media(prefers-reduced-motion:reduce){.mechanism-zoom { transition:none; }}
+[data-watch-column] { transition:transform 240ms ease; }
+@media(prefers-reduced-motion:reduce){[data-watch-column] { transition:none; }}
+
+.pid-mechanism,.kalman-mechanism { max-height:340px; }
+.anatomy-platform { fill:var(--anatomy-shade-0); stroke:var(--anatomy-mid); stroke-width:1; }
+.pid-signal { fill:none; stroke-width:3; stroke-linecap:round; }
+.pid-forward { stroke:url(#pid-wire); filter:url(#pid-glow); }
+.pid-feedback { stroke:#50d5ba; stroke-dasharray:5 6; opacity:.8; }
+.pid-pulse { fill:#8be9ff; filter:drop-shadow(0 0 5px #6bdcff); animation:pid-flow 2.2s linear infinite; }
+@keyframes pid-flow { from { offset-distance:0%; } to { offset-distance:100%; } }
+.pid-block rect,.pid-block polygon { fill:#343b53; stroke:#8fa6ff; stroke-width:1.1; }
+.pid-block .pid-top { fill:#6577b6; }
+.pid-block .pid-side { fill:#273049; }
+.pid-block text { fill:#f6f7ff; font-family:inherit; font-size:15px; }
+.pid-block .pid-label,.pid-label,.pid-caption,.pid-wire-label { fill:var(--muted); font-family:inherit; font-size:10px; }
+.pid-block .pid-led { fill:#6fe1bd; }
+.pid-block .pid-led-2 { fill:#ffab5e; }
+.pid-target-block rect,.pid-target-block polygon { fill:#384453; stroke:#6edbc2; }
+.pid-target-block polygon:first-child { fill:#5b857a; }
+.pid-motor ellipse { fill:#4c3859; stroke:#d48cff; stroke-width:1.1; }
+.pid-motor path { fill:none; stroke:#d48cff; stroke-width:2; }
+.pid-motor text,.pid-encoder text { fill:var(--muted); font-size:10px; }
+.pid-encoder circle,.pid-encoder path { fill:#3a4858; stroke:#78c8ff; stroke-width:1.3; }
+.pid-encoder path { fill:none; }
+.pid-chart { display:block; width:100%; margin-top:-5px; overflow:visible; }
+.pid-grid,.kalman-grid { fill:none; stroke:var(--line); stroke-width:.8; }
+.pid-target-line { fill:none; stroke:#e3a84b; stroke-dasharray:5 5; stroke-width:1.5; }
+.pid-response-line { fill:none; stroke:#74d7bd; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+.pid-chart-head { fill:#ffc56e; stroke:var(--paper); stroke-width:2; }
+.pid-chart text,.kalman-chart text { fill:var(--muted); font-size:10px; font-family:inherit; }
+.pid-controls,.kalman-controls { display:flex; flex-wrap:wrap; justify-content:center; gap:12px 18px; }
+.pid-controls label,.kalman-controls label { display:flex; align-items:center; gap:5px; color:var(--muted); font-size:10px; }
+.pid-controls input,.kalman-controls input { width:82px; accent-color:#6edbc2; }
+.pid-controls output,.kalman-controls output { display:inline; min-width:25px; margin:0; color:var(--ink); font-size:10px; }
+.pid-controls button,.kalman-controls button { padding:5px 9px; border:1px solid var(--line); background:var(--wash); color:var(--ink); font:inherit; font-size:10px; cursor:pointer; }
+.pid-readout,.kalman-readout { color:var(--ink) !important; font-size:11px !important; }
+.mechanism-note { max-width:520px; margin:8px auto 0; color:var(--muted); font-size:10px; line-height:1.6; text-align:center; }
+.kalman-rail { fill:none; stroke:#8896a4; stroke-width:3; stroke-linecap:round; }
+.kalman-cart { transition:transform 500ms cubic-bezier(.2,.8,.2,1); }
+.kalman-cart-shell { fill:#3c4654; stroke:#78d8ec; stroke-width:1.4; }
+.kalman-wheel { fill:#d08cff; stroke:#f1dfff; stroke-width:1; }
+.kalman-cart-window { fill:#6b9cab; stroke:#c1f5ff; stroke-width:1; }
+.kalman-sensor > circle { fill:#34475a; stroke:#7fd5ff; stroke-width:1.6; }
+.kalman-sensor > path:not(.kalman-ray) { fill:none; stroke:#7fd5ff; stroke-width:1.5; }
+.kalman-ray { fill:none; stroke:#f4b85c; stroke-dasharray:4 4; stroke-width:1.2; }
+.kalman-measurement { fill:#ffba58; filter:drop-shadow(0 0 5px #ffba58); }
+.kalman-estimator rect { fill:#403450; stroke:#c68cff; stroke-width:1.4; }
+.kalman-estimator path { fill:none; stroke:#d4aaff; stroke-width:1.4; }
+.kalman-estimator circle { fill:#8ee1c4; }
+.kalman-estimate-ray { fill:none; stroke:#d18aff; stroke-dasharray:3 4; stroke-width:1.4; }
+.kalman-caption { fill:var(--muted); font-size:10px; font-family:inherit; }
+.kalman-chart { display:block; width:100%; margin-top:-4px; overflow:visible; }
+.kalman-actual-line { fill:none; stroke:#66c1ef; stroke-width:1.5; stroke-dasharray:6 4; opacity:.9; }
+.kalman-estimate-line { fill:none; stroke:#a789ff; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+.kalman-observation-dot { fill:#f3ab4c; opacity:.78; }
+.kalman-current-measure { stroke:#f3ab4c; stroke-dasharray:2 5; opacity:.48; }
+.kalman-current-estimate { fill:#bd95ff; stroke:var(--paper); stroke-width:2; }
+.kalman-legend.true { fill:#66c1ef; }.kalman-legend.measured { fill:#f3ab4c; }.kalman-legend.filtered { fill:#a789ff; }
+
+/* The chronograph and gearbox are drawn from directly above. */
+.watch-band { fill:var(--anatomy-shade-1); stroke:var(--anatomy-mid); stroke-width:1; }
+.watch-band-link { fill:none; stroke:var(--anatomy-hi); stroke-width:.8; }
+.watch-lug { fill:var(--anatomy-shade-2); stroke:var(--anatomy-hi); stroke-width:1; }
+.watch-case { fill:var(--anatomy-shade-1); stroke:var(--anatomy-hi); stroke-width:2; }
+.watch-bezel { fill:var(--anatomy-shade-0); stroke:var(--anatomy-mid); stroke-width:3; }
+.watch-dial { fill:var(--anatomy-top); stroke:var(--anatomy-hi); stroke-width:1; }
+.watch-index { stroke:var(--anatomy-mid); stroke-width:.8; }
+.watch-index.major { stroke:var(--anatomy-lit); stroke-width:1.8; }
+.watch-screw { fill:var(--anatomy-lit); }
+.watch-pusher,.watch-crown { fill:var(--anatomy-shade-2); stroke:var(--anatomy-hi); stroke-width:1; }
+.watch-crown-groove { stroke:var(--anatomy-mid); stroke-width:.8; }
+.watch-dial-labels { fill:var(--anatomy-lit); font-size:8px; }
+.watch-subdial { fill:var(--anatomy-shade-0); stroke:var(--anatomy-hi); stroke-width:.8; }
+.watch-subdial-inner { fill:none; stroke:var(--anatomy-mid); stroke-width:.5; }
+.watch-hour-hands { stroke:var(--anatomy-lit); stroke-width:3; stroke-linecap:round; fill:none; }
+.watch-second { stroke:var(--accent); stroke-width:1.2; fill:none; }
+.watch-subhand { stroke:var(--anatomy-hi); stroke-width:1.1; }
+.movement-plate { fill:var(--anatomy-shade-0); stroke:var(--anatomy-mid); stroke-width:1; }
+.gearbox-base { fill:var(--anatomy-shade-0); stroke:var(--anatomy-hi); stroke-width:1.2; }
+.gearbox-recess { fill:var(--anatomy-shade-1); stroke:var(--anatomy-mid); stroke-width:.8; }
+.gearbox-housing { fill:var(--anatomy-shade-0); stroke:var(--anatomy-hi); stroke-width:11; }
+.gearbox-shoulder { fill:none; stroke:var(--anatomy-mid); stroke-width:2; }
+.gearbox-fastener-seat { fill:var(--anatomy-shade-0); stroke:var(--anatomy-hi); stroke-width:1; }
+.gearbox-bearing-ball { fill:var(--anatomy-lit); }
+.gearbox-ring { fill:var(--anatomy-shade-2); stroke:var(--anatomy-lit); stroke-width:1.1; }
+.gearbox-ring-edge { fill:none; stroke:var(--anatomy-hi); stroke-width:.8; }
+.gearbox-relief { fill:var(--anatomy-lo); }
+.gear-carrier-arm { fill:var(--anatomy-shade-1); stroke:var(--anatomy-hi); stroke-width:1; }
+.gear-carrier-pin { fill:var(--anatomy-shade-0); stroke:var(--anatomy-lit); stroke-width:1; }
+.gear-carrier-hub { fill:var(--anatomy-shade-2); stroke:var(--anatomy-hi); stroke-width:1; }
+.gearbox-bearing-inner { fill:var(--anatomy-top); stroke:var(--accent); stroke-width:.8; }
+.gearbox-cover-ring,.gearbox-cover-spoke { fill:var(--anatomy-shade-2); stroke:var(--anatomy-lit); stroke-width:1; }
+.gearbox-cover-rivet { fill:var(--accent); stroke:var(--anatomy-lit); stroke-width:.7; }
+.watch-study > svg,.gearbox-study > svg { overflow:hidden; }
+
+/* Anatomy-style Kalman demonstrator: a target rig feeds an estimator and output carriage. */
+.kalman-mechanism { max-height:none; }
+.kalman-plinth { fill:var(--anatomy-shade-0); stroke:var(--anatomy-hi); stroke-width:1.3; }
+.kalman-foot { stroke:var(--anatomy-mid); stroke-width:4; stroke-linecap:round; }
+.kalman-rail { fill:none; stroke:#7f8d9a; stroke-width:3; stroke-linecap:round; }
+.kalman-rail-crown { fill:#aeb7c1; stroke:#d5dde4; stroke-width:.7; }
+.kalman-scale-major,.kalman-scale-tick { stroke:var(--anatomy-mid); stroke-width:.85; }
+.kalman-scale-tick { opacity:.65; }
+.kalman-rail-rivet,.kalman-fastener { fill:var(--anatomy-lit); stroke:var(--anatomy-lo); stroke-width:.6; }
+.kalman-screw-slot { stroke:var(--anatomy-lo); stroke-width:.7; }
+.kalman-base-seam { stroke:var(--anatomy-lo); stroke-width:.8; }
+.kalman-cart { transition:transform 70ms linear; }
+.kalman-cart-shell { fill:#364656; stroke:#89d9ef; stroke-width:1.4; }
+.kalman-cart-window { fill:#263745; stroke:#83c9e2; stroke-width:.8; }
+.kalman-cart-glass { fill:url(#kalman-glass); stroke:#9ee8ff; stroke-width:.6; }
+.kalman-cart-seam,.kalman-target-mast { fill:none; stroke:#b5d5e3; stroke-width:.9; }
+.kalman-target { fill:#5cd7ef; stroke:#e0fbff; stroke-width:1.2; }
+.kalman-target-core { fill:#fff; }
+.kalman-wheel { fill:#d08cff; stroke:#f2ddff; stroke-width:1; }
+.kalman-wheel-hub { fill:#f3e9ff; stroke:#8658a7; stroke-width:.6; }
+.kalman-confidence { fill:#a789ff; stroke:#bca8ff; stroke-width:.7; opacity:.17; transition:x 200ms ease,width 200ms ease; }
+.kalman-prediction-marker { stroke:#b89cff; stroke-width:1.3; stroke-dasharray:3 3; }
+.kalman-estimate-carriage { transition:transform 70ms linear; }
+.kalman-estimate-shell { fill:#51446e; stroke:#c2a8ff; stroke-width:1.3; }
+.kalman-estimate-glass { fill:#8975b6; stroke:#d3c3ff; stroke-width:.7; }
+.kalman-estimate-wheel { fill:#b99aff; stroke:#f1eaff; stroke-width:.8; }
+.kalman-gantry { fill:#364653; stroke:#8da3b6; stroke-width:1; }
+.kalman-gantry-seam { fill:none; stroke:#c0ced9; stroke-width:.8; }
+.kalman-gantry-foot { fill:#485a68; stroke:#a0b2c0; stroke-width:.8; }
+.kalman-sensor-body { fill:#374958; stroke:#8edfff; stroke-width:1.3; }
+.kalman-sensor-ridge,.kalman-sensor-fins { fill:none; stroke:#b8eaff; stroke-width:.7; }
+.kalman-lens-ring { fill:#293b4b; stroke:#92dfff; stroke-width:1.4; }
+.kalman-lens { fill:#287fa7; stroke:#c5f2ff; stroke-width:.9; }
+.kalman-lens-core { fill:#d9f9ff; }
+.kalman-ray { fill:none; stroke:#ffc15c; stroke-dasharray:4 4; stroke-width:1.4; opacity:.88; }
+.kalman-measurement-halo { fill:#ffc15c; opacity:.18; }
+.kalman-measurement { fill:#ffc15c; stroke:#fff0ca; stroke-width:.9; }
+.kalman-measurement-line { stroke:#ffc15c; stroke-width:.8; stroke-dasharray:2 3; opacity:.8; }
+.kalman-actual-marker { stroke:#64c9ee; stroke-width:1.2; }
+.kalman-signal-wire,.kalman-output-wire { fill:none; stroke:url(#kalman-signal); stroke-width:1.5; stroke-dasharray:5 4; animation:kalman-wire-flow 3s linear infinite; }
+.kalman-output-wire { stroke:#ac91ff; }
+.kalman-terminal { fill:var(--anatomy-lit); stroke:#b998ff; stroke-width:1; }
+.kalman-estimator-shell { fill:#292d3d; stroke:#b89bff; stroke-width:1.3; }
+.kalman-estimator-top { fill:#4a4563; stroke:#d3c6ff; stroke-width:.6; }
+.kalman-module-label { fill:#f3edff; font-size:5.2px; letter-spacing:.8px; font-family:inherit; }
+.kalman-gauge-well { fill:#1c2230; stroke:#7782a1; stroke-width:.7; }
+.kalman-gauge-ring { fill:#34364b; stroke:#a9b1d1; stroke-width:1; }
+.kalman-gauge-face { fill:#202638; stroke:#767e9a; stroke-width:.7; }
+.kalman-gauge-tick { stroke:#d0d5e5; stroke-width:.7; }
+.kalman-gain-needle { stroke:#ffbe62; stroke-width:1.6; stroke-linecap:round; transition:transform 180ms ease-out; }
+.kalman-gauge-pin { fill:#ffe1a9; }
+.kalman-micro-label { fill:#c4bfd3; font-size:4.4px; letter-spacing:.15px; font-family:inherit; }
+.kalman-display { fill:#111a22; stroke:#74b4bd; stroke-width:.7; }
+.kalman-display-ink { fill:none; stroke:#7be0c1; stroke-width:1.2; }
+.kalman-display-value { fill:#b8ffe3; font-size:7px; font-family:ui-monospace,monospace; }
+.kalman-covariance-track { fill:#161d2c; stroke:#777292; stroke-width:.5; }
+.kalman-covariance-fill { fill:#b49aff; opacity:.85; transition:width 180ms ease; }
+.kalman-board-trace { fill:none; stroke:#8e81b5; stroke-width:.8; }
+.kalman-terminal-pad { fill:#c3a7ff; stroke:#f0e6ff; stroke-width:.4; }
+.kalman-led { fill:#79e8c6; filter:drop-shadow(0 0 2px #79e8c6); }
+.kalman-led.muted { fill:#657080; filter:none; }
+.kalman-caption { fill:var(--muted); font-size:8px; font-family:inherit; }
+.kalman-residual-bracket { fill:none; stroke:#f7c66e; stroke-width:.9; }
+.kalman-uncertainty-band { fill:#a789ff; opacity:.13; stroke:none; }
+.kalman-chart { display:block; width:100%; margin-top:-4px; overflow:visible; }
+.kalman-estimate-line { fill:none; stroke:#a789ff; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+.kalman-observation-dot { fill:#f3ab4c; opacity:.82; }
+.kalman-current-estimate { fill:#bd95ff; stroke:var(--paper); stroke-width:2; }
+@keyframes kalman-wire-flow { to { stroke-dashoffset:-18; } }
+@media(prefers-reduced-motion:reduce) {
+  .kalman-signal-wire,.kalman-output-wire { animation:none; }
+  .kalman-cart,.kalman-estimate-carriage,.kalman-confidence,.kalman-gain-needle { transition:none; }
+}
+
+.iso{
+  --anatomy-page:#0b0b0b;--anatomy-card:#131313;--anatomy-text:#a3a3a3;--anatomy-strong:#e6e6e6;--anatomy-muted:#6e6e6e;
+  --anatomy-paper:#131313;--anatomy-face:#1b1b1b;--anatomy-top:#1c1c1c;
+  --anatomy-shade-0:#0f0f0f;--anatomy-shade-1:#121212;--anatomy-shade-2:#151515;--anatomy-shade-3:#181818;
+  --anatomy-lit-top:#262626;--anatomy-lit-shade:#1d1d1d;
+  --anatomy-hi:#d4d4d4;--anatomy-mid:#6a6a6a;--anatomy-lo:#3e3e3e;--anatomy-faint:#2a2a2a;--anatomy-lit:#ffffff;
+  --anatomy-halo:#050505;--anatomy-halo-opacity:.9;--anatomy-dot:#e6e6e6;
+  --anatomy-red:#ff6b6b;--anatomy-green:#6be0a0;--anatomy-blue:#6b9bff;
+  --anatomy-weight:.6px;--anatomy-ease:cubic-bezier(.32,.72,0,1);
+  --anatomy-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff0a,inset 0 0 0 1px #ffffff06,0 0 0 1px #00000026,0 1px 1px -.5px #00000014,0 3px 3px -1.5px #00000014,0 6px 6px -3px #00000014,0 12px 12px -6px #00000014;
+}
+.iso[data-theme="light"]{
+  --anatomy-page:#f2f2ef;--anatomy-card:#fbfbfa;--anatomy-text:#57575a;--anatomy-strong:#18181a;--anatomy-muted:#8c8c90;
+  --anatomy-paper:#fbfbfa;--anatomy-face:#ffffff;--anatomy-top:#ffffff;
+  --anatomy-shade-0:#dcdcd9;--anatomy-shade-1:#e5e5e2;--anatomy-shade-2:#ededea;--anatomy-shade-3:#f4f4f1;
+  --anatomy-lit-top:#ffffff;--anatomy-lit-shade:#eeeeeb;
+  --anatomy-hi:#26262a;--anatomy-mid:#8a8a8f;--anatomy-lo:#b4b4b8;--anatomy-faint:#d4d4d6;--anatomy-lit:#000000;
+  --anatomy-halo:#8a8a80;--anatomy-halo-opacity:.32;--anatomy-dot:#3a3a3e;
+  --anatomy-red:#e5484d;--anatomy-green:#30a46c;--anatomy-blue:#3e63dd;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff,0 0 0 1px #0000000f,0 1px 1px -.5px #0000000a,0 3px 3px -1.5px #0000000a,0 6px 6px -3px #0000000a,0 12px 12px -6px #0000000a;
+}
+.iso[data-theme="paper"]{
+  --anatomy-page:#f4f1ea;--anatomy-card:#f4f1ea;--anatomy-text:#5b564d;--anatomy-strong:#1c1a17;--anatomy-muted:#8a8478;
+  --anatomy-paper:#f4f1ea;--anatomy-face:#fffdf7;--anatomy-top:#fffdf7;
+  --anatomy-shade-0:#d8d2c4;--anatomy-shade-1:#e2dccf;--anatomy-shade-2:#ece7d9;--anatomy-shade-3:#f4efe2;
+  --anatomy-lit-top:#fffdf7;--anatomy-lit-shade:#efe8d6;
+  --anatomy-hi:#2b2925;--anatomy-mid:#8a8478;--anatomy-lo:#b8b0a0;--anatomy-faint:#d5cfbf;--anatomy-lit:#000000;
+  --anatomy-halo:#8a8478;--anatomy-halo-opacity:.35;--anatomy-dot:#3a372f;
+  --anatomy-red:#c93a3a;--anatomy-green:#2e7d4f;--anatomy-blue:#2f5fc9;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff,0 0 0 1px #0000000f,0 1px 1px -.5px #0000000a,0 3px 3px -1.5px #0000000a,0 6px 6px -3px #0000000a,0 12px 12px -6px #0000000a;
+}
+.fx-stage{position:relative;touch-action:pan-y}
+.fx-stage>svg,.fx-stage>canvas{display:block;width:100%;height:auto}
+.fx-stage>.fx-layer{position:absolute;inset:0;height:100%!important;pointer-events:none}
+.iso:not([data-theme="light"]):not([data-theme="paper"]) .fx-gl{mix-blend-mode:screen}
+.iso-svg path,.iso-svg circle{vector-effect:non-scaling-stroke}
+.iso-fill{fill:var(--anatomy-paper);stroke:none}
+.iso-solid[data-lit]>.iso-fill{fill:var(--anatomy-face)}
+.iso-shade,.iso-top{stroke:none}
+.iso-shade[data-shade="0"]{fill:var(--anatomy-shade-0)}
+.iso-shade[data-shade="1"]{fill:var(--anatomy-shade-1)}
+.iso-shade[data-shade="2"]{fill:var(--anatomy-shade-2)}
+.iso-shade[data-shade="3"]{fill:var(--anatomy-shade-3)}
+.iso-top{fill:var(--anatomy-top)}
+.iso-solid[data-lit]>.iso-top{fill:var(--anatomy-lit-top)}
+.iso-solid[data-lit]>.iso-shade{fill:var(--anatomy-lit-shade)}
+.iso-solid[data-seamless]>.iso-shade,.iso-solid[data-seamless]>.iso-top{stroke-width:.4;stroke-linejoin:round}
+.iso-solid[data-seamless]>.iso-shade[data-shade="0"]{stroke:var(--anatomy-shade-0)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="1"]{stroke:var(--anatomy-shade-1)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="2"]{stroke:var(--anatomy-shade-2)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="3"]{stroke:var(--anatomy-shade-3)}
+.iso-solid[data-seamless]>.iso-top{stroke:var(--anatomy-top)}
+.iso-solid[data-seamless][data-lit]>.iso-top{stroke:var(--anatomy-lit-top)}
+.iso-solid[data-seamless][data-lit]>.iso-shade{stroke:var(--anatomy-lit-shade)}
+.iso-solid[data-lit]>.iso-edge{stroke:var(--anatomy-lit)}
+.iso-halo{fill:var(--anatomy-halo);stroke:none;filter:blur(9px);opacity:var(--anatomy-halo-opacity);transform:translateY(3px)}
+.iso-line{fill:none;stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight);stroke-linecap:round;stroke-linejoin:round}
+.iso-line[data-tone="hi"]{stroke:var(--anatomy-hi)}
+.iso-line[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.iso-line[data-tone="lo"]{stroke:var(--anatomy-lo)}
+.iso-line[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.iso-line[data-tone="lit"]{stroke:var(--anatomy-lit)}
+.iso-line[data-tone="red"]{stroke:var(--anatomy-red)}
+.iso-line[data-tone="green"]{stroke:var(--anatomy-green)}
+.iso-line[data-tone="blue"]{stroke:var(--anatomy-blue)}
+.iso-line[data-dotted]{stroke-dasharray:.01 3.5;stroke-width:1}
+.iso-line[data-dashed]{stroke-dasharray:3 3}
+.iso-line[data-flow]{stroke-dasharray:2 6}
+.iso-wire-end{fill:var(--anatomy-paper);stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight)}
+.iso-wire[data-tone="hi"] .iso-wire-end{stroke:var(--anatomy-hi)}
+.iso-wire[data-tone="mid"] .iso-wire-end{stroke:var(--anatomy-mid)}
+.iso-wire[data-tone="faint"] .iso-wire-end{stroke:var(--anatomy-faint)}
+.iso-wire[data-tone="lit"] .iso-wire-end{stroke:var(--anatomy-lit)}
+.iso-dots circle{fill:var(--anatomy-dot);stroke:none;opacity:.32}
+.iso-dots[data-tone="hi"] circle{opacity:.85}
+.iso-dots[data-tone="mid"] circle{opacity:.45}
+.iso-dots[data-tone="lo"] circle{opacity:.22}
+.iso-dots[data-tone="faint"] circle{opacity:.12}
+.iso-face-text{fill:var(--anatomy-mid);font-family:var(--anatomy-mono);letter-spacing:.04em}
+.iso-face-text[data-tone="hi"]{fill:var(--anatomy-hi)}
+.iso-face-text[data-tone="lo"]{fill:var(--anatomy-lo)}
+.iso-face-text[data-tone="faint"]{fill:var(--anatomy-faint)}
+.tb-body{fill:var(--anatomy-shade-2);stroke:none}
+.tb-shine{fill:var(--anatomy-top);stroke:none}
+.tb-shade{fill:var(--anatomy-shade-0);stroke:none}
+.tb-ring{fill:none;stroke:var(--anatomy-lo);stroke-width:.45;stroke-linecap:butt;stroke-linejoin:round}
+.tb-ring[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.tb-ring[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.tb-ring[data-tone="hi"]{stroke:var(--anatomy-hi)}
+@keyframes iso-flow{to{stroke-dashoffset:-32}}
+@keyframes iso-pulse{0%,100%{opacity:.18}12%{opacity:1}40%{opacity:.18}}
+.iso-line[data-flow]{animation:iso-flow 1600ms linear infinite}
+.iso-dots circle[data-pulse]{animation:iso-pulse 1600ms steps(1,end) infinite;animation-delay:var(--pulse-at,0ms)}
+.iso-figure{margin:32px 0 36px}
+.iso-plate{position:relative;padding:52px 24px;border-radius:0;background:var(--anatomy-card);box-shadow:0 0 0 1px var(--anatomy-mid);--anatomy-paper:var(--anatomy-card)}
+.iso-plate-corners{position:absolute;inset:18px 20px;pointer-events:none}
+.iso-plate-corner{position:absolute;color:var(--anatomy-muted);font-family:var(--anatomy-mono);font-size:10.5px;line-height:1;letter-spacing:.04em;white-space:nowrap}
+.iso-plate-corner[data-corner="fig"]{top:0;left:0;color:var(--anatomy-text)}
+.iso-plate-corner[data-corner="title"]{top:0;right:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="hint"]{bottom:0;left:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="readout"]{right:0;bottom:0;color:var(--anatomy-text);font-variant-numeric:tabular-nums}
+.iso-plate .iso-svg{margin:0 auto}
+.iso-legend{display:grid;gap:8px;margin-top:12px;color:var(--anatomy-muted);font-size:13px;line-height:1.55}
+.iso-keys{display:flex;flex-wrap:wrap;gap:6px 18px}
+.iso-key{display:inline-flex;align-items:center;gap:7px}
+.iso-swatch{width:16px;height:10px;flex:none;overflow:visible}
+.iso-swatch path{fill:none;stroke:var(--anatomy-hi);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+.iso-swatch[data-mark="raised"] path,.iso-swatch[data-mark="flat"] path{stroke:var(--anatomy-mid)}
+.iso-swatch[data-mark="lit"] path{stroke:var(--anatomy-lit)}
+.iso-swatch[data-mark="dim"] path{stroke:var(--anatomy-lo)}
+.iso-swatch[data-mark="dotted"] path{stroke-dasharray:.01 3;stroke-width:1.4}
+.iso-swatch[data-mark="dashed"] path{stroke-dasharray:3 2.5}
+.iso-swatch[data-mark="red"] path{stroke:var(--anatomy-red)}
+.iso-swatch[data-mark="green"] path{stroke:var(--anatomy-green)}
+.iso-swatch[data-mark="blue"] path{stroke:var(--anatomy-blue)}
+.iso-swatch-crease{stroke:var(--anatomy-lo)!important}
+@media (max-width:560px){.iso-plate{padding:48px 12px 70px}.iso-plate-corner[data-corner="hint"]{bottom:18px}}
+@media (prefers-reduced-motion:reduce){.iso-line[data-flow],.iso-dots circle[data-pulse]{animation:none}}
+}

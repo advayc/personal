@@ -1,12 +1,14 @@
 import type { GetStaticPaths, GetStaticProps } from "next";
 import ProjectImage from "@/components/ProjectImage";
-import ProjectVideo from "@/components/ProjectVideo";
-import GqSlides from "@/components/projects/GqSlides";
-import NumsShowcase from "@/components/projects/NumsShowcase";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { FiArrowLeft, FiArrowUpRight } from "react-icons/fi";
 import SiteLayout from "@/components/SiteLayout";
 import { projects, type Project } from "@/lib/projects";
+
+const ProjectVideo = dynamic(() => import("@/components/ProjectVideo"));
+const GqSlides = dynamic(() => import("@/components/projects/GqSlides"));
+const NumsShowcase = dynamic(() => import("@/components/projects/NumsShowcase"));
 
 export default function ProjectPage({ project }: { project: Project }) {
   return (
@@ -47,18 +49,24 @@ export default function ProjectPage({ project }: { project: Project }) {
               <ProjectVideo
                 src="/projects/sitemaker-demo.mp4"
                 webmSrc="/projects/sitemaker-demo.webm"
-                poster="/projects/sitemaker-demo.png"
+                poster="/projects/sitemaker-poster.webp"
                 alt={project.imageAlt || project.title}
               />
             ) : (
               <ProjectImage
                 className="project-hero-image"
                 lightboxClassName={project.slug === "wrapped" ? "wrapped-lightbox" : undefined}
-                src={project.image || ""}
+                src={project.image}
+                priority
+                animated={project.animated}
                 alt={project.imageAlt || project.title}
                 width={project.imageWidth || 1440}
                 height={project.imageHeight || 900}
-                sizes="(max-width: 740px) calc(100vw - 48px), (max-width: 1200px) 90vw, 1040px"
+                sizes={
+                  project.slug === "spy" ? "(max-width: 488px) calc(100vw - 48px), 440px" :
+                  project.slug === "67-detector" ? "(max-width: 588px) calc(100vw - 48px), 540px" :
+                  "(max-width: 1088px) calc(100vw - 48px), 1040px"
+                }
               />
             )}
             <figcaption>

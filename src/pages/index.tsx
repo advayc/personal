@@ -23,6 +23,7 @@ export default function Home() {
             <div className="portrait-wrapper">
               <Image
                 src="/icons/me.png"
+                sizes="(max-width: 540px) 88px, 136px"
                 alt="Advay overlooking the mountains"
                 width={136}
                 height={181}
@@ -30,6 +31,7 @@ export default function Home() {
               />
               <Image
                 src="/icons/me-asci.png"
+                sizes="(max-width: 540px) 88px, 136px"
                 alt=""
                 width={136}
                 height={169}

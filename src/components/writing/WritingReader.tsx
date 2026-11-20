@@ -1,86 +1,15 @@
-import { useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
-import ReactMarkdown, { type Components } from "react-markdown";
-import remarkDirective from "remark-directive";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import type { Plugin } from "unified";
-import type { Root } from "mdast";
+import { useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
+import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+import { toJsxRuntime } from "hast-util-to-jsx-runtime";
+import type { Components } from "hast-util-to-jsx-runtime";
+import dynamic from "next/dynamic";
 import { FiChevronDown, FiExternalLink } from "react-icons/fi";
 import LossyCompressionStudies from "./LossyCompressionStudies";
-import CardMathStudy from "./CardMathStudy";
 import ProjectImage from "@/components/ProjectImage";
+import type { Heading, WritingDocument } from "@/lib/compileWriting";
 
-type Heading = { id: string; label: string; level: number };
+const CardMathStudy = dynamic(() => import("./CardMathStudy"));
 type Typeface = "serif" | "sans" | "mono";
-
-function textFromNode(node: ReactNode): string {
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(textFromNode).join("");
-  if (node && typeof node === "object" && "props" in node) {
-    return textFromNode((node as { props?: { children?: ReactNode } }).props?.children);
-  }
-  return "";
-}
-
-function slugifyHeading(text: string) {
-  return text
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s-]/gu, "")
-    .trim()
-    .replace(/\s+/g, "-");
-}
-
-function readHeadings(markdown: string): Heading[] {
-  return Array.from(markdown.matchAll(/^(#{2,4})\s+(.+)$/gm), ([, marks, label]) => ({
-    id: slugifyHeading(label),
-    label,
-    level: marks.length,
-  }));
-}
-
-type DirectiveNode = {
-  type?: string;
-  name?: string;
-  value?: string;
-  attributes?: Record<string, string | null | undefined>;
-  data?: Record<string, unknown>;
-  children?: DirectiveNode[];
-};
-
-const writingDirectives: Plugin<[], Root> = () => (tree) => {
-  const visit = (node: DirectiveNode) => {
-    // Keep ordinary prose such as ratios (5:1) and DOIs (doi:10...) literal.
-    if (node.type === "textDirective" && node.name) {
-      node.type = "text";
-      node.value = `:${node.name}`;
-      delete node.name;
-      delete node.attributes;
-      delete node.children;
-      return;
-    }
-    if (node.type === "containerDirective" && node.name) {
-      const kind = node.name === "interactive" ? "interactive" : node.name;
-      node.data = {
-        ...node.data,
-        hName: "div",
-        hProperties: {
-          "data-writing-directive": kind,
-          "data-type": node.attributes?.type || "",
-        },
-      };
-    }
-    node.children?.forEach(visit);
-  };
-  visit(tree as unknown as DirectiveNode);
-};
-
-function makeHeading(level: 1 | 2 | 3 | 4) {
-  const Tag = `h${level}` as const;
-  return function MarkdownHeading({ children, ...props }: ComponentProps<typeof Tag>) {
-    return <Tag id={slugifyHeading(textFromNode(children))} {...props}>{children}</Tag>;
-  };
-}
 
 type MarkdownDivProps = ComponentProps<"div"> & {
   "data-writing-directive"?: string;
@@ -105,11 +34,7 @@ function MarkdownDirective({ children, ...props }: MarkdownDivProps) {
   return <div {...props}>{children}</div>;
 }
 
-const markdownComponents: Components = {
-  h1: makeHeading(1),
-  h2: makeHeading(2),
-  h3: makeHeading(3),
-  h4: makeHeading(4),
+const markdownComponents: Partial<Components> = {
   div: MarkdownDirective,
   img: ({ alt, src }) => src ? (
     <ProjectImage
@@ -239,8 +164,10 @@ function Contents({ headings }: { headings: Heading[] }) {
   );
 }
 
-export default function WritingReader({ markdown, pdfHref }: { markdown: string; pdfHref?: string }) {
-  const headings = useMemo(() => readHeadings(markdown), [markdown]);
+export default function WritingReader({ article, pdfHref }: { article: WritingDocument; pdfHref?: string }) {
+  const content = useMemo(() => toJsxRuntime(article.tree, {
+    Fragment, jsx, jsxs, components: markdownComponents, ignoreInvalidStyle: true,
+  }), [article.tree]);
   const [typeface, setTypeface] = useState<Typeface>("sans");
 
   const changeTypeface = (font: Typeface) => {
@@ -264,16 +191,10 @@ export default function WritingReader({ markdown, pdfHref }: { markdown: string;
         <FontPicker value={typeface} onChange={changeTypeface} />
       </div>
       <div className="writing-reader-grid">
-        <Contents headings={headings} />
+        <Contents headings={article.headings} />
         <article className={`writing-body typeface-${typeface}`}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath, remarkDirective, writingDirectives]}
-            rehypePlugins={[rehypeKatex]}
-            components={markdownComponents}
-          >
-            {markdown}
-          </ReactMarkdown>
-          <div className="writing-word-count">{markdown.trim().split(/\s+/).length.toLocaleString()} words</div>
+          {content}
+          <div className="writing-word-count">{article.words.toLocaleString()} words</div>
         </article>
       </div>
     </div>

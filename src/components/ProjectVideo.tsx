@@ -75,7 +75,7 @@ export default function ProjectVideo({
           dialog.current?.showModal();
         }}
       >
-        <video ref={preview} poster={poster} muted loop playsInline preload="metadata" aria-hidden="true">
+        <video ref={preview} poster={poster} muted loop playsInline preload="none" aria-hidden="true">
           <source src={webmSrc} type="video/webm" />
           <source src={src} type="video/mp4" />
         </video>

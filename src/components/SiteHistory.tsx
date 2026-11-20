@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { FiX } from "react-icons/fi";
 
-const OPEN_HISTORY_EVENT = "portfolio:open-site-history";
 const versions = [
   { label: "2024", date: "2023", href: "/versions/1" },
   { label: "june 2026", date: "2025", href: "/versions/2" },
@@ -15,42 +14,16 @@ function versionFromPath(path: string) {
   return 3;
 }
 
-export default function SiteHistory() {
+export default function SiteHistory({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
   const router = useRouter();
   const currentVersion = versionFromPath(router.asPath.split(/[?#]/)[0]);
   const [selectedVersion, setSelectedVersion] = useState(currentVersion);
-  const [open, setOpen] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const transitionInProgress = useRef(false);
 
   useEffect(() => {
     setSelectedVersion(currentVersion);
-    if (currentVersion !== 3) setOpen(true);
   }, [currentVersion]);
-
-  useEffect(() => {
-    const show = () => setOpen(true);
-    window.addEventListener(OPEN_HISTORY_EVENT, show);
-    return () => window.removeEventListener(OPEN_HISTORY_EVENT, show);
-  }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    const prefetch = () => {
-      const currentPath = router.asPath.split(/[?#]/)[0];
-      versions.forEach(({ href }) => {
-        if (href === currentPath) return;
-        void router.prefetch(href);
-        // Next.js prefetching is disabled by the dev server. A quiet request
-        // warms its on-demand compiler so local version changes do not pay the
-        // first-visit compilation cost.
-        if (process.env.NODE_ENV === "development") {
-          void fetch(href, { credentials: "same-origin" }).catch(() => undefined);
-        }
-      });
-    };
-    prefetch();
-  }, [open, router]);
 
   const choose = async (next: number) => {
     if (transitionInProgress.current) return;

@@ -1,6 +1,6 @@
 import type { IconType } from "react-icons";
 import { FaHackerNews, FaLinkedin, FaMicrosoft, FaYahoo } from "react-icons/fa6";
-import { FiArchive, FiArrowDownRight, FiBookOpen, FiBriefcase, FiClock, FiCpu, FiFolder, FiGlobe, FiHome, FiLink, FiMapPin } from "react-icons/fi";
+import { FiArchive, FiHelpCircle, FiBookOpen, FiBriefcase, FiClock, FiCpu, FiFolder, FiGlobe, FiHome, FiLink, FiMapPin } from "react-icons/fi";
 import {
   SiArxiv, SiBaidu, SiBehance, SiBitbucket, SiBluesky, SiBrave, SiClaude, SiDevdotto, SiDiscord, SiDiscourse,
   SiDribbble, SiDuckduckgo, SiEcosia, SiFacebook, SiFlipboard, SiGithub, SiGitlab, SiGlassdoor, SiGmail, SiGoogle,
@@ -12,7 +12,8 @@ import {
 } from "react-icons/si";
 
 const SOURCE_ICONS: Record<string, IconType> = {
-  direct: FiArrowDownRight,
+  unknown: FiHelpCircle,
+  internal: FiHome,
   linkedin: FaLinkedin,
   github: SiGithub,
   x: SiX,

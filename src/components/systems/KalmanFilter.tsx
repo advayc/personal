@@ -1,3 +1,4 @@
+import { useReducedMotion, useVisibleInstrument } from "./useLive";
 import { useEffect, useMemo, useState } from "react";
 
 type Sample = {
@@ -68,19 +69,13 @@ export function KalmanFilter() {
   const [process, setProcess] = useState(1.3);
   const [tick, setTick] = useState(0);
   const [running, setRunning] = useState(true);
-  const [reduced, setReduced] = useState(false);
+  const reduced = useReducedMotion();
+  const { ref, visible } = useVisibleInstrument();
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-  useEffect(() => {
-    if (!running || reduced) return;
+    if (!running || reduced || !visible) return;
     const timer = window.setInterval(() => setTick((value) => value + 1), 70);
     return () => window.clearInterval(timer);
-  }, [running, reduced]);
+  }, [running, reduced, visible]);
 
   const data = useMemo(() => track(tick, noise, process), [tick, noise, process]);
   const actualLine = data.map((item, i) => (i ? "L" : "M") + xAt(i) + " " + yAt(item.actual)).join(" ");
@@ -100,7 +95,7 @@ export function KalmanFilter() {
   const sampleCount = tick + 1;
 
   return (
-    <div className="system-instrument kalman-study">
+    <div ref={ref} className="system-instrument kalman-study">
       <svg
         className="iso-svg kalman-mechanism"
         viewBox="0 0 760 340"

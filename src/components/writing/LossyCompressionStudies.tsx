@@ -42,9 +42,9 @@ function JpegComparison({ overview = false }: { overview?: boolean }) {
   return (
     <StudyFrame title="JPEG compression, side by side" hint={overview ? "overview · explore image quality" : "section 3.1 · drag the divider"}>
       <div className="jpeg-comparison" style={{ "--jpeg-split": `${split}%`, "--jpeg-zoom": zoom } as React.CSSProperties}>
-        <img src={asset(`kodak-jpeg-${result.image}.png`)} alt={`Kodak aircraft crop compressed to JPEG quality ${quality}`} />
+        <img loading="lazy" decoding="async" src={asset(`kodak-jpeg-${result.image}.png`)} alt={`Kodak aircraft crop compressed to JPEG quality ${quality}`} />
         <div className="jpeg-original-layer">
-          <img src={asset("kodak-original-crop.png")} alt="Original Kodak aircraft crop" />
+          <img loading="lazy" decoding="async" src={asset("kodak-original-crop.png")} alt="Original Kodak aircraft crop" />
         </div>
         <span className="jpeg-divider" aria-hidden="true"><i /></span>
         <span className="jpeg-image-label jpeg-label-original">Original</span>
@@ -89,11 +89,11 @@ function ArtifactZoomStudy() {
     <StudyFrame title="Inspect JPEG artifacts up close" hint="same 150 × 150 crop · choose a quality">
       <div className="artifact-zoom-pair" style={{ "--artifact-zoom": zoom } as React.CSSProperties}>
         <figure>
-          <img src={asset("kodak-original-crop.png")} alt="Original 150 by 150 pixel crop from Kodak Image 20" />
+          <img loading="lazy" decoding="async" src={asset("kodak-original-crop.png")} alt="Original 150 by 150 pixel crop from Kodak Image 20" />
           <figcaption>Original crop</figcaption>
         </figure>
         <figure>
-          <img src={asset(`kodak-jpeg-${result.image}.png`)} alt={`Same crop encoded at JPEG quality ${quality}`} />
+          <img loading="lazy" decoding="async" src={asset(`kodak-jpeg-${result.image}.png`)} alt={`Same crop encoded at JPEG quality ${quality}`} />
           <figcaption>JPEG Q{quality}</figcaption>
         </figure>
       </div>
@@ -263,14 +263,34 @@ function dct2d(pixels: number[][]): Matrix {
   }));
 }
 
+function useNearStudy<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    if (!ref.current || typeof IntersectionObserver === "undefined") {
+      setNear(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setNear(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: "500px" });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  return { ref, near };
+}
+
 function DctStudy() {
-  const sourceRef = useRef<HTMLCanvasElement>(null);
+  const { ref: sourceRef, near } = useNearStudy<HTMLCanvasElement>();
   const outputRef = useRef<HTMLCanvasElement>(null);
   const [coefficients, setCoefficients] = useState<Matrix | null>(null);
-  const [pixels, setPixels] = useState<Matrix | null>(null);
   const [retained, setRetained] = useState(18);
 
   useEffect(() => {
+    if (!near) return;
     const image = new Image();
     image.onload = () => {
       const source = sourceRef.current;
@@ -279,17 +299,18 @@ function DctStudy() {
       const context = source.getContext("2d", { willReadFrequently: true });
       if (!context) return;
       context.imageSmoothingEnabled = false;
-      context.drawImage(image, 200, 150, 8, 8, 0, 0, 8, 8);
+      // The shared reference crop starts at (200, 150) in the Kodak original.
+      context.drawImage(image, 0, 0, 8, 8, 0, 0, 8, 8);
       const rgba = context.getImageData(0, 0, 8, 8).data;
       const block = Array.from({ length: 8 }, (_, row) => Array.from({ length: 8 }, (_, col) => {
         const index = (row * 8 + col) * 4;
         return 0.299 * rgba[index] + 0.587 * rgba[index + 1] + 0.114 * rgba[index + 2];
       }));
-      setPixels(block);
       setCoefficients(dct2d(block));
     };
-    image.src = asset("kodim20.png");
-  }, []);
+    image.src = asset("kodak-original-crop.png");
+    return () => { image.onload = null; };
+  }, [near, sourceRef]);
 
   const retainedCells = new Set(zigzag.slice(0, retained).map(({ row, col }) => `${row}-${col}`));
   useEffect(() => {
@@ -548,29 +569,11 @@ function Spectrogram({ excerpt, label }: { excerpt: AudioExcerpt | undefined; la
         context.fillText(String(db), barX + barWidth + 6, y + 3);
       }
       context.save(); context.translate(866, top + plotHeight / 2); context.rotate(-Math.PI / 2); context.font = font(17); context.textAlign = "center"; context.fillText("Level (dBFS)", 0, 0); context.restore();
-      if (cursor) {
-        const cursorX = left + ((cursor.frame + 0.5) / spectrum.bins.length) * plotWidth;
-        const cursorY = bottom - ((cursor.bin + 0.5) / spectrum.bins[0].length) * plotHeight;
-        context.strokeStyle = spectrogramColor(1, colors);
-        context.lineWidth = 1;
-        context.setLineDash([4, 4]);
-        context.beginPath();
-        context.moveTo(cursorX, top);
-        context.lineTo(cursorX, bottom);
-        context.moveTo(left, cursorY);
-        context.lineTo(right, cursorY);
-        context.stroke();
-        context.setLineDash([]);
-        context.fillStyle = spectrogramColor(1, colors);
-        context.beginPath();
-        context.arc(cursorX, cursorY, 3, 0, Math.PI * 2);
-        context.fill();
-      }
     };
     draw();
     window.addEventListener("resize", draw);
     return () => window.removeEventListener("resize", draw);
-  }, [cursor, label, spectrum]);
+  }, [label, spectrum]);
   if (!spectrum) return <div className="audio-spectrogram-loading" role="status">Loading source spectrogram…</div>;
   const selectAt = (event: PointerEvent<HTMLCanvasElement>) => {
     const canvas = event.currentTarget;
@@ -585,6 +588,8 @@ function Spectrogram({ excerpt, label }: { excerpt: AudioExcerpt | undefined; la
     const bin = Math.max(0, Math.min(spectrum.bins[0].length - 1, Math.round((1 - (y - plotTop) / plotHeight) * (spectrum.bins[0].length - 1))));
     setCursor({ frame, bin });
   };
+  const cursorX = cursor ? 90 + ((cursor.frame + 0.5) / spectrum.bins.length) * 620 : 0;
+  const cursorY = cursor ? 382 - ((cursor.bin + 0.5) / spectrum.bins[0].length) * 340 : 0;
   const activeBin = cursor && spectrum ? spectrum.bins[cursor.frame][cursor.bin] : null;
   const activeTime = cursor && spectrum ? (cursor.frame * spectrum.hop) / spectrum.sampleRate : null;
   const activeFrequency = cursor && spectrum ? cursor.bin * spectrum.sampleRate / spectrum.frameSize : null;
@@ -614,6 +619,12 @@ function Spectrogram({ excerpt, label }: { excerpt: AudioExcerpt | undefined; la
           });
         }}
       />
+      {cursor && (
+        <svg aria-hidden="true" viewBox="0 0 880 520" style={{ position: "absolute", top: 0, left: 0, width: "100%", pointerEvents: "none", color: "var(--spectrum-peak)" }}>
+          <path d={`M${cursorX} 42V382 M90 ${cursorY}H710`} fill="none" stroke="currentColor" strokeDasharray="4 4" />
+          <circle cx={cursorX} cy={cursorY} r={3} fill="currentColor" />
+        </svg>
+      )}
       <div className="audio-spectrogram-readout" aria-live="polite">
         {cursor && activeBin !== null && activeTime !== null && activeFrequency !== null
           ? `${activeTime.toFixed(3)} s · ${Math.round(activeFrequency).toLocaleString()} Hz · ${activeBin.toFixed(1)} dBFS`
@@ -649,6 +660,7 @@ function formatTime(value: number) {
 
 function AudioStudy() {
   const [bitrate, setBitrate] = useState<Bitrate>("wav");
+  const { ref: studyRef, near } = useNearStudy<HTMLDivElement>();
   const [excerpts, setExcerpts] = useState<Partial<Record<Bitrate, AudioExcerpt>>>({});
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -661,20 +673,26 @@ function AudioStudy() {
   const positionRef = useRef(0);
   const active = bitrateOptions.find((option) => option.value === bitrate)!;
 
+  const excerpt = excerpts[bitrate];
   useEffect(() => {
-    let cancelled = false;
-    const options = bitrateOptions.map(async (option) => {
-      const filename = option.value === "wav" ? "original.wav" : `mp3-${option.value}.wav`;
-      const response = await fetch(asset(`audio/${filename}`));
-      if (!response.ok) throw new Error(`Could not load ${filename}`);
-      return [option.value, readWavExcerpt(await response.arrayBuffer())] as const;
-    });
-    void Promise.all(options).then((loaded) => {
-      if (!cancelled) setExcerpts(Object.fromEntries(loaded));
-    }).catch(() => {
-      if (!cancelled) setExcerpts({});
-    });
-    return () => { cancelled = true; };
+    if (!near || excerpt) return;
+    const controller = new AbortController();
+    const filename = bitrate === "wav" ? "original.wav" : `mp3-${bitrate}.wav`;
+    const load = async () => {
+      const response = await fetch(asset(`audio/${filename}`), { signal: controller.signal });
+      if (!response.ok) return;
+      const loaded = readWavExcerpt(await response.arrayBuffer());
+      if (!controller.signal.aborted) {
+        setExcerpts((previous) => ({ ...previous, [bitrate]: loaded }));
+      }
+    };
+    void load().catch(() => { /* The listening player works independently. */ });
+    return () => controller.abort();
+  }, [bitrate, excerpt, near]);
+
+  useEffect(() => () => {
+    sourceRef.current?.stop();
+    if (contextRef.current) void contextRef.current.close().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -741,7 +759,7 @@ function AudioStudy() {
 
   return (
     <StudyFrame title="Hear the bitrate change" hint="section 3.2 · illustrative audio">
-      <div className={`audio-study ${bitrate === "wav" ? "audio-is-wav" : "audio-is-mp3"}`}>
+      <div ref={studyRef} className={`audio-study ${bitrate === "wav" ? "audio-is-wav" : "audio-is-mp3"}`}>
         <div className="audio-rate-tabs" role="group" aria-label="Choose audio bitrate">
           {bitrateOptions.map((option) => (
             <button type="button" key={option.value} aria-pressed={bitrate === option.value} onClick={() => chooseRate(option.value)}>{option.label}</button>
@@ -754,7 +772,7 @@ function AudioStudy() {
           <input type="range" min="0" max={demoDuration} step="0.05" value={time} onChange={(event) => seek(Number(event.target.value))} aria-label="Audio position" />
           <span className="audio-time">{formatTime(time)} / 0:06</span>
         </div>
-        <div className="audio-spectrogram"><Spectrogram excerpt={excerpts[bitrate]} label={active.label} /></div>
+        <div className="audio-spectrogram"><Spectrogram key={bitrate} excerpt={excerpt} label={active.label} /></div>
         <p className="audio-description">{bitrate === "wav" ? "Listening demo · synthesized tone sample" : `Listening demo · synthesized tone low-pass filtered at ${active.cutoff.toLocaleString()} Hz`}</p>
         <p className="audio-disclosure">The spectrogram uses the supplied 100 ms PCM excerpts: the original WAV and MP3 encodes decoded back to WAV. The essay identifies this slice as 20.0–20.1 s. The listening player is a separate synthesized sample and is labeled illustrative.</p>
       <StudyCaption>Figures 9–13. Frequency is shown on a linear scale to Nyquist; color and the readout show single-bin level in dBFS. Point to the plot or focus it and use the arrow keys to inspect the measured excerpt.</StudyCaption>

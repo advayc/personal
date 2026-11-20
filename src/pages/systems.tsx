@@ -1,5 +1,7 @@
+import anatomy from "@/components/anatomy/iso.module.css";
+import styles from "@/components/systems/Study.module.css";
 import dynamic from "next/dynamic";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import SiteLayout from "@/components/SiteLayout";
 const Microcontroller = dynamic(
   () => import("@/components/systems/Electronics").then((mod) => mod.Microcontroller),
@@ -39,9 +41,29 @@ function Study({
   sentence: string;
   children: ReactNode;
 }) {
+  const section = useRef<HTMLElement>(null);
+  const [nearby, setNearby] = useState(id === "atmega");
+
+  useEffect(() => {
+    if (nearby || !section.current) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setNearby(true);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setNearby(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: "400px 0px" });
+    observer.observe(section.current);
+    return () => observer.disconnect();
+  }, [nearby]);
+
   return (
-    <section className="system-study" id={id} aria-labelledby={`${id}-title`}>
-      <div className="system-drawing">{children}</div>
+    <section className="system-study" id={id} aria-labelledby={`${id}-title`}
+      ref={section} tabIndex={nearby ? undefined : 0} onFocus={nearby ? undefined : () => setNearby(true)}>
+      <div className={`system-drawing ${styles.drawing}`}>{nearby && children}</div>
       <div className="system-copy">
         <h2 id={`${id}-title`}>{title}</h2>
         <p>{sentence}</p>
@@ -70,6 +92,7 @@ export default function Systems() {
     <SiteLayout
       title="systems i find interesting"
       wide
+      mainClassName={anatomy.page}
       description="Interactive studies of circuits, watches, gears, PID control, and Kalman filtering."
     >
       <header className="page-intro">

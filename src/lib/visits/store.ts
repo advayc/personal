@@ -48,6 +48,7 @@ async function redis() {
 // Upstash locks only the declared keys when a script opts in; stock Redis rejects the flag.
 const KEY_LOCKING = "#!lua flags=allow-key-locking\n";
 const RECORD_VISIT = `
+if redis.call('EXISTS', KEYS[3]) == 1 then return 0 end
 local count = redis.call('INCR', KEYS[2])
 if count == 1 then redis.call('EXPIRE', KEYS[2], 600) end
 if count > 90 then return 0 end
@@ -56,13 +57,14 @@ redis.call('ZADD', KEYS[1], ARGV[5], ARGV[1])
 redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[2])
 redis.call('ZREMRANGEBYRANK', KEYS[1], 0, -tonumber(ARGV[3]) - 1)
 redis.call('EXPIRE', KEYS[1], ARGV[4])
+redis.call('SET', KEYS[3], '1', 'EX', 600)
 return 1
 `;
 
 export async function recordVisit(visit: Visit, bucket: string) {
   const db = await redis();
   await db.sendCommand([
-    "EVAL", (/\.upstash\.io(:|\/|$)/.test(redisUrl() ?? "") ? KEY_LOCKING : "") + RECORD_VISIT.trimStart(), "2", VISITS_KEY, `${NAMESPACE}:rate:${bucket}`,
+    "EVAL", (/\.upstash\.io(:|\/|$)/.test(redisUrl() ?? "") ? KEY_LOCKING : "") + RECORD_VISIT.trimStart(), "3", VISITS_KEY, `${NAMESPACE}:rate:${bucket}`, `${NAMESPACE}:seen:${visit.id}`,
     JSON.stringify(visit), String(visit.at - WINDOW_MS), String(MAX_VISITS), String(WINDOW_MS / 1000), String(visit.at),
   ], { abortSignal: AbortSignal.timeout(2_000) });
 }

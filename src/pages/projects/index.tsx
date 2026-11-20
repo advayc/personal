@@ -13,11 +13,12 @@ export default function Projects() {
         </a>
       </header>
       <ul className="project-list">
-        {projects.map((project) => (
+        {projects.map((project, index) => (
           <li key={project.slug} className="project-row">
             <Link
               href={`/projects/${project.slug}`}
               className="project-row-copy"
+              prefetch={false}
             >
               <div className="project-title-line">
                 <h2>{project.title}</h2>
@@ -34,6 +35,8 @@ export default function Projects() {
             {project.image && (
               <ProjectImage
                 className="project-thumbnail"
+                priority={index === 0}
+                animated={project.animated}
                 src={project.thumbnail || project.image}
                 alt={project.imageAlt || project.title}
                 width={project.thumbnailWidth || project.imageWidth || 640}
