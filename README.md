@@ -1,43 +1,14 @@
-# advay chandorkar — personal site
+# advay chandorkar
 
-My personal portfolio website (old + new version)
+[advayc.ca](https://advayc.ca)
 
-## Versions
-
-The old version is at `/` — a terminal-based desktop where you click file icons to open draggable windows showing my experience and projects. It also has a draw app and a retro browser.
-
-The current version is at `/resume` — a clean résumé page with sections for what I am doing, what I have done, and what I have built. There is a command palette (⌘K) for theming, an accent color picker, and a full résumé PDF at `/resume.pdf`.
-
-### New version
-
-<img width="1204" height="744" alt="image" src="https://github.com/user-attachments/assets/8c9728e2-c0b8-48ee-973d-ecc55fee6a80" />
-
-## Customization
-
-Both versions let you change the accent color, background pattern, background color, font, and light/dark theme. Settings persist in localStorage.
-
-## Stack
-
-Next.js 15, React 18, TypeScript, Tailwind CSS, Framer Motion, Vercel Analytics & Speed Insights. Hit counter powered by a custom Go API.
-
-## Development runtime
-
-This project requires Node.js 24.22.1. The version is pinned in `.node-version` and `.nvmrc`; `volta` users are pinned through `package.json`.
-
-With `fnm` or `nvm`, run:
+Next.js 15, React 18, TypeScript. Node 24.
 
 ```bash
-fnm use
-# or: nvm use
-yarn install
+yarn
+yarn dev
 ```
 
-The `dev`, `build`, `start`, `lint`, and `typecheck` scripts verify Node 24 before running.
+`/projects` `/writing` `/systems` `/archive`
 
-## Private visit dashboard
-
-The dashboard is at `https://www.advay.ca/admin`. Generate its single-owner password with `openssl rand -hex 32`, save it in your password manager, and add it as a sensitive, **Production** environment variable named `VISITS_ADMIN_PASSWORD` in Vercel. Set `VISITS_REDIS_URL` to a working Redis connection string, such as the TCP URL from an Upstash database. Production falls back to `REDIS_URL` when `VISITS_REDIS_URL` is absent. Redeploy after setting the variables. Preview tracking and dashboard access are disabled. For local testing, set `VISITS_ADMIN_PASSWORD` and `VISITS_REDIS_URL` in `.env.local` and use a local or test Redis.
-
-Open an individual view to inspect its timestamp, source evidence, page, reported user agent, connection IP and approximate location when available. An external referrer takes precedence over link tags. Tags and recognizable in-app browser signals are labeled separately. The app label describes where a page opened. Internal navigation has its own label, and missing evidence is shown as unknown. Public LinkedIn, GitHub, X and Instagram link paths are shown when the browser supplies a supported permalink. No external query strings or fragments are retained. On Vercel the collector reads the platform’s connection IP header. Elsewhere it uses the immediate socket peer. Older records can lack these fields. The private dashboard shows up to 2,000 views from the past 30 days, with filters and paginated history in Toronto time. Sign out to clear the session. Rotating the password invalidates all sessions after redeployment.
-
-The log starts collecting visible browser page views once configured, with a rolling display window of 30 days and a cap of 2,000 entries. Page views require JavaScript. Raw IP addresses and full referrer URLs are excluded from the log.
+`/admin` is the private visit log. Set `VISITS_ADMIN_PASSWORD` and `VISITS_REDIS_URL`. Production can use `REDIS_URL`.
