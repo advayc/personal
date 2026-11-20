@@ -289,10 +289,14 @@ function Activity({ dashboard }: { dashboard: Dashboard }) {
                       {visit.path}
                     </span>
                     <span className={styles.visitMeta}>
-                      <span className={styles.icon}><PlaceIcon country={visit.country} /></span>
-                      {visit.place}
-                      <span className={styles.icon}><SourceIcon source={visit.sourceKey} /></span>
-                      {visit.source}
+                      <span className={styles.metaItem}>
+                        <span className={styles.icon}><PlaceIcon country={visit.country} /></span>
+                        {visit.place}
+                      </span>
+                      <span className={styles.metaItem}>
+                        <span className={styles.icon}><SourceIcon source={visit.sourceKey} /></span>
+                        {visit.source}
+                      </span>
                     </span>
                   </li>
                 ))}
@@ -316,6 +320,21 @@ export default function Admin(props: InferGetServerSidePropsType<typeof getServe
       <Head>
         <title>visits · advay chandorkar</title>
         <meta name="robots" content="noindex,nofollow,noarchive" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="/favicon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#171717" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="visits · advay chandorkar" />
+        <meta property="og:description" content="private visit dashboard" />
+        <meta property="og:image" content="https://advayc.ca/meta.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Advay Chandorkar — building things people use" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="visits · advay chandorkar" />
+        <meta name="twitter:description" content="private visit dashboard" />
+        <meta name="twitter:image" content="https://advayc.ca/meta.png" />
       </Head>
       <div className="site-column">
         <Header signedIn={!props.login} />

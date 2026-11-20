@@ -70,13 +70,13 @@
 /* Icons: muted, text-sized glyphs ahead of labels */
 .rowLabel { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .rowLabel > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.icon { display: inline-grid; place-items: center; width: 15px; height: 15px; flex-shrink: 0; color: var(--muted); font-size: 13px; line-height: 1; }
+.icon { display: inline-grid; place-items: center; width: 16px; height: 15px; flex-shrink: 0; color: var(--muted); font-size: 11px; line-height: 1; }
 .icon svg { width: 13px; height: 13px; }
+.icon [data-flag] { font-size: 13px; line-height: 1; }
 .breakdown li a:hover .icon, .breakdown li a[aria-current] .icon { color: var(--accent); }
 .visitPath { display: inline-flex; align-items: center; gap: 8px; }
-.visitMeta { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 6px; }
-.visitMeta .icon + * { margin-left: -1px; }
-.visitMeta .icon:not(:first-child) { margin-left: 8px; }
+.visitMeta { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 14px; }
+.metaItem { display: inline-flex; align-items: center; gap: 6px; }
 
 .intro > p.live { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; line-height: 1.5; }
 .live span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s ease-in-out infinite; }
