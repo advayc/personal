@@ -3,12 +3,15 @@ import "@/components/anatomy/iso.css";
 import "@/components/writing/writing.css";
 import "katex/dist/katex.min.css";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import type { AppProps } from "next/app";
 import { TerminalProvider } from '@/components/TerminalContext';
 import { SelectionBoxProvider } from '@/components/SelectionContext';
 import Head from "next/head";
 import { calculateAge } from '@/utils/age';
+import VisitTracking from "@/components/VisitTracking";
+import { ADMIN_PATH } from "@/lib/visits/shared";
 const SiteHistory = dynamic(() => import('@/components/SiteHistory'), {
   ssr: false,
 });
@@ -52,6 +55,9 @@ function DeferredMonitoring() {
 }
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+  if (router.pathname === ADMIN_PATH) return <Component {...pageProps} />;
+
   return (
     <>
       <Head>
@@ -91,6 +97,7 @@ export default function App({ Component, pageProps }: AppProps) {
         </SelectionBoxProvider>
       </TerminalProvider>
       <DeferredMonitoring />
+      {router.isReady && !["/404", "/500", "/_error"].includes(router.pathname) && <VisitTracking page={router.asPath} />}
     </>
   );
 }

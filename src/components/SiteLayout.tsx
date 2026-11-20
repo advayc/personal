@@ -157,6 +157,7 @@ export default function SiteLayout({
               <SiteHistoryTrigger className="archive-link">
                 site versions
               </SiteHistoryTrigger>
+              <Link className="archive-link" href="/privacy">privacy</Link>
               <span className="portfolio-views">
                 <HitCounter
                   id="home"
